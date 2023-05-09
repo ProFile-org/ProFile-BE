@@ -1,12 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{2ABA6E1D-4A5E-4725-80D7-4ABFB3C0C233}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "src\Api\Api.csproj", "{2ABA6E1D-4A5E-4725-80D7-4ABFB3C0C233}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{0C75EEC2-0360-4C32-9155-08F9D2C3AC96}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain.csproj", "{0C75EEC2-0360-4C32-9155-08F9D2C3AC96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{4B5398A7-8439-4889-97B8-6A0D5F176155}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{4B5398A7-8439-4889-97B8-6A0D5F176155}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{7CE12706-621D-41AB-B8D1-945B65CFC677}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{7CE12706-621D-41AB-B8D1-945B65CFC677}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{15A016EF-FB72-4F48-9773-569A4582C0B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3BD03CBB-C09F-4362-BB3F-DEDF8E89AF09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +34,11 @@ Global
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2ABA6E1D-4A5E-4725-80D7-4ABFB3C0C233} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
+		{4B5398A7-8439-4889-97B8-6A0D5F176155} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
+		{0C75EEC2-0360-4C32-9155-08F9D2C3AC96} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
+		{7CE12706-621D-41AB-B8D1-945B65CFC677} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
 	EndGlobalSection
 EndGlobal
