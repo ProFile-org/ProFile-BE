@@ -2,14 +2,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
 WORKDIR /app
 
-COPY *.sln .
-COPY ./src/Api/*.csproj ./src/Api/
-COPY ./src/Application/*.csproj ./src/Application/
-COPY ./src/Domain/*.csproj ./src/Domain/
-COPY ./src/Infrastructure/*.csproj ./src/Infrastructure/
-RUN dotnet restore
+COPY ./src/Api/*.csproj ./Api/
+COPY ./src/Application/*.csproj ./Application/
+COPY ./src/Domain/*.csproj ./Domain/
+COPY ./src/Infrastructure/*.csproj ./Infrastructure/
+RUN dotnet restore ./Api/Api.csproj
 
-COPY ./src ./src
+COPY ./src ./
 
 RUN dotnet publish -c Release -o /app/publish
 
