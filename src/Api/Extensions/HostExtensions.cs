@@ -5,7 +5,7 @@ namespace Api.Extensions;
 
 public static class HostExtensions
 {
-    public static IHostBuilder AddAppConfigurations(this IHostBuilder host)
+    public static IHostBuilder AddAppConfigurations(this IHostBuilder host, IConfiguration configuration)
     {
         return host.UseSerilog(Serilogger.Configure);
     }
