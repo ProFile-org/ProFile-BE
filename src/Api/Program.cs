@@ -25,7 +25,7 @@ catch (Exception ex)
     // Handle an error related to .NET 6
     // https://github.com/dotnet/runtime/issues/60600
     var error = ex.GetType().Name;
-    if (error.Equals("StopTheHostException", StringComparison.Ordinal))
+    if (error.Equals("HostAbortedException", StringComparison.Ordinal))
     {
         throw;
     }

@@ -14,6 +14,7 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddApplicationDbContext(configuration);
+        services.AddScoped<DbContext>(s => s.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IDbConnection>(s =>
         {
