@@ -1,13 +1,11 @@
 using System.Data;
 using Application.Common.Interfaces;
-using Application.Common.Interfaces.Repositories;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 
 namespace Infrastructure;
 
@@ -52,8 +50,6 @@ public static class ConfigureServices
 
     private static IServiceCollection RegisterRepositories(this IServiceCollection services)
     {
-        services.AddScoped<ISampleRepository, SampleRepository>();
-
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }

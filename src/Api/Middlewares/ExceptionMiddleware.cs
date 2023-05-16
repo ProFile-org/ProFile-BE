@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Application.Common.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Middlewares;
 

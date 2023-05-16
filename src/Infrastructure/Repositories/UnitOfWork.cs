@@ -1,6 +1,5 @@
 using System.Data;
 using Application.Common.Interfaces;
-using Application.Common.Interfaces.Repositories;
 using Infrastructure.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly IMediator _mediator;
     private readonly DbContext _context;
 
-    public UnitOfWork(IDbTransaction dbTransaction, IMediator mediator, DbContext context, ISampleRepository sampleRepository)
+    public UnitOfWork(IDbTransaction dbTransaction, IMediator mediator, DbContext context)
     {
         // Baseline
         _dbTransaction = dbTransaction;
@@ -21,12 +20,9 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
 
         // Inject repositories
-        SampleRepository = sampleRepository;
     }
     
     // Add Repositories
-    
-    public ISampleRepository SampleRepository { get; }
     
     // End of adding repositories
 
