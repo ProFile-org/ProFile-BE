@@ -10,7 +10,7 @@ RUN dotnet restore ./Api/Api.csproj
 
 COPY ./src ./
 
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish ./Api/Api.csproj -c Release -o /app/publish
 
 # Final stage
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS final
