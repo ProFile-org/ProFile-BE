@@ -9,29 +9,21 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    builder.Host.AddAppConfigurations();
-
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Host.AddAppConfigurations(builder.Configuration);
+    
+    // Add services related infrastructure
+    builder.Services.AddInfrastructure(builder.Configuration);
+    
     var app = builder.Build();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-    }
-    else
-    {
-    }
-
-    app.MapControllers();
-
-    app.MapGet("/", () => "Hello from ProFile!");
+    
+    app.UseInfrastructure();
 
     app.Run();
 }
 catch (Exception ex)
 {
+    // Handle an error related to .NET 6
+    // https://github.com/dotnet/runtime/issues/60600
     var error = ex.GetType().Name;
     if (error.Equals("StopTheHostException", StringComparison.Ordinal))
     {
