@@ -19,7 +19,13 @@ public class ExceptionMiddleware : IMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
+        context.Response.ContentType = "application/json";
         // Note: Handle every exception you throw here
+        if (ex is KeyNotFoundException)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await WriteExceptionMessageAsync(context, ex);
+        }
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
