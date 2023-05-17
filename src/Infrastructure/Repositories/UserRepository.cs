@@ -43,7 +43,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetUserByIdAsync(Guid id)
     {
         var sql =
-            @"SELECT Username, Email, PasswordHash, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
+            @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
             "FROM Users " +
             "WHERE Id = @id";
         return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
