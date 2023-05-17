@@ -1,3 +1,4 @@
+using Application.Common.Models;
 using Application.Users.Commands.CreateUserCommand;
 using Application.Users.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,9 @@ namespace Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<UserDTO>> CreateUser(CreateUserCommand command)
+    public async Task<ActionResult<Result<UserDto>>> CreateUser(CreateUserCommand command)
     {
-        return await Mediator.Send(command);
+        var result = await Mediator.Send(command);
+        return Created("", Result<UserDto>.Succeed(result));
     }
 }

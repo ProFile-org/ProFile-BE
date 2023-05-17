@@ -11,7 +11,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
-            .HasValueGenerator<GuidValueGenerator>();
+            .ValueGeneratedOnAdd();
         builder.Property(x => x.Username)
             .IsRequired()
             .HasMaxLength(50);

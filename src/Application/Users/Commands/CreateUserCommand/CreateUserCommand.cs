@@ -7,20 +7,19 @@ using MediatR;
 
 namespace Application.Users.Commands.CreateUserCommand;
 
-public record CreateUserCommand : IRequest<UserDTO>
+public record CreateUserCommand : IRequest<UserDto>
 {
     public string Username { get; init; }
     public string Email { get; init; }
-    public string Password { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public Department Department { get; set; }
-    public string Role { get; set; }
-    public string Position { get; set; }
-    public bool IsActive { get; set; }
+    public string Password { get; init; }
+    public string FirstName { get; init; }
+    public string LastName { get; init; }
+    public Guid DepartmentId { get; init; }
+    public string Role { get; init; }
+    public string Position { get; init; }
 }
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDTO>
+public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
 {
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
@@ -29,7 +28,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         _uow = uow;
         _mapper = mapper;
     }
-    public async Task<UserDTO> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         var entity = new User
         {
@@ -38,14 +37,14 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Department = request.Department,
+            Department = await _uow.DepartmentRepository.GetByIdAsync(request.DepartmentId),
             Role = request.Role,
             Position = request.Position,
-            IsActive = request.IsActive
+            IsActive = true
         };
 
         var result = await _uow.UserRepository.CreateUserAsync(entity);
-        return _mapper.Map<UserDTO>(result);
+        return _mapper.Map<UserDto>(result);
     }
 }
 

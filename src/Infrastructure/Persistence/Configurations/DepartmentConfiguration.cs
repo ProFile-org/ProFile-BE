@@ -11,7 +11,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
-            .HasValueGenerator<GuidValueGenerator>();
+            .ValueGeneratedOnAdd();
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(64);

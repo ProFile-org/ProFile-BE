@@ -15,14 +15,14 @@ public class UserRepository : IUserRepository
         _connection = connection;
         _transaction = transaction;
     }
-    
+
     public async Task<User> CreateUserAsync(User user)
     {
-        var commandText = $"INSERT INTO " +
-                          "User(username, email, password_hash, firstName, " +
-                          "lastName, department_id, role, position, isActive) " +
-                          "VALUES (@username, @email, @password_hash, @firstName," +
-                          "@lastname, @department_id, @role, @position, @isActive)";
+        var sql = @"INSERT INTO " +
+                  "User(username, email, password_hash, firstName, " +
+                  "lastName, department_id, role, position, isActive) " +
+                  "VALUES (@username, @email, @password_hash, @firstName," +
+                  "@lastname, @department_id, @role, @position, @isActive)";
 
         var queryArguments = new
         {
@@ -37,12 +37,7 @@ public class UserRepository : IUserRepository
             isActive = user.IsActive
         };
 
-        var affectedRows = await _connection.ExecuteAsync(commandText, queryArguments, transaction: _transaction);
-        if (affectedRows > 0)
-        {
-            return user;
-        }
-
-        return null;
+        await _connection.ExecuteAsync(sql, queryArguments, transaction: _transaction);
+        return user;
     }
 }

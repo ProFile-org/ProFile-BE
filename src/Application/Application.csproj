@@ -20,6 +20,8 @@
 
     <ItemGroup>
       <Folder Include="Common\Interfaces\Repositories" />
+      <Folder Include="Helpers\" />
+      <Folder Include="Users\Queries\" />
     </ItemGroup>
 
 </Project>
