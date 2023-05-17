@@ -44,6 +44,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         };
 
         var result = await _uow.UserRepository.CreateUserAsync(entity);
+        await _uow.Commit();
         return _mapper.Map<UserDto>(result);
     }
 }

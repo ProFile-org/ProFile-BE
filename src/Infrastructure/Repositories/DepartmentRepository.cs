@@ -13,7 +13,6 @@ public class DepartmentRepository : IDepartmentRepository
     public DepartmentRepository(IDbConnection connection, IDbTransaction transaction)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<Department> GetByIdAsync(Guid id)
