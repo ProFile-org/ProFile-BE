@@ -3,7 +3,10 @@ version: "3.8"
 services:
   backend:
     build: .
+    ports:
+      - '8888:80'
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mydb;User ID=profiletest;Password=supasecured;
     depends_on:
       database:
