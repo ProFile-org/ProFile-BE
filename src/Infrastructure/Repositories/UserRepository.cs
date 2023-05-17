@@ -40,4 +40,13 @@ public class UserRepository : IUserRepository
         await _connection.ExecuteAsync(sql, queryArguments, transaction: _transaction);
         return user;
     }
+
+    public async Task<IEnumerable<User>> GetUserByNameAsync(String firstName)
+    {
+        var sql = @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated" +
+                  "FROM Users" +
+                  "WHERE FirstName = @firstName";
+
+        return await _connection.QueryAsync<User>(sql, new { firstName });
+    }
 }
