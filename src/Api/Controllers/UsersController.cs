@@ -12,6 +12,6 @@ public class UsersController : ApiControllerBase
     public async Task<ActionResult<Result<UserDto>>> CreateUser(CreateUserCommand command)
     {
         var result = await Mediator.Send(command);
-        return Created("", Result<UserDto>.Succeed(result));
+        return Ok(Result<UserDto>.Succeed(result));
     }
 }

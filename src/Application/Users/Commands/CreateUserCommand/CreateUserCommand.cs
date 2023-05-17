@@ -30,6 +30,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
     }
     public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        var department = await _uow.DepartmentRepository.GetByIdAsync(request.DepartmentId);
+        if (department is null)
+        {
+            throw new KeyNotFoundException($"department {request.DepartmentId} doesn't existed");
+        }
         var entity = new User
         {
             Username = request.Username,
@@ -37,7 +42,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Department = await _uow.DepartmentRepository.GetByIdAsync(request.DepartmentId),
+            Department = department,
             Role = request.Role,
             Position = request.Position,
             IsActive = true

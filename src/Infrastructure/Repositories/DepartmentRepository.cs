@@ -17,7 +17,8 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Department> GetByIdAsync(Guid id)
     {
+       
         var sql = @"SELECT id, name FROM Department WHERE id = @id";
-        return await _connection.QuerySingleOrDefault<Task<Department>>(sql, new { id });
+        return await _connection.QuerySingleOrDefaultAsync<Department>(sql, new { id });
     }
 }
