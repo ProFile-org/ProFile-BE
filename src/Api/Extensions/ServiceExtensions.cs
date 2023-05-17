@@ -12,6 +12,8 @@ public static class ServiceExtensions
         services.AddApplicationServices();
         services.AddInfrastructureServices(configuration);
         
+        // Register services
+        services.AddServices();
         
         services.AddControllers();
 
@@ -19,8 +21,6 @@ public static class ServiceExtensions
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         
-        // Register services
-        services.AddServices();
         return services;
     }
     

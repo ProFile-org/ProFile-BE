@@ -18,13 +18,14 @@ public static class ConfigureServices
 
         services.AddScoped<IDbConnection>(s =>
         {
-            var dbContext = s.GetRequiredService<DbContext>();
+            var dbContext = s.GetRequiredService<ApplicationDbContext>();
             return dbContext.Database.GetDbConnection();
         });
 
         services.AddScoped<IDbTransaction>(s =>
         {
             var connection = s.GetRequiredService<IDbConnection>();
+            connection.Open();
             return connection.BeginTransaction();
         });
 
@@ -35,8 +36,9 @@ public static class ConfigureServices
 
     private static IServiceCollection AddApplicationDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-        var databaseSettings = configuration.GetSection(nameof(DatabaseSettings));
-        var connectionString = databaseSettings.GetConnectionString(nameof(DatabaseSettings.ConnectionString));
+        var connectionString = configuration.GetSection(
+                $"{nameof(DatabaseSettings)}:{nameof(DatabaseSettings.ConnectionString)}")
+            .Value;
         
         services.AddDbContext<ApplicationDbContext>(builder =>
         {

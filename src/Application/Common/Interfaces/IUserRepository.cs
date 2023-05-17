@@ -1,5 +1,3 @@
-using Application.Users.Commands.CreateUserCommand;
-using Application.Users.Queries;
 using Domain.Entities;
 
 namespace Application.Common.Interfaces;
