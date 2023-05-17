@@ -1,6 +1,6 @@
 using Domain.Entities.Physical;
 
-namespace Application.Common.Interfaces;
+namespace Application.Common.Interfaces.Repositories;
 
 public interface IStaffRepository
 {
