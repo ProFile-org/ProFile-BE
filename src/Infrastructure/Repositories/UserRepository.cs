@@ -28,9 +28,9 @@ public class UserRepository : IUserRepository
         {
             username = user.Username,
             email = user.Email,
+            lastName = user.LastName,
             password_hash = user.PasswordHash,
             firstName = user.FirstName,
-            lastName = user.LastName,
             department_id = user.Department.Id,
             role = user.Role,
             position = user.Position,

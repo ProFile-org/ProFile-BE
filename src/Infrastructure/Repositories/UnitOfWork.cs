@@ -14,7 +14,8 @@ public class UnitOfWork : IUnitOfWork
 
     public UnitOfWork(IDbTransaction dbTransaction, IMediator mediator, DbContext context, 
         IUserRepository userRepository,
-        IDepartmentRepository departmentRepository)
+        IDepartmentRepository departmentRepository
+        )
     {
         // Baseline
         _dbTransaction = dbTransaction;
@@ -32,6 +33,8 @@ public class UnitOfWork : IUnitOfWork
 
     public IUserRepository UserRepository { get; }
     public IDepartmentRepository DepartmentRepository { get; }
+    public IStaffRepository StaffRepository { get; }
+    public IRoomRepository RoomRepository { get; }
 
     public async Task Commit()
     {
