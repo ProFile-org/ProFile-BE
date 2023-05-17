@@ -56,7 +56,8 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
             Description = request.Description,
             NumberOfFolders = 0,
             Capacity = request.Capacity,
-            Room = room
+            Room = room,
+            IsAvailable = true
         };
 
         var result = await _context.Lockers.AddAsync(entity, cancellationToken);
