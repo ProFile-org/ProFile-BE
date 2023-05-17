@@ -33,7 +33,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         var department = await _uow.DepartmentRepository.GetByIdAsync(request.DepartmentId);
         if (department is null)
         {
-            throw new KeyNotFoundException($"department {request.DepartmentId} doesn't existed");
+            throw new KeyNotFoundException($"department {request.DepartmentId} does not exist");
         }
         var entity = new User
         {
