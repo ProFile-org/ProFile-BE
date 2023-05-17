@@ -11,7 +11,7 @@ public static class Serilogger
         var applicationName = context.HostingEnvironment.ApplicationName?.ToLower().Replace(".", "-");
         var environmentName = context.HostingEnvironment.EnvironmentName ?? "Development";
 
-        // Configure structured loggin
+        // Configure structured logging
         configuration
             .WriteTo.Debug()
             .WriteTo.Console(outputTemplate:
