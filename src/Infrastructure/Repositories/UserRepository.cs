@@ -27,10 +27,12 @@ public class UserRepository : IUserRepository
         {
             username = user.Username,
             email = user.Email,
-            passwordHash = user.PasswordHash,
-            firstName = user.FirstName,
+
             lastName = user.LastName,
-            departmentId = user.Department.Id,
+            password_hash = user.PasswordHash,
+            firstName = user.FirstName,
+            department_id = user.Department.Id,
+
             role = user.Role,
             position = user.Position,
             isActive = user.IsActive,
