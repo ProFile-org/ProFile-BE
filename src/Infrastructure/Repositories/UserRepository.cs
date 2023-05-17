@@ -20,7 +20,8 @@ public class UserRepository : IUserRepository
     {
         var sql = @"INSERT INTO " +
                   "Users(Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
-                  "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated)";
+                  "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated) " +
+                  "RETURNING Id";
 
         var queryArguments = new
         {
@@ -35,7 +36,7 @@ public class UserRepository : IUserRepository
             isActive = user.IsActive,
             isActivated = user.IsActivated
         };
-        var insertedId = await _connection.QueryFirstOrDefaultAsync<Guid>(sql, queryArguments, transaction: _transaction);
+        var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, queryArguments, transaction: _transaction);
         var insertedUser = await GetUserByIdAsync(insertedId);
         return insertedUser;
     }
