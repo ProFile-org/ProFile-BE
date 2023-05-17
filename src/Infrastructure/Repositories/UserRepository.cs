@@ -23,7 +23,6 @@ public class UserRepository : IUserRepository
                   "lastName, department_id, role, position, isActive) " +
                   "VALUES (@username, @email, @password_hash, @firstName," +
                   "@lastname, @department_id, @role, @position, @isActive)";
-        Console.WriteLine(user.PasswordHash);
         var queryArguments = new
         {
             username = user.Username,
