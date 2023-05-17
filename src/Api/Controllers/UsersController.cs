@@ -16,7 +16,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUserByName(GetUserByNameQuery query)
+    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUserByName([FromBody] GetUserByNameQuery query)
     {
         var result = await Mediator.Send(query);
         return Ok(Result<IEnumerable<UserDto>>.Succeed(result));

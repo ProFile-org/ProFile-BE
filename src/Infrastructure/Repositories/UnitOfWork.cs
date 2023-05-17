@@ -1,5 +1,6 @@
 using System.Data;
 using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Infrastructure.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
