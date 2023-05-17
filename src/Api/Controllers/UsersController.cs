@@ -13,4 +13,11 @@ public class UsersController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }
+
+    [HttpGet]
+    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUserByName([FromBody] GetUserByNameQuery query)
+    {
+        var result = await Mediator.Send(query);
+        return Ok(Result<IEnumerable<UserDto>>.Succeed(result));
+    }
 }

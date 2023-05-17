@@ -17,10 +17,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Common\Interfaces\Repositories" />
       <Folder Include="Helpers\" />
-      <Folder Include="Rooms\Queries\" />
-      <Folder Include="Users\Queries\" />
+        <Folder Include="Rooms\Queries\" />
+        <Folder Include="Users\Queries\" />
     </ItemGroup>
 
 </Project>

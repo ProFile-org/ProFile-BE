@@ -1,5 +1,5 @@
 using System.Data;
-using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Dapper;
 using Domain.Entities;
 
@@ -49,5 +49,14 @@ public class UserRepository : IUserRepository
             "FROM Users " +
             "WHERE Id = @id";
         return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
+    }
+
+    public async Task<IEnumerable<User>> GetUserByNameAsync(String firstName)
+    {
+        var sql = @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
+                  "FROM Users " +
+                  "WHERE FirstName = @firstName";
+
+        return await _connection.QueryAsync<User>(sql, new { firstName });
     }
 }
