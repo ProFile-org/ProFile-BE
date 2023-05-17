@@ -31,6 +31,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(64);
         builder.Property(x => x.IsActive)
             .IsRequired();
+        builder.Property(x => x.IsActivated)
+            .IsRequired();
         builder.Property(x => x.Created)
             .IsRequired();
     }
