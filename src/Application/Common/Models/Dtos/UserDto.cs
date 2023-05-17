@@ -14,6 +14,7 @@ public class UserDto : IMapFrom<User>
     public string Role { get; set; }
     public string Position { get; set; }
     public bool IsActive { get; set; }
+    public bool IsActivated { get; set; }
 
     public void Mapping(Profile profile)
     {

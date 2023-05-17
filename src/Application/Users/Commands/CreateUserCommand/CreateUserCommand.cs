@@ -45,7 +45,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             Department = department,
             Role = request.Role,
             Position = request.Position,
-            IsActive = true
+            IsActive = true,
+            IsActivated = false
         };
 
         var result = await _uow.UserRepository.CreateUserAsync(entity);
