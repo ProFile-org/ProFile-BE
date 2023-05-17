@@ -51,12 +51,12 @@ public class UserRepository : IUserRepository
         return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
     }
 
-    public async Task<IEnumerable<User>> GetUserByNameAsync(String firstName)
+    public async Task<IQueryable<User>> GetUsersByNameAsync(String firstName)
     {
         var sql = @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
                   "FROM Users " +
                   "WHERE FirstName = @firstName";
-
-        return await _connection.QueryAsync<User>(sql, new { firstName });
+        var result = await _connection.QueryAsync<User>(sql, new { firstName });
+        return result.AsQueryable();
     }
 }

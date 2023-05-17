@@ -1,6 +1,7 @@
 using Application.Common.Models;
 using Application.Users.Commands.CreateUser;
 using Application.Users.Queries;
+using Application.Users.Queries.GetUsersByName;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -15,7 +16,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUserByName([FromBody] GetUserByNameQuery query)
+    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUsersByName([FromBody] GetUsersByNameQuery query)
     {
         var result = await Mediator.Send(query);
         return Ok(Result<IEnumerable<UserDto>>.Succeed(result));
