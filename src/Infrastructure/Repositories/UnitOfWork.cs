@@ -12,7 +12,9 @@ public class UnitOfWork : IUnitOfWork
     private readonly IMediator _mediator;
     private readonly DbContext _context;
 
-    public UnitOfWork(IDbTransaction dbTransaction, IMediator mediator, DbContext context)
+    public UnitOfWork(IDbTransaction dbTransaction, IMediator mediator, DbContext context, 
+        IUserRepository userRepository,
+        IDepartmentRepository departmentRepository)
     {
         // Baseline
         _dbTransaction = dbTransaction;
@@ -20,11 +22,16 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
 
         // Inject repositories
+        UserRepository = userRepository;
+        DepartmentRepository = departmentRepository;
     }
     
     // Add Repositories
     
     // End of adding repositories
+
+    public IUserRepository UserRepository { get; }
+    public IDepartmentRepository DepartmentRepository { get; }
 
     public async Task Commit()
     {
