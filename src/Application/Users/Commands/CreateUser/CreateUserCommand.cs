@@ -5,7 +5,7 @@ using AutoMapper;
 using Domain.Entities;
 using MediatR;
 
-namespace Application.Users.Commands.CreateUserCommand;
+namespace Application.Users.Commands.CreateUser;
 
 public record CreateUserCommand : IRequest<UserDto>
 {

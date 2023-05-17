@@ -6,8 +6,9 @@ namespace Api.Extensions;
 
 public static class HostExtensions
 {
-    public static IHostBuilder AddAppConfigurations(this IHostBuilder host, IConfiguration configuration)
+    public static IHostBuilder AddAppConfigurations(this IHostBuilder host, IConfigurationBuilder configuration)
     {
+        configuration.AddEnvironmentVariables("PROFILE_");
         return host.UseSerilog(Serilogger.Configure);
     }
     

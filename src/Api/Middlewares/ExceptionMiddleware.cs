@@ -19,7 +19,7 @@ public class ExceptionMiddleware : IMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
-
+        // Note: Handle every exception you throw here
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)

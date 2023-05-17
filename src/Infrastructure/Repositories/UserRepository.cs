@@ -22,7 +22,6 @@ public class UserRepository : IUserRepository
                   "Users(Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
                   "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated) " +
                   "RETURNING Id";
-
         var queryArguments = new
         {
             username = user.Username,
