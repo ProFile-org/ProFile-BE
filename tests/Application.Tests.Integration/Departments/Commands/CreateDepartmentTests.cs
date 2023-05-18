@@ -9,7 +9,7 @@ public class CreateDepartmentTests : BaseClassFixture
     {
     }
 
-    [Fact(Timeout = 8)]
+    [Fact(Timeout = 1000)]
     public async Task ShouldCreateDepartment()
     {
         // Arrange

@@ -1,7 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using Application.Common.Interfaces;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries.GetUsersByName;
 
@@ -22,8 +25,10 @@ public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, I
 
     public async Task<IEnumerable<UserDto>> Handle(GetUsersByNameQuery request, CancellationToken cancellationToken)
     {
-        // var result = await _context.Users.Where(x => x.FirstName.request.FirstName);
-        // return new ReadOnlyCollection<UserDto>(_mapper.Map<List<UserDto>>(result)
-        //                                             .ToList());
+        var users = await _context.Users
+            .Where(x => x.FirstName.Contains(request.FirstName))
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            .ToListAsync(cancellationToken);
+        return new ReadOnlyCollection<UserDto>(users);
     }
 }

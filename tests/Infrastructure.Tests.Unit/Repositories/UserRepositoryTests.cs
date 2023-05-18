@@ -3,7 +3,6 @@ using Application.Helpers;
 using Bogus;
 using Dapper;
 using Domain.Entities;
-using Infrastructure.Repositories;
 using NSubstitute;
 using Xunit;
 

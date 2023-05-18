@@ -1,6 +1,7 @@
 using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Entities;
+using Domain.Entities.Physical;
 using Infrastructure.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         _mediator = mediator;
     }
 
-    public DbSet<Department> Departments { get; set; }
-    public DbSet<User> Users { get; set; }
-    
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Staff> Staffs => Set<Staff>();
+    public DbSet<Room> Rooms => Set<Room>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Scan for entity configurations using FluentAPI

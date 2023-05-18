@@ -1,8 +1,6 @@
 using System.Data;
 using Application.Common.Interfaces;
-using Application.Common.Interfaces.Repositories;
 using Infrastructure.Persistence;
-using Infrastructure.Repositories;
 using Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -30,8 +28,6 @@ public static class ConfigureServices
             return connection.BeginTransaction();
         });
 
-        services.RegisterRepositories();
-        
         return services;
     }
 
@@ -49,14 +45,6 @@ public static class ConfigureServices
             });
         });
 
-        return services;
-    }
-
-    private static IServiceCollection RegisterRepositories(this IServiceCollection services)
-    {
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 }

@@ -2,6 +2,7 @@ using Application.Common.Interfaces;
 using Application.Users.Queries;
 using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands.DisableUser;
 
@@ -12,27 +13,27 @@ public record DisableUserCommand : IRequest<UserDto>
 
 public class DisableUserCommandHandler : IRequestHandler<DisableUserCommand, UserDto>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-
-    public DisableUserCommandHandler(IUnitOfWork uow, IMapper mapper)
+    public DisableUserCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
 
     public async Task<UserDto> Handle(DisableUserCommand request, CancellationToken cancellationToken)
     {
-        var id = request.Id;
-        var user = await _uow.UserRepository.GetUserByIdAsync(id);
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
         if (user is null)
         {
             throw new KeyNotFoundException("User does not exist");
         }
-        
-        var result = await _uow.UserRepository.DisableUserById(id);
-        await _uow.Commit();
+
+        user.IsActive = false;
+
+        var result = _context.Users.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<UserDto>(result);
     }
 }
