@@ -29,6 +29,7 @@ public class MappingTests
     
     [Theory]
     [InlineData(typeof(User), typeof(UserDto))]
+    [InlineData(typeof(Department), typeof(DepartmentDto))]
     public void ShouldSupportMappingFromSourceToDestination(Type source, Type destination)
     {
         // Arrange

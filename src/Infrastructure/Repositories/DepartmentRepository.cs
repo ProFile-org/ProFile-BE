@@ -17,21 +17,10 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Department> CreateDepartmentAsync(Department department)
     {
-        var sql = "INSERT INTO Departments(Id, Name) " +
-                  "VALUES (@id, @name) " +
-                  "RETURNING Id";
-        var queryParams = new
-        {
-            id = department.Id,
-            name = department.Name
-        };
-        var insertedId =
-            await _connection.ExecuteScalarAsync<Guid>(sql, queryParams, transaction: _transaction);
-        department.Id = insertedId;
-        return department;
+        return new Department();
     }
 
-    public async Task<Department> GetByIdAsync(Guid id)
+    public async Task<Department?> GetByIdAsync(Guid id)
     {
        
         var sql = @"SELECT Id, Name FROM Departments WHERE Id = @id";

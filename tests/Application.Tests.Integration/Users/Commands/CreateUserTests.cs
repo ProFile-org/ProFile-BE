@@ -1,3 +1,4 @@
+using Application.Departments.Commands.CreateDepartment;
 using Application.Users.Commands.CreateUser;
 using Bogus;
 using Domain.Entities;
@@ -24,7 +25,13 @@ public class CreateUserTests : BaseClassFixture
     public async Task ShouldCreateUser_WhenCreateDetailsAreValid()
     {
         // Arrange
+        var createDepartmentCommand = _departmentGenerator.Generate();
+        var department = await SendAsync(createDepartmentCommand);
         var command = _userGenerator.Generate();
+        command = command with
+        {
+            DepartmentId = department.Id
+        };
         
         // Act
         var result = await SendAsync(command);
