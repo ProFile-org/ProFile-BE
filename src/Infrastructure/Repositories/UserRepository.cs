@@ -55,9 +55,9 @@ public class UserRepository : IUserRepository
 
     public async Task<IQueryable<User>> GetUsersByNameAsync(String firstName)
     {
-        var sql = @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
-                  "FROM Users " +
-                  "WHERE FirstName = @firstName";
+        var sql = @"SELECT username, email, password_hash, first_name,last_name, department_id, role, position, is_active, is_activated " +
+                  "FROM users " +
+                  "WHERE first_name = @firstName";
         var result = await _connection.QueryAsync<User>(sql, new { firstName });
         return result.AsQueryable();
     }

@@ -26,6 +26,12 @@ public class ExceptionMiddleware : IMiddleware
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             await WriteExceptionMessageAsync(context, ex);
         }
+
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            Console.WriteLine(ex.ToString());
+        }
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
