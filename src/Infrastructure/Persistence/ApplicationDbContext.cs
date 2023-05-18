@@ -20,4 +20,10 @@ public class ApplicationDbContext : DbContext
 
         base.OnModelCreating(builder);
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSnakeCaseNamingConvention();
+        base.OnConfiguring(optionsBuilder);
+    }
 }

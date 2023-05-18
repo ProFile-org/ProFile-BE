@@ -1,5 +1,5 @@
 using System.Data;
-using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Dapper;
 using Domain.Entities;
 
@@ -19,24 +19,44 @@ public class UserRepository : IUserRepository
     public async Task<User> CreateUserAsync(User user)
     {
         var sql = @"INSERT INTO " +
-                  "User(username, email, password_hash, firstName, " +
-                  "lastName, department_id, role, position, isActive) " +
-                  "VALUES (@username, @email, @password_hash, @firstName," +
-                  "@lastname, @department_id, @role, @position, @isActive)";
+                  "Users(Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
+                  "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated) " +
+                  "RETURNING Id";
         var queryArguments = new
         {
             username = user.Username,
             email = user.Email,
+
+            lastName = user.LastName,
             password_hash = user.PasswordHash,
             firstName = user.FirstName,
-            lastName = user.LastName,
             department_id = user.Department.Id,
+
             role = user.Role,
             position = user.Position,
-            isActive = user.IsActive
+            isActive = user.IsActive,
+            isActivated = user.IsActivated
         };
+        var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, queryArguments, transaction: _transaction);
+        var insertedUser = await GetUserByIdAsync(insertedId);
+        return insertedUser;
+    }
 
-        await _connection.ExecuteAsync(sql, queryArguments, transaction: _transaction);
-        return user;
+    public async Task<User?> GetUserByIdAsync(Guid id)
+    {
+        var sql =
+            @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
+            "FROM Users " +
+            "WHERE Id = @id";
+        return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
+    }
+
+    public async Task<IQueryable<User>> GetUsersByNameAsync(String firstName)
+    {
+        var sql = @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
+                  "FROM Users " +
+                  "WHERE FirstName = @firstName";
+        var result = await _connection.QueryAsync<User>(sql, new { firstName });
+        return result.AsQueryable();
     }
 }

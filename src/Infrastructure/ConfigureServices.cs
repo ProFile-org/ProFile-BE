@@ -1,5 +1,6 @@
 using System.Data;
 using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repositories;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Infrastructure.Shared;
