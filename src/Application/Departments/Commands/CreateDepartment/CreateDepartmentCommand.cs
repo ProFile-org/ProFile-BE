@@ -24,9 +24,16 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
     public async Task<DepartmentDto> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
+        var id = Guid.NewGuid();
+
+        while (_uow.DepartmentRepository.GetByIdAsync(id) != null)
+        {
+            id = Guid.NewGuid();
+        }
+        
         var entity = new Department
         {
-            Id = Guid.NewGuid(),
+            Id = id,
             Name = request.Name
         };
 
