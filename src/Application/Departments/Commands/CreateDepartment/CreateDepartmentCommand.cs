@@ -26,7 +26,7 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
     {
         var id = Guid.NewGuid();
 
-        while (_uow.DepartmentRepository.GetByIdAsync(id) != null)
+        while (await _uow.DepartmentRepository.GetByIdAsync(id) != null)
         {
             id = Guid.NewGuid();
         }
@@ -41,4 +41,4 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
         await _uow.Commit();
         return _mapper.Map<DepartmentDto>(result);
     }
-}
+}   

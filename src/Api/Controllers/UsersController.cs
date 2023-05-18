@@ -1,5 +1,6 @@
 using Application.Common.Models;
 using Application.Users.Commands.CreateUser;
+using Application.Users.Commands.DisableUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetUsersByName;
 using Microsoft.AspNetCore.Mvc;
@@ -20,5 +21,12 @@ public class UsersController : ApiControllerBase
     {
         var result = await Mediator.Send(query);
         return Ok(Result<IEnumerable<UserDto>>.Succeed(result));
+    }
+
+    [HttpPost("remove")]
+    public async Task<ActionResult<Result<UserDto>>> DisableUser([FromBody] DisableUserCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
     }
 }

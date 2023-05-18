@@ -31,7 +31,7 @@ public class DepartmentRepository : IDepartmentRepository
         return department;
     }
 
-    public async Task<Department> GetByIdAsync(Guid id)
+    public async Task<Department?> GetByIdAsync(Guid id)
     {
        
         var sql = @"SELECT Id, Name FROM Departments WHERE Id = @id";

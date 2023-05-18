@@ -7,4 +7,5 @@ public interface IUserRepository
     Task<User> CreateUserAsync(User user);
     Task<IQueryable<User>> GetUsersByNameAsync(String firstName);
     Task<User?> GetUserByIdAsync(Guid id);
+    Task<User> DisableUserById(Guid id);
 }

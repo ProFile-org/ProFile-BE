@@ -19,11 +19,12 @@ public class UserRepository : IUserRepository
     public async Task<User> CreateUserAsync(User user)
     {
         var sql = @"INSERT INTO " +
-                  "Users(Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
-                  "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated) " +
+                  "Users(Id, Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
+                  "VALUES(@id, @username, @email, @password_hash, @firstName,@lastName, @department_id, @role, @position, @isActive, @isActivated) " +
                   "RETURNING Id";
         var queryArguments = new
         {
+            id = user.Id,
             username = user.Username,
             email = user.Email,
 
@@ -38,8 +39,8 @@ public class UserRepository : IUserRepository
             isActivated = user.IsActivated
         };
         var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, queryArguments, transaction: _transaction);
-        var insertedUser = await GetUserByIdAsync(insertedId);
-        return insertedUser;
+        user.Id = insertedId;
+        return user;
     }
 
     public async Task<User?> GetUserByIdAsync(Guid id)
@@ -58,5 +59,15 @@ public class UserRepository : IUserRepository
                   "WHERE FirstName = @firstName";
         var result = await _connection.QueryAsync<User>(sql, new { firstName });
         return result.AsQueryable();
+    }
+
+    public async Task<User> DisableUserById(Guid id)
+    {
+        var sql = @"UPDATE users " +
+                  "SET IsActive = False " +
+                  "WHERE id = @id";
+        var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, new { id }, _transaction);
+        var result = await GetUserByIdAsync(insertedId);
+        return result;
     }
 }

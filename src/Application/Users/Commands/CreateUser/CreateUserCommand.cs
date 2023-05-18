@@ -37,6 +37,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         }
         var entity = new User
         {
+            Id = Guid.NewGuid(),
             Username = request.Username,
             PasswordHash = SecurityUtil.Hash(request.Password),
             Email = request.Email,
