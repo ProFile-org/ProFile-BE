@@ -53,6 +53,11 @@ public class UserRepository : IUserRepository
         return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
     }
 
+    public Task<User> DisableUserById(Guid id)
+    {
+        // throw new NotImplementedException();
+    }
+
     public async Task<IQueryable<User>> GetUsersByNameAsync(String firstName)
     {
         var sql = @"SELECT username, email, password_hash, first_name,last_name, department_id, role, position, is_active, is_activated " +

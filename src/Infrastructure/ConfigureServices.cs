@@ -16,7 +16,7 @@ public static class ConfigureServices
     {
         services.AddApplicationDbContext(configuration);
         services.AddScoped<DbContext>(s => s.GetRequiredService<ApplicationDbContext>());
-
+        services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
         services.AddScoped<IDbConnection>(s =>
         {
             var dbContext = s.GetRequiredService<ApplicationDbContext>();
