@@ -15,6 +15,22 @@ public class DepartmentRepository : IDepartmentRepository
         _connection = connection;
     }
 
+    public async Task<Department> CreateDepartmentAsync(Department department)
+    {
+        var sql = "INSERT INTO departments(id, name) " +
+                  "VALUES (@id, @name) " +
+                  "RETURNING id";
+        var queryParams = new
+        {
+            id = department.Id,
+            name = department.Name
+        };
+        var insertedId =
+            await _connection.ExecuteScalarAsync<Guid>(sql, queryParams, transaction: _transaction);
+        department.Id = insertedId;
+        return department;
+    }
+
     public async Task<Department> GetByIdAsync(Guid id)
     {
        
