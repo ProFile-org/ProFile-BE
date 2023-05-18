@@ -6,9 +6,9 @@ using MediatR;
 
 namespace Application.Departments.Commands.CreateDepartment;
 
-public class CreateDepartmentCommand : IRequest<DepartmentDto>
+public record CreateDepartmentCommand : IRequest<DepartmentDto>
 {
-    public string Name { get; set; }
+    public string Name { get; init; }
 }
 
 public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCommand, DepartmentDto>
@@ -26,7 +26,7 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
     {
         var id = Guid.NewGuid();
 
-        while (await  _uow.DepartmentRepository.GetByIdAsync(id) is not null)
+        while (await _uow.DepartmentRepository.GetByIdAsync(id) != null)
         {
             id = Guid.NewGuid();
         }
@@ -41,4 +41,4 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
         await _uow.Commit();
         return _mapper.Map<DepartmentDto>(result);
     }
-}
+}   
