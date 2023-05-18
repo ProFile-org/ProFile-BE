@@ -13,20 +13,7 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddApplicationDbContext(configuration);
-        services.AddScoped<DbContext>(s => s.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
-        services.AddScoped<IDbConnection>(s =>
-        {
-            var dbContext = s.GetRequiredService<ApplicationDbContext>();
-            return dbContext.Database.GetDbConnection();
-        });
-
-        services.AddScoped<IDbTransaction>(s =>
-        {
-            var connection = s.GetRequiredService<IDbConnection>();
-            connection.Open();
-            return connection.BeginTransaction();
-        });
 
         return services;
     }
@@ -39,9 +26,10 @@ public static class ConfigureServices
         
         services.AddDbContext<ApplicationDbContext>(builder =>
         {
-            builder.UseNpgsql(connectionString, builder =>
+            builder.UseNpgsql(connectionString, options =>
             {
-                builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                options.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                options.UseNodaTime();
             });
         });
 

@@ -16,4 +16,17 @@ public class UserDto : IMapFrom<User>
     public string Position { get; set; }
     public bool IsActive { get; set; }
     public bool IsActivated { get; set; }
+    public DateTime Created { get; set; }
+    public Guid? CreatedBy { get; set; }
+    public DateTime? LastModified { get; set; }
+    public Guid? LastModifiedBy { get; set; }
+
+    public void Mapping(Profile profile)
+    {
+        profile.CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Created,
+                opt => opt.MapFrom(src => src.Created.ToDateTimeUnspecified()))
+            .ForMember(dest => dest.LastModified,
+                opt => opt.MapFrom(src => src.LastModified.Value.ToDateTimeUnspecified()));
+    }
 }

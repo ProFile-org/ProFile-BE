@@ -1,11 +1,11 @@
 using Application.Common.Interfaces;
+using Application.Common.Models.Dtos.Physical;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities.Physical;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
-namespace Application.Rooms.Commands;
+namespace Application.Rooms.Commands.CreateRoom;
 
 public record CreateRoomCommand : IRequest<RoomDto>
 {
@@ -34,6 +34,6 @@ public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, RoomD
         };
         var result = await _context.Rooms.AddAsync(entity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<RoomDto>(result);
+        return _mapper.Map<RoomDto>(result.Entity);
     }
 }

@@ -33,7 +33,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetim
             
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(_dbContainer.GetConnectionString());
+                options.UseNpgsql(_dbContainer.GetConnectionString(), optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
     }

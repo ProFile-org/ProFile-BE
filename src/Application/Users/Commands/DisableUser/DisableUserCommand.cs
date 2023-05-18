@@ -8,7 +8,7 @@ namespace Application.Users.Commands.DisableUser;
 
 public record DisableUserCommand : IRequest<UserDto>
 {
-    public Guid Id { get; init; }
+    public Guid UserId { get; init; }
 }
 
 public class DisableUserCommandHandler : IRequestHandler<DisableUserCommand, UserDto>
@@ -23,8 +23,7 @@ public class DisableUserCommandHandler : IRequestHandler<DisableUserCommand, Use
 
     public async Task<UserDto> Handle(DisableUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
         if (user is null)
         {
             throw new KeyNotFoundException("User does not exist");

@@ -9,6 +9,8 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+      <PackageReference Include="FluentValidation" Version="11.5.2" />
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.5.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
     </ItemGroup>
 
@@ -18,8 +20,6 @@
 
     <ItemGroup>
       <Folder Include="Helpers\" />
-        <Folder Include="Rooms\Queries\" />
-        <Folder Include="Users\Queries\" />
     </ItemGroup>
 
 </Project>

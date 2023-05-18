@@ -1,8 +1,10 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Departments.Commands.CreateDepartment;
 
@@ -23,6 +25,12 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
     public async Task<DepartmentDto> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
+        var department = await _context.Departments.FirstOrDefaultAsync(x => x.Name.Equals(request.Name), cancellationToken);
+
+        if (department is not null)
+        {
+            throw new ConflictException("Department name already exists");
+        }
         var entity = new Department
         {
             Name = request.Name
@@ -30,6 +38,6 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
         var result = await _context.Departments.AddAsync(entity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<DepartmentDto>(result);
+        return _mapper.Map<DepartmentDto>(result.Entity);
     }
 }   

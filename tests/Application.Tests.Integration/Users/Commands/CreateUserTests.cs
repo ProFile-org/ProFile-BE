@@ -1,5 +1,6 @@
 using Application.Departments.Commands.CreateDepartment;
 using Application.Users.Commands.CreateUser;
+using Application.Users.Queries;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
@@ -37,6 +38,15 @@ public class CreateUserTests : BaseClassFixture
         var result = await SendAsync(command);
         
         // Assert
-        result.Should().BeEquivalentTo(command);
+        result.Username.Should().Be(command.Username);
+        result.FirstName.Should().Be(command.FirstName);
+        result.LastName.Should().Be(command.LastName);
+        result.Department.Should().BeEquivalentTo(department);
+        result.Email.Should().Be(command.Email);
+        result.Role.Should().Be(command.Role);
+        result.Position.Should().Be(command.Position);
+        result.IsActive.Should().Be(true);
+        result.IsActivated.Should().Be(false);
+        
     }
 }
