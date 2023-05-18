@@ -17,9 +17,9 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Department> CreateDepartmentAsync(Department department)
     {
-        var sql = "INSERT INTO departments(id, name) " +
+        var sql = "INSERT INTO Departments(Id, Name) " +
                   "VALUES (@id, @name) " +
-                  "RETURNING id";
+                  "RETURNING Id";
         var queryParams = new
         {
             id = department.Id,
