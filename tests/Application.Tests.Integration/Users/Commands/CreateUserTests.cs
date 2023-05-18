@@ -16,7 +16,7 @@ public class CreateUserTests : BaseClassFixture
         .RuleFor(x => x.Password, faker => faker.Random.String())
         .RuleFor(x => x.Role, faker => faker.Random.Word())
         .RuleFor(x => x.Position, faker => faker.Random.Word());
-    protected CreateUserTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public CreateUserTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
 

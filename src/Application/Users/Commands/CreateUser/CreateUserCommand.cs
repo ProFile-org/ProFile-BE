@@ -37,6 +37,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         }
         var entity = new User
         {
+            Id = Guid.NewGuid(),
             Username = request.Username,
             PasswordHash = SecurityUtil.Hash(request.Password),
             Email = request.Email,
@@ -51,6 +52,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
 
         var result = await _uow.UserRepository.CreateUserAsync(entity);
         await _uow.Commit();
+        result.Department = department;
         return _mapper.Map<UserDto>(result);
     }
 }

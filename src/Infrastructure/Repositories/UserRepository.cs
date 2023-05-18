@@ -19,11 +19,12 @@ public class UserRepository : IUserRepository
     public async Task<User> CreateUserAsync(User user)
     {
         var sql = @"INSERT INTO " +
-                  "Users(Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated) " +
-                  "VALUES(@username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated) " +
+                  "Users(Id, Username, Email, PasswordHash, FirstName,LastName, DepartmentId, Role, Position, IsActive, IsActivated, Created) " +
+                  "VALUES(@id, @username, @email, @passwordHash, @firstName,@lastname, @departmentId, @role, @position, @isActive, @isActivated, @created) " +
                   "RETURNING Id";
         var queryArguments = new
         {
+            id = user.Id,
             username = user.Username,
             email = user.Email,
 
@@ -35,9 +36,10 @@ public class UserRepository : IUserRepository
             role = user.Role,
             position = user.Position,
             isActive = user.IsActive,
-            isActivated = user.IsActivated
+            isActivated = user.IsActivated,
+            created = user.Created
         };
-        var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, queryArguments, transaction: _transaction);
+        var insertedId = await _connection.ExecuteScalarAsync<Guid>(sql, queryArguments, _transaction);
         var insertedUser = await GetUserByIdAsync(insertedId);
         return insertedUser;
     }
@@ -45,7 +47,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetUserByIdAsync(Guid id)
     {
         var sql =
-            @"SELECT Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated " +
+            @"SELECT Id, Username, Email, FirstName, LastName, DepartmentId, Role, Position, IsActive, IsActivated, Created, CreatedBy, Modified, ModifiedBy " +
             "FROM Users " +
             "WHERE Id = @id";
         return await _connection.QueryFirstOrDefaultAsync<User?>(sql, new { id });
