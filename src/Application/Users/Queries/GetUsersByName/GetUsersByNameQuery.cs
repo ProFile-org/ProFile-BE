@@ -12,19 +12,18 @@ public record GetUsersByNameQuery : IRequest<IEnumerable<UserDto>>
 
 public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, IEnumerable<UserDto>>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-
-    public GetUsersByNameQueryHandler(IUnitOfWork uow, IMapper mapper)
+    public GetUsersByNameQueryHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
 
     public async Task<IEnumerable<UserDto>> Handle(GetUsersByNameQuery request, CancellationToken cancellationToken)
     {
-        var result = await _uow.UserRepository.GetUsersByNameAsync(request.FirstName);
-        return new ReadOnlyCollection<UserDto>(_mapper.Map<List<UserDto>>(result)
-                                                    .ToList());
+        // var result = await _context.Users.Where(x => x.FirstName.request.FirstName);
+        // return new ReadOnlyCollection<UserDto>(_mapper.Map<List<UserDto>>(result)
+        //                                             .ToList());
     }
 }

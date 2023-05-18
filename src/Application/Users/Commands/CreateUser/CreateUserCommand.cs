@@ -4,6 +4,7 @@ using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands.CreateUser;
 
@@ -21,23 +22,23 @@ public record CreateUserCommand : IRequest<UserDto>
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    public CreateUserCommandHandler(IUnitOfWork uow, IMapper mapper)
+    public CreateUserCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
     public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
-        var department = await _uow.DepartmentRepository.GetByIdAsync(request.DepartmentId);
+        var department = await _context.Departments
+                .FirstOrDefaultAsync(x => x.Id == request.DepartmentId, cancellationToken);
         if (department is null)
         {
             throw new KeyNotFoundException("Department does not exist");
         }
         var entity = new User
         {
-            Id = Guid.NewGuid(),
             Username = request.Username,
             PasswordHash = SecurityUtil.Hash(request.Password),
             Email = request.Email,
@@ -51,9 +52,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             Created = DateTime.Now
         };
 
-        var result = await _uow.UserRepository.CreateUserAsync(entity);
-        await _uow.Commit();
-        result.Department = department;
+        var result = await _context.Users.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<UserDto>(result);
     }
 }

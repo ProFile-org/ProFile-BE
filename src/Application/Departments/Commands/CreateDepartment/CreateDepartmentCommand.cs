@@ -13,32 +13,23 @@ public record CreateDepartmentCommand : IRequest<DepartmentDto>
 
 public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCommand, DepartmentDto>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-
-    public CreateDepartmentCommandHandler(IUnitOfWork uow, IMapper mapper)
+    public CreateDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
 
     public async Task<DepartmentDto> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var id = Guid.NewGuid();
-
-        while (await _uow.DepartmentRepository.GetByIdAsync(id) != null)
-        {
-            id = Guid.NewGuid();
-        }
-        
         var entity = new Department
         {
-            Id = id,
             Name = request.Name
         };
 
-        var result = await _uow.DepartmentRepository.CreateDepartmentAsync(entity);
-        await _uow.Commit();
+        var result = await _context.Departments.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<DepartmentDto>(result);
     }
 }   
