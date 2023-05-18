@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230517150524_AddSnakeCasingNamingConvention")]
-    partial class AddSnakeCasingNamingConvention
+    [Migration("20230518032328_AddLowerCasingNamingConvention")]
+    partial class AddLowerCasingNamingConvention
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,11 +57,11 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
-                        .HasColumnName("created_by");
+                        .HasColumnName("createdby");
 
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("uuid")
-                        .HasColumnName("department_id");
+                        .HasColumnName("departmentid");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -73,35 +73,35 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("first_name");
+                        .HasColumnName("firstname");
 
                     b.Property<bool>("IsActivated")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_activated");
+                        .HasColumnName("isactivated");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
-                        .HasColumnName("is_active");
+                        .HasColumnName("isactive");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_modified");
+                        .HasColumnName("lastmodified");
 
                     b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid")
-                        .HasColumnName("last_modified_by");
+                        .HasColumnName("lastmodifiedby");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("last_name");
+                        .HasColumnName("lastname");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
-                        .HasColumnName("password_hash");
+                        .HasColumnName("passwordhash");
 
                     b.Property<string>("Position")
                         .IsRequired()
@@ -125,7 +125,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasName("pk_users");
 
                     b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_users_department_id");
+                        .HasDatabaseName("ix_users_departmentid");
 
                     b.ToTable("users", (string)null);
                 });
@@ -137,7 +137,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_users_departments_department_id");
+                        .HasConstraintName("fk_users_departments_departmentid");
 
                     b.Navigation("Department");
                 });

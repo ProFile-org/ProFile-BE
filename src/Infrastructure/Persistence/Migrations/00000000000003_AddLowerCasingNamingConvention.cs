@@ -5,7 +5,7 @@
 namespace Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSnakeCasingNamingConvention : Migration
+    public partial class AddLowerCasingNamingConvention : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,9 +46,54 @@ namespace Infrastructure.Persistence.Migrations
                 newName: "position");
 
             migrationBuilder.RenameColumn(
+                name: "PasswordHash",
+                table: "users",
+                newName: "passwordhash");
+
+            migrationBuilder.RenameColumn(
+                name: "LastName",
+                table: "users",
+                newName: "lastname");
+
+            migrationBuilder.RenameColumn(
+                name: "LastModifiedBy",
+                table: "users",
+                newName: "lastmodifiedby");
+
+            migrationBuilder.RenameColumn(
+                name: "LastModified",
+                table: "users",
+                newName: "lastmodified");
+
+            migrationBuilder.RenameColumn(
+                name: "IsActive",
+                table: "users",
+                newName: "isactive");
+
+            migrationBuilder.RenameColumn(
+                name: "IsActivated",
+                table: "users",
+                newName: "isactivated");
+
+            migrationBuilder.RenameColumn(
+                name: "FirstName",
+                table: "users",
+                newName: "firstname");
+
+            migrationBuilder.RenameColumn(
                 name: "Email",
                 table: "users",
                 newName: "email");
+
+            migrationBuilder.RenameColumn(
+                name: "DepartmentId",
+                table: "users",
+                newName: "departmentid");
+
+            migrationBuilder.RenameColumn(
+                name: "CreatedBy",
+                table: "users",
+                newName: "createdby");
 
             migrationBuilder.RenameColumn(
                 name: "Created",
@@ -60,55 +105,10 @@ namespace Infrastructure.Persistence.Migrations
                 table: "users",
                 newName: "id");
 
-            migrationBuilder.RenameColumn(
-                name: "PasswordHash",
-                table: "users",
-                newName: "password_hash");
-
-            migrationBuilder.RenameColumn(
-                name: "LastName",
-                table: "users",
-                newName: "last_name");
-
-            migrationBuilder.RenameColumn(
-                name: "LastModifiedBy",
-                table: "users",
-                newName: "last_modified_by");
-
-            migrationBuilder.RenameColumn(
-                name: "LastModified",
-                table: "users",
-                newName: "last_modified");
-
-            migrationBuilder.RenameColumn(
-                name: "IsActive",
-                table: "users",
-                newName: "is_active");
-
-            migrationBuilder.RenameColumn(
-                name: "IsActivated",
-                table: "users",
-                newName: "is_activated");
-
-            migrationBuilder.RenameColumn(
-                name: "FirstName",
-                table: "users",
-                newName: "first_name");
-
-            migrationBuilder.RenameColumn(
-                name: "DepartmentId",
-                table: "users",
-                newName: "department_id");
-
-            migrationBuilder.RenameColumn(
-                name: "CreatedBy",
-                table: "users",
-                newName: "created_by");
-
             migrationBuilder.RenameIndex(
                 name: "IX_Users_DepartmentId",
                 table: "users",
-                newName: "ix_users_department_id");
+                newName: "ix_users_departmentid");
 
             migrationBuilder.RenameColumn(
                 name: "Name",
@@ -131,9 +131,9 @@ namespace Infrastructure.Persistence.Migrations
                 column: "id");
 
             migrationBuilder.AddForeignKey(
-                name: "fk_users_departments_department_id",
+                name: "fk_users_departments_departmentid",
                 table: "users",
-                column: "department_id",
+                column: "departmentid",
                 principalTable: "departments",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
@@ -143,7 +143,7 @@ namespace Infrastructure.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "fk_users_departments_department_id",
+                name: "fk_users_departments_departmentid",
                 table: "users");
 
             migrationBuilder.DropPrimaryKey(
@@ -178,9 +178,54 @@ namespace Infrastructure.Persistence.Migrations
                 newName: "Position");
 
             migrationBuilder.RenameColumn(
+                name: "passwordhash",
+                table: "Users",
+                newName: "PasswordHash");
+
+            migrationBuilder.RenameColumn(
+                name: "lastname",
+                table: "Users",
+                newName: "LastName");
+
+            migrationBuilder.RenameColumn(
+                name: "lastmodifiedby",
+                table: "Users",
+                newName: "LastModifiedBy");
+
+            migrationBuilder.RenameColumn(
+                name: "lastmodified",
+                table: "Users",
+                newName: "LastModified");
+
+            migrationBuilder.RenameColumn(
+                name: "isactive",
+                table: "Users",
+                newName: "IsActive");
+
+            migrationBuilder.RenameColumn(
+                name: "isactivated",
+                table: "Users",
+                newName: "IsActivated");
+
+            migrationBuilder.RenameColumn(
+                name: "firstname",
+                table: "Users",
+                newName: "FirstName");
+
+            migrationBuilder.RenameColumn(
                 name: "email",
                 table: "Users",
                 newName: "Email");
+
+            migrationBuilder.RenameColumn(
+                name: "departmentid",
+                table: "Users",
+                newName: "DepartmentId");
+
+            migrationBuilder.RenameColumn(
+                name: "createdby",
+                table: "Users",
+                newName: "CreatedBy");
 
             migrationBuilder.RenameColumn(
                 name: "created",
@@ -192,53 +237,8 @@ namespace Infrastructure.Persistence.Migrations
                 table: "Users",
                 newName: "Id");
 
-            migrationBuilder.RenameColumn(
-                name: "password_hash",
-                table: "Users",
-                newName: "PasswordHash");
-
-            migrationBuilder.RenameColumn(
-                name: "last_name",
-                table: "Users",
-                newName: "LastName");
-
-            migrationBuilder.RenameColumn(
-                name: "last_modified_by",
-                table: "Users",
-                newName: "LastModifiedBy");
-
-            migrationBuilder.RenameColumn(
-                name: "last_modified",
-                table: "Users",
-                newName: "LastModified");
-
-            migrationBuilder.RenameColumn(
-                name: "is_active",
-                table: "Users",
-                newName: "IsActive");
-
-            migrationBuilder.RenameColumn(
-                name: "is_activated",
-                table: "Users",
-                newName: "IsActivated");
-
-            migrationBuilder.RenameColumn(
-                name: "first_name",
-                table: "Users",
-                newName: "FirstName");
-
-            migrationBuilder.RenameColumn(
-                name: "department_id",
-                table: "Users",
-                newName: "DepartmentId");
-
-            migrationBuilder.RenameColumn(
-                name: "created_by",
-                table: "Users",
-                newName: "CreatedBy");
-
             migrationBuilder.RenameIndex(
-                name: "ix_users_department_id",
+                name: "ix_users_departmentid",
                 table: "Users",
                 newName: "IX_Users_DepartmentId");
 

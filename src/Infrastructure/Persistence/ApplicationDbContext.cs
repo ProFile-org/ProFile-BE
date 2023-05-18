@@ -23,7 +23,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSnakeCaseNamingConvention();
+        optionsBuilder.UseLowerCaseNamingConvention();
         base.OnConfiguring(optionsBuilder);
     }
 }
