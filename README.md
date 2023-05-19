@@ -1,3 +1,4 @@
+![](https://github.com/ProFile-org/ProFile-BE/actions/workflows/test.yml/badge.svg?event=push)
 # ProFile - Backend
 
 ## To create new repository
