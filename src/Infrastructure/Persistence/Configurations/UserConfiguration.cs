@@ -35,5 +35,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
         builder.Property(x => x.Created)
             .IsRequired();
+        builder.HasOne(x => x.Department)
+            .WithMany();
     }
 }

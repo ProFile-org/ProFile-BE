@@ -1,6 +1,8 @@
 using Api.Middlewares;
+using Api.Policies;
 using Application;
 using Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Api.Extensions;
 
@@ -15,7 +17,8 @@ public static class ServiceExtensions
         // Register services
         services.AddServices();
         
-        services.AddControllers();
+        services.AddControllers(opt =>
+            opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
         // For swagger
         services.AddEndpointsApiExplorer();

@@ -1,30 +1,41 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using Application.Common.Interfaces;
+using Application.Common.Mappings;
+using Application.Common.Models;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries.GetUsersByName;
 
-public record GetUsersByNameQuery : IRequest<IEnumerable<UserDto>>
+public record GetUsersByNameQuery : IRequest<PaginatedList<UserDto>>
 {
-    public string FirstName { get; init; }
+    public string? SearchTerm { get; init; }
+    public int Page { get; init; }
+    public int Size { get; init; }
 }
 
-public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, IEnumerable<UserDto>>
+public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, PaginatedList<UserDto>>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-
-    public GetUsersByNameQueryHandler(IUnitOfWork uow, IMapper mapper)
+    public GetUsersByNameQueryHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<UserDto>> Handle(GetUsersByNameQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<UserDto>> Handle(GetUsersByNameQuery request, CancellationToken cancellationToken)
     {
-        var result = await _uow.UserRepository.GetUsersByNameAsync(request.FirstName);
-        return new ReadOnlyCollection<UserDto>(_mapper.Map<List<UserDto>>(result)
-                                                    .ToList());
+        var users = await _context.Users
+            .Where(x => string.IsNullOrEmpty(request.SearchTerm) 
+                        || x.FirstName.ToLower().Contains(request.SearchTerm.ToLower())
+                        || x.LastName.ToLower().Contains(request.SearchTerm.ToLower()))
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            .OrderBy(x => x.Username)
+            .PaginatedListAsync(request.Page, request.Size);
+        return users;
     }
 }

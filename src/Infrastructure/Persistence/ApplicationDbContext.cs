@@ -1,18 +1,28 @@
 using System.Reflection;
+using Application.Common.Interfaces;
 using Domain.Entities;
+using Domain.Entities.Physical;
+using Infrastructure.Common;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    private readonly IMediator _mediator;
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options, 
+        IMediator mediator) : base(options)
     {
+        _mediator = mediator;
     }
 
-    public DbSet<Department> Departments { get; set; }
-    public DbSet<User> Users { get; set; }
-    
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Staff> Staffs => Set<Staff>();
+    public DbSet<Room> Rooms => Set<Room>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Scan for entity configurations using FluentAPI
@@ -21,9 +31,10 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(builder);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        optionsBuilder.UseLowerCaseNamingConvention();
-        base.OnConfiguring(optionsBuilder);
+        await _mediator.DispatchDomainEvents(this);
+
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

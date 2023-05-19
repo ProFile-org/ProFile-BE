@@ -1,8 +1,10 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Departments.Commands.CreateDepartment;
 
@@ -13,32 +15,29 @@ public record CreateDepartmentCommand : IRequest<DepartmentDto>
 
 public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCommand, DepartmentDto>
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-
-    public CreateDepartmentCommandHandler(IUnitOfWork uow, IMapper mapper)
+    public CreateDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
-        _uow = uow;
+        _context = context;
         _mapper = mapper;
     }
 
     public async Task<DepartmentDto> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var id = Guid.NewGuid();
+        var department = await _context.Departments.FirstOrDefaultAsync(x => x.Name.Equals(request.Name), cancellationToken);
 
-        while (_uow.DepartmentRepository.GetByIdAsync(id) != null)
+        if (department is not null)
         {
-            id = Guid.NewGuid();
+            throw new ConflictException("Department name already exists");
         }
-        
         var entity = new Department
         {
-            Id = id,
             Name = request.Name
         };
 
-        var result = await _uow.DepartmentRepository.CreateDepartmentAsync(entity);
-        await _uow.Commit();
-        return _mapper.Map<DepartmentDto>(result);
+        var result = await _context.Departments.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return _mapper.Map<DepartmentDto>(result.Entity);
     }
-}
+}   

@@ -2,7 +2,7 @@ using Application.Common.Mappings;
 using AutoMapper;
 using Domain.Entities.Physical;
 
-namespace Application.Users.Queries;
+namespace Application.Common.Models.Dtos.Physical;
 
 public class RoomDto : IMapFrom<Room>
 {
@@ -16,6 +16,6 @@ public class RoomDto : IMapFrom<Room>
     {
         profile.CreateMap<Room, RoomDto>()
             .ForMember(x => x.StaffId,
-                opt => opt.MapFrom(src => src.Staff.Id));
+                opt => opt.MapFrom(src => src.Staff!.Id));
     }
 }

@@ -1,11 +1,10 @@
 using Application.Common.Models;
-using Application.Rooms.Commands;
-using Application.Users.Queries;
+using Application.Common.Models.Dtos.Physical;
+using Application.Rooms.Commands.CreateRoom;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-[Route("api/v1/[controller]")]
 public class RoomsController : ApiControllerBase
 {
     [HttpPost]

@@ -1,5 +1,6 @@
 using Application.Common.Models;
 using Application.Users.Commands.CreateUser;
+using Application.Users.Commands.DisableUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetUsersByName;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +17,22 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Result<IEnumerable<UserDto>>>> GetUsersByName([FromBody] GetUsersByNameQuery query)
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int page, int size)
     {
+        var query = new GetUsersByNameQuery
+        {
+            SearchTerm = searchTerm,
+            Page = page,
+            Size = size
+        };
         var result = await Mediator.Send(query);
-        return Ok(Result<IEnumerable<UserDto>>.Succeed(result));
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    }
+
+    [HttpPost("disable")]
+    public async Task<ActionResult<Result<UserDto>>> DisableUser([FromBody] DisableUserCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
     }
 }

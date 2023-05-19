@@ -4,6 +4,7 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -26,105 +27,147 @@ namespace Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("name");
+                        .HasColumnType("character varying(64)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_departments");
+                    b.HasKey("Id");
 
-                    b.ToTable("departments", (string)null);
+                    b.HasAlternateKey("Name");
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("NumberOfLockers")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Physical.Staff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("UserId");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId")
+                        .IsUnique();
+
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("createdby");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("departmentid");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(320)
-                        .HasColumnType("character varying(320)")
-                        .HasColumnName("email");
+                        .HasColumnType("character varying(320)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("firstname");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<bool>("IsActivated")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isactivated");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isactive");
+                        .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("LastModified")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lastmodified");
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("LastModifiedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("lastmodifiedby");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("lastname");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("passwordhash");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Position")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("position");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("role");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("username");
+                        .HasColumnType("character varying(50)");
 
-                    b.HasKey("Id")
-                        .HasName("pk_users");
+                    b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_users_departmentid");
+                    b.HasIndex("DepartmentId");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Physical.Staff", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithOne("Staff")
+                        .HasForeignKey("Domain.Entities.Physical.Staff", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Physical.Room", "Room")
+                        .WithOne("Staff")
+                        .HasForeignKey("Domain.Entities.Physical.Staff", "RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -133,10 +176,20 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_users_departments_departmentid");
+                        .IsRequired();
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
+                {
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("Domain.Entities.User", b =>
+                {
+                    b.Navigation("Staff")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

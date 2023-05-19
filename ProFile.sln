@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Tests.Unit", "tests\Application.Tests.Unit\Application.Tests.Unit.csproj", "{10AF78A2-A6E1-4E17-8131-97FD4491C42A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Tests.Integration", "tests\Application.Tests.Integration\Application.Tests.Integration.csproj", "{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,11 +47,21 @@ Global
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CE12706-621D-41AB-B8D1-945B65CFC677}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10AF78A2-A6E1-4E17-8131-97FD4491C42A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10AF78A2-A6E1-4E17-8131-97FD4491C42A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10AF78A2-A6E1-4E17-8131-97FD4491C42A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10AF78A2-A6E1-4E17-8131-97FD4491C42A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2ABA6E1D-4A5E-4725-80D7-4ABFB3C0C233} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
 		{4B5398A7-8439-4889-97B8-6A0D5F176155} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
 		{0C75EEC2-0360-4C32-9155-08F9D2C3AC96} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
 		{7CE12706-621D-41AB-B8D1-945B65CFC677} = {15A016EF-FB72-4F48-9773-569A4582C0B9}
+		{10AF78A2-A6E1-4E17-8131-97FD4491C42A} = {3BD03CBB-C09F-4362-BB3F-DEDF8E89AF09}
+		{B1A7F3EB-9A86-4B21-9B1F-D3E9DB55B7E7} = {3BD03CBB-C09F-4362-BB3F-DEDF8E89AF09}
 	EndGlobalSection
 EndGlobal
