@@ -1,19 +1,13 @@
 using Api.Middlewares;
 using Api.Policies;
-using Application;
-using Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Api.Extensions;
+namespace Api;
 
-public static class ServiceExtensions
+public static class ConfigureServices
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
-        // Add infrastructure project services
-        services.AddApplicationServices();
-        services.AddInfrastructureServices(configuration);
-        
         // Register services
         services.AddServices();
         
