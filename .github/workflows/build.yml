@@ -25,6 +25,6 @@ jobs:
     - name: Ship to Docker Hub
       uses: docker/build-push-action@v4
       with:
-        contex: .
+        context: .
         push: true
         tags: profileorg/${{ github.repository }}
