@@ -1,0 +1,21 @@
+name: run-test
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build the Docker image for unit test
+      run: docker build --target unittest . --file Dockerfile --tag profile-unit-test:latest
+    
+    - name: Run unit test
+      run: docker run -t profile-unit-test
