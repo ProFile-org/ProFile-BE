@@ -1,15 +1,12 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using Api.Controllers.Payload;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Helpers;
 using Infrastructure.Shared;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +14,7 @@ using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredCla
 
 namespace Api.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 public class AuthController : ControllerBase
 {
@@ -67,11 +65,15 @@ public class AuthController : ControllerBase
                 new EncryptingCredentials(publicEncryptionKey, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)
         };
 
-        var handler = new JsonWebTokenHandler();
-        
+        var handler = new JsonWebTokenHandler
+        {
+            TokenLifetimeInMinutes = 1
+        };
+
         var token = handler.CreateToken(tokenDescriptor);
         return Ok(new {
-                token
+                token,
+                Expires = DateTime.Now.AddMinutes(handler.TokenLifetimeInMinutes)
             }
         );
     }

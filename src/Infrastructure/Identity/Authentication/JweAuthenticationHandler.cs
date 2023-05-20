@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Infrastructure.Authentication;
+namespace Infrastructure.Identity.Authentication;
 
 public class JweAuthenticationHandler : AuthenticationHandler<JweAuthenticationOptions>
 {
@@ -48,6 +48,7 @@ public class JweAuthenticationHandler : AuthenticationHandler<JweAuthenticationO
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
+                ValidateLifetime = true,
                 // public key for signing
                 IssuerSigningKey = publicSigningKey,
         

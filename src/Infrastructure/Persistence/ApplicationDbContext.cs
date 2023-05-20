@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Staff> Staffs => Set<Staff>();
     public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Locker> Lockers => Set<Locker>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
