@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
 
-public class RoomConfiguration : IEntityTypeConfiguration<Room>
+public class FolderConfiguration : IEntityTypeConfiguration<Folder>
 {
-    public void Configure(EntityTypeBuilder<Room> builder)
+    public void Configure(EntityTypeBuilder<Folder> builder)
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
 
-        builder.HasAlternateKey(x => x.Name);
         builder.Property(x => x.Name)
             .HasMaxLength(64)
             .IsRequired();
@@ -21,12 +20,17 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
             .HasMaxLength(256)
             .IsRequired(false);
 
-        builder.Property(x => x.Capacity)
-            .IsRequired();
-        
-        builder.Property(x => x.NumberOfLockers)
+        builder.HasOne(x => x.Locker)
+            .WithMany(x => x.Folders)
+            .HasForeignKey("LockerId")
             .IsRequired();
 
+        builder.Property(x => x.Capacity)
+            .IsRequired();
+
+        builder.Property(x => x.NumberOfDocuments)
+            .IsRequired();
+        
         builder.Property(x => x.IsAvailable)
             .IsRequired();
     }

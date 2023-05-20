@@ -1,3 +1,4 @@
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,13 +11,17 @@ public class StaffConfiguration : IEntityTypeConfiguration<Staff>
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
+            .ValueGeneratedOnAdd()
             .HasColumnName("UserId");
-        builder.HasOne(x => x.Room)
-            .WithOne(x => x.Staff)           
-            .HasForeignKey<Staff>(x => x.RoomId);
 
         builder.HasOne(x => x.User)
+            .WithOne()
+            .HasForeignKey<Staff>(x => x.Id)
+            .IsRequired();
+        
+        builder.HasOne(x => x.Room)
             .WithOne(x => x.Staff)
-            .HasForeignKey<Staff>(x => x.Id);
+            .HasForeignKey<Staff>("RoomId")
+            .IsRequired();
     }
 }
