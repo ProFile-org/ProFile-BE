@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Entities.Physical;
 
 namespace Domain.Entities;
 
@@ -14,4 +15,7 @@ public class User : BaseAuditableEntity
     public string Position { get; set; }
     public bool IsActive { get; set; }
     public bool IsActivated { get; set; }
+    
+    // Navigation properties
+    public Staff Staff { get; set; }
 }
