@@ -1,4 +1,5 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
@@ -12,7 +13,7 @@ public record AddLockerCommand : IRequest<LockerDto>
 {
     public string Name { get; init; }
     public string Description { get; init; }
-    public string RoomId { get; init; }
+    public Guid RoomId { get; init; }
     public int Capacity { get; init; }
 }
 
@@ -29,8 +30,7 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
 
     public async Task<LockerDto> Handle(AddLockerCommand request, CancellationToken cancellationToken)
     {
-        var roomGuid = Guid.Parse(request.RoomId);
-        var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == roomGuid, cancellationToken);
+        var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
         if (room is null)
         {
@@ -40,8 +40,14 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
         if (room.NumberOfLockers == room.Capacity)
         {
             throw new LimitExceededException(
-                "This room cannot accept more folders. Please remove a folder then try again."
+                "This room cannot accept more lockers."
                 );
+        }
+
+        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name));
+        if (locker is not null)
+        {
+            throw new ConflictException("Locker's name already exists");
         }
         
         var entity = new Locker

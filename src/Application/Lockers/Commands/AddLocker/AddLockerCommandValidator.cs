@@ -13,19 +13,17 @@ public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
 
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(x => x.Capacity)
-            .GreaterThan(0).WithMessage("Locker's capacity must be greater than 0");
-        
+            .GreaterThan(0).WithMessage("Locker's capacity cannot be less than 1");
+
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Locker's name is required.")
-            .MaximumLength(64).WithMessage("Locker's name cannot exceed 64 characters.")
-            .Must(BeUnique).WithMessage("Locker's name already exists.");
+            .MaximumLength(64).WithMessage("Locker's name cannot exceed 64 characters.");
 
         RuleFor(x => x.Description)
-            .MaximumLength(256).WithMessage("Locker's description must not exceed 256 characters.");
+            .MaximumLength(256).WithMessage("Locker's description cannot exceed 256 characters.");
 
         RuleFor(x => x.RoomId)
-            .NotEmpty().WithMessage("Room ID is required.")
-            .Must(BeValid).WithMessage("Invalid Room ID format");
+            .NotEmpty().WithMessage("Room ID is required.");
     }
 
     private bool BeUnique(string name)
