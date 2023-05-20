@@ -2,7 +2,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Common.Interfaces;
-using Infrastructure.Authentication;
+using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
 using Infrastructure.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
