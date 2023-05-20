@@ -11,6 +11,7 @@ public interface IApplicationDbContext
     
     public DbSet<Staff> Staffs { get; }
     public DbSet<Room> Rooms { get; }
+    public DbSet<Folder> Folders { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
