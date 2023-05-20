@@ -11,6 +11,7 @@ public class RoomDto : IMapFrom<Room>
     public string Name { get; set; }
     public string? Description { get; set; }
     public int NumberOfLockers { get; set; }
+    public int Capacity { get; set; }
 
     public void Mapping(Profile profile)
     {

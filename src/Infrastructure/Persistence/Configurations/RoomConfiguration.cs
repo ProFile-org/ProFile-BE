@@ -18,6 +18,8 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
             .HasMaxLength(256);
         builder.Property(x => x.NumberOfLockers)
             .IsRequired();
+        builder.Property(x => x.Capacity)
+            .IsRequired();
 
         builder.HasOne(x => x.Staff);
     }
