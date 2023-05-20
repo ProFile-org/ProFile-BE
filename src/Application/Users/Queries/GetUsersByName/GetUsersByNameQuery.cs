@@ -1,12 +1,9 @@
-﻿using System.Collections.Immutable;
-using System.Collections.ObjectModel;
-using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces;
 using Application.Common.Mappings;
 using Application.Common.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries.GetUsersByName;
 

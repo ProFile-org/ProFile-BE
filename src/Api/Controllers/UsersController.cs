@@ -3,6 +3,7 @@ using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DisableUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetUsersByName;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -16,6 +17,7 @@ public class UsersController : ApiControllerBase
         return Ok(Result<UserDto>.Succeed(result));
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int page, int size)
     {
