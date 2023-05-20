@@ -41,7 +41,6 @@ public class CreateStaffCommandHandler : IRequestHandler<CreateStaffCommand, Sta
         var staff = new Staff
         {
             Id = user.Id,
-            RoomId = room.Id,
             User = user,
             Room = room
         };

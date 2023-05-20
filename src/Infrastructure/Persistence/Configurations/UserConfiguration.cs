@@ -12,30 +12,56 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
+        
         builder.Property(x => x.Username)
-            .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .IsRequired();
+        
         builder.Property(x => x.Email)
-            .IsRequired()
-            .HasMaxLength(320);
+            .HasMaxLength(320)            
+            .IsRequired(false);
+        
         builder.Property(x => x.PasswordHash)
-            .IsRequired()
-            .HasMaxLength(64);
+            .HasMaxLength(64)
+            .IsRequired();
+        
         builder.Property(x => x.FirstName)
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .IsRequired(false);
+        
         builder.Property(x => x.LastName)
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .IsRequired(false);
+        
+        builder.HasOne(x => x.Department)
+            .WithMany()
+            .HasForeignKey("DepartmentId")
+            .IsRequired(false);
+        
         builder.Property(x => x.Role)
-            .HasMaxLength(64);
+            .HasMaxLength(64)
+            .IsRequired();
+        
         builder.Property(x => x.Position)
-            .HasMaxLength(64);
+            .HasMaxLength(64)
+            .IsRequired(false);
+        
         builder.Property(x => x.IsActive)
             .IsRequired();
+        
         builder.Property(x => x.IsActivated)
             .IsRequired();
+        
         builder.Property(x => x.Created)
             .IsRequired();
-        builder.HasOne(x => x.Department)
-            .WithMany();
+
+        builder.Property(x => x.CreatedBy)
+            .IsRequired(false);
+
+        builder.Property(x => x.LastModified)
+            .IsRequired(false);
+
+        builder.Property(x => x.LastModifiedBy)
+            .IsRequired(false);
     }
 }

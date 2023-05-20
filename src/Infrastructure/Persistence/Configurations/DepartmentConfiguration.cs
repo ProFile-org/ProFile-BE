@@ -10,9 +10,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
     public void Configure(EntityTypeBuilder<Department> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.HasAlternateKey(x => x.Name);
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
+        
+        builder.HasAlternateKey(x => x.Name);
         builder.Property(x => x.Name)
             .HasMaxLength(64);
     }

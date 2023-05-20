@@ -1,4 +1,7 @@
+using Api;
 using Api.Extensions;
+using Application;
+using Infrastructure;
 using Infrastructure.Persistence;
 using Serilog;
 
@@ -12,8 +15,9 @@ try
 {
     builder.Host.AddAppConfigurations(builder.Configuration);
     
-    // Add services related infrastructure
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplicationServices();
+    builder.Services.AddInfrastructureServices(builder.Configuration);
+    builder.Services.AddApiServices();
     
     var app = builder.Build();
     
