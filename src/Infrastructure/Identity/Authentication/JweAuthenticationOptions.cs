@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 
-namespace Infrastructure.Authentication;
+namespace Infrastructure.Identity.Authentication;
 
 public class JweAuthenticationOptions : AuthenticationSchemeOptions
 {
