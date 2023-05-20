@@ -7,6 +7,7 @@ namespace Application.Common.Models.Dtos.Physical;
 
 public class BorrowDto : IMapFrom<Borrow>
 {
+    public Guid Id { get; set; }
     public UserDto Borrower { get; set; }
     public DocumentDto Document { get; set; }
     public DateTime BorrowTime { get; set; }
