@@ -44,7 +44,7 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
                 );
         }
 
-        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name));
+        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name) && x.Room.Id.Equals(request.RoomId));
         if (locker is not null)
         {
             throw new ConflictException("Locker's name already exists");
