@@ -23,6 +23,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Staff> Staffs => Set<Staff>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Locker> Lockers => Set<Locker>();
+    public DbSet<Folder> Folders => Set<Folder>();
+    public DbSet<Document> Documents => Set<Document>();
+    public DbSet<Borrow> Borrows => Set<Borrow>();
+    
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
