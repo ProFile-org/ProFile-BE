@@ -1,0 +1,58 @@
+name: dev CI
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+
+  unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build the Docker image for unit test
+      run: docker build --target unittest . --file Dockerfile --tag profile-unit-test:latest
+    
+    - name: Run unit test
+      run: docker run -t profile-unit-test
+
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run integration test
+      run: docker compose -f docker-compose.test.yml run --rm backend
+
+    - name: stop and remove containers
+      run: docker compose down
+  
+  build:
+    if: github.event_name == "push" 
+    needs: [unit-test, integration-test]
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Ship to Docker Hub
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: profileorg/profile-be-dev
