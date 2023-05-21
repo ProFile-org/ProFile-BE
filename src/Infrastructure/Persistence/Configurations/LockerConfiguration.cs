@@ -11,6 +11,9 @@ public class LockerConfiguration : IEntityTypeConfiguration<Locker>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
+        builder.Property(x => x.Name)
+            .HasMaxLength(64)
+            .IsRequired();
 
         builder.Property(x => x.Description)
             .HasMaxLength(256)
