@@ -1,6 +1,4 @@
-using Application.Departments.Commands.CreateDepartment;
 using Application.Users.Commands.CreateUser;
-using Application.Users.Queries;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
@@ -26,27 +24,35 @@ public class CreateUserTests : BaseClassFixture
     public async Task ShouldCreateUser_WhenCreateDetailsAreValid()
     {
         // Arrange
-        var createDepartmentCommand = _departmentGenerator.Generate();
-        var department = await SendAsync(createDepartmentCommand);
-        var command = _userGenerator.Generate();
-        command = command with
+        var department = new Department()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.Department()
+        };
+        await AddAsync(department);
+        var createUserCommand = _userGenerator.Generate();
+        createUserCommand = createUserCommand with
         {
             DepartmentId = department.Id
         };
         
         // Act
-        var result = await SendAsync(command);
+        var user = await SendAsync(createUserCommand);
         
         // Assert
-        result.Username.Should().Be(command.Username);
-        result.FirstName.Should().Be(command.FirstName);
-        result.LastName.Should().Be(command.LastName);
-        result.Department.Should().BeEquivalentTo(department);
-        result.Email.Should().Be(command.Email);
-        result.Role.Should().Be(command.Role);
-        result.Position.Should().Be(command.Position);
-        result.IsActive.Should().Be(true);
-        result.IsActivated.Should().Be(false);
+        user.Username.Should().Be(createUserCommand.Username);
+        user.FirstName.Should().Be(createUserCommand.FirstName);
+        user.LastName.Should().Be(createUserCommand.LastName);
+        user.Department.Should().BeEquivalentTo(new { department.Id, department.Name });
+        user.Email.Should().Be(createUserCommand.Email);
+        user.Role.Should().Be(createUserCommand.Role);
+        user.Position.Should().Be(createUserCommand.Position);
+        user.IsActive.Should().Be(true);
+        user.IsActivated.Should().Be(false);
         
+        // Clean up
+        var userEntity = await FindAsync<User>(user.Id);
+        Remove(userEntity);
+        Remove(department);
     }
 }
