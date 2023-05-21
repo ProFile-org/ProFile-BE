@@ -48,9 +48,9 @@ public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentComman
 
         var entity = new Document()
         {
-            Title = request.Title,
-            Description = request.Description,
-            DocumentType = request.DocumentType,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
+            DocumentType = request.DocumentType.Trim(),
             Importer = importer,
             Department = importer.Department,
             Folder = folder
