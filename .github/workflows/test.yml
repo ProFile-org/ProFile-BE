@@ -1,4 +1,4 @@
-name: run-test
+name: automation tests
 
 on:
   push:
@@ -19,3 +19,12 @@ jobs:
     
     - name: Run unit test
       run: docker run -t profile-unit-test
+
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run integration test with docker compose file
+      run: docker compose -f docker-compose.test.yml up
