@@ -9,7 +9,7 @@ services:
       - '8888:80'
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mydb;User ID=profiletest;Password=supasecured;
+      - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5423;Database=mytestdb;User ID=profiletester;Password=supasupasecured;
     depends_on:
       database:
         condition: service_started
@@ -18,8 +18,8 @@ services:
     image: postgres:alpine
     restart: always
     environment:
-      - POSTGRES_USER=profiletest
-      - POSTGRES_PASSWORD=supasecured
-      - POSTGRES_DB=mydb
+      - POSTGRES_USER=profiletester
+      - POSTGRES_PASSWORD=supasupasecured
+      - POSTGRES_DB=mytestdb
     ports:
-      - '5432:5432'
+      - '5423:5432'
