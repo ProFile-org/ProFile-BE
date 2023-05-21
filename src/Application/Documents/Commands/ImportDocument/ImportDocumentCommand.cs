@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -36,11 +37,18 @@ public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentComman
         {
             throw new KeyNotFoundException("User does not exist");
         }
+
+        var document = _context.Documents.FirstOrDefault(x => 
+            x.Title.Equals(request.Title) 
+            && x.Importer != null 
+            && x.Importer.Id == request.ImporterId);
+        if (document is not null)
+        {
+            throw new ConflictException($"Document title already exists for user {importer.FirstName}");
+        }
         
         var folder = await _context.Folders
-            .Include(x => x.Locker)
-            .ThenInclude(x => x.Room)
-            .FirstOrDefaultAsync(x => x.Id == request.ImporterId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.FolderId, cancellationToken);
         if (folder is null)
         {
             throw new KeyNotFoundException("Folder does not exist");
