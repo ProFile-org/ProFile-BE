@@ -1,5 +1,5 @@
-![](https://github.com/ProFile-org/ProFile-BE/actions/workflows/test.yml/badge.svg)
-![](https://github.com/ProFile-org/ProFile-BE/actions/workflows/build.yml/badge.svg)
+![](https://github.com/ProFile-org/ProFile-BE/actions/workflows/dev-ci.yml/badge.svg)
+![](https://github.com/ProFile-org/ProFile-BE/actions/workflows/shiping.yml/badge.svg)
 # ProFile - Backend
 
 ## To create new repository
