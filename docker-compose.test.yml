@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      target: integrationtest
+    ports:
+      - '8888:80'
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mydb;User ID=profiletest;Password=supasecured;
+    depends_on:
+      database:
+        condition: service_started
+    
+  database:
+    image: postgres:alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=profiletest
+      - POSTGRES_PASSWORD=supasecured
+      - POSTGRES_DB=mydb
+    ports:
+      - '5432:5432'
