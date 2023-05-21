@@ -38,10 +38,9 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder();
             connectionStringBuilder.Host = "database";
             connectionStringBuilder.Database = "mytestdb";
-            connectionStringBuilder.Port = 5423;
+            connectionStringBuilder.Port = 5432;
             connectionStringBuilder.Username = "profiletester";
             connectionStringBuilder.Password = "supasupasecured";
-            Console.WriteLine(connectionStringBuilder.ConnectionString);
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(connectionStringBuilder.ConnectionString , optionsBuilder => optionsBuilder.UseNodaTime());
