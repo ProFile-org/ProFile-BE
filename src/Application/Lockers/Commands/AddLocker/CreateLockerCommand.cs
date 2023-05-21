@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Lockers.Commands.AddLocker;
 
-public record AddLockerCommand : IRequest<LockerDto>
+public record CreateLockerCommand : IRequest<LockerDto>
 {
     public string Name { get; init; }
     public string Description { get; init; }
@@ -17,7 +17,7 @@ public record AddLockerCommand : IRequest<LockerDto>
     public int Capacity { get; init; }
 }
 
-public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerDto>
+public class AddLockerCommandHandler : IRequestHandler<CreateLockerCommand, LockerDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -28,7 +28,7 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
         _mapper = mapper;
     }
 
-    public async Task<LockerDto> Handle(AddLockerCommand request, CancellationToken cancellationToken)
+    public async Task<LockerDto> Handle(CreateLockerCommand request, CancellationToken cancellationToken)
     {
         var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
@@ -45,10 +45,19 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
         }
 
         var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name) && x.Room.Id.Equals(request.RoomId));
-        if (locker is not null)
+        if (locker is not null && locker.IsAvailable)
         {
             throw new ConflictException("Locker's name already exists");
         }
+        if (locker is not null && !locker.IsAvailable)
+        {
+            locker.IsAvailable = true;
+            room.NumberOfLockers += 1;
+            var enabledresult = _context.Lockers.Update(locker);
+            _context.Rooms.Update(room);
+            await _context.SaveChangesAsync(cancellationToken);
+            return _mapper.Map<LockerDto>(enabledresult.Entity);
+        } 
         
         var entity = new Locker
         {
