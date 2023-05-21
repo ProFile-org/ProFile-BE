@@ -43,7 +43,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
             connectionStringBuilder.Password = "supasupasecured";
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(connectionStringBuilder.ConnectionString , optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql("Server=database;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured" , optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
     }
