@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Departments.Commands.DeleteDepartment;
+using Domain.Entities;
 using FluentAssertions;
 using Xunit;
 
@@ -24,11 +25,8 @@ public class CreateDepartmentTests : BaseClassFixture
         department.Name.Should().Be(createDepartmentCommand.Name);
         
         // Cleanup
-        var deleteDepartmentCommand = new DeleteDepartmentCommand
-        {
-            DepartmentId = department.Id
-        };
-        await SendAsync(deleteDepartmentCommand);
+        var departmentEntity = await FindAsync<Department>(department.Id);
+        Remove(departmentEntity);
     }
 
     [Fact]
@@ -45,10 +43,7 @@ public class CreateDepartmentTests : BaseClassFixture
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists");
         
         // Cleanup
-        var deleteDepartmentCommand = new DeleteDepartmentCommand
-        {
-            DepartmentId = department.Id
-        };
-        await SendAsync(deleteDepartmentCommand);
+        var departmentEntity = await FindAsync<Department>(department.Id);
+        Remove(departmentEntity);
     }
 }

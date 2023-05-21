@@ -11,7 +11,8 @@ public record CreateRoomCommand : IRequest<RoomDto>
 {
     public string Name { get; init; }
     public string Description { get; init; }
-    public int NumberOfLockers { get; init; }
+    public int Capacity { get; init; }
+    
 }
 
 public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, RoomDto>
@@ -30,7 +31,8 @@ public class CreateRoomCommandHandler : IRequestHandler<CreateRoomCommand, RoomD
         {
             Name = request.Name,
             Description = request.Description,
-            NumberOfLockers = request.NumberOfLockers
+            NumberOfLockers = 0,
+            Capacity = request.Capacity
         };
         var result = await _context.Rooms.AddAsync(entity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
