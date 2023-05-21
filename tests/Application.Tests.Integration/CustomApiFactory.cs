@@ -1,26 +1,20 @@
 using Api;
 using Infrastructure.Persistence;
+using Infrastructure.Shared;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Testcontainers.PostgreSql;
-using Xunit;
+using Npgsql;
 
 namespace Application.Tests.Integration;
 
-public class CustomApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
+public class CustomApiFactory : WebApplicationFactory<IApiMarker>
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-        .WithDatabase("tmtest")
-        .WithUsername("something")
-        .WithPassword("somethingelse")
-        .Build();
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.ConfigureTestServices(services =>
+    {        
+        builder.ConfigureServices((builderContext, services) =>
         {
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType ==
@@ -30,21 +24,18 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetim
             {
                 services.Remove(descriptor);
             }
-            
+
+            var databaseSettings = GetConfiguration().GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(_dbContainer.GetConnectionString(), optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql(databaseSettings.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
     }
 
-    public async Task InitializeAsync()
+    private IConfiguration GetConfiguration()
     {
-        await _dbContainer.StartAsync();
-    }
-
-    public new async Task DisposeAsync()
-    {
-        await _dbContainer.DisposeAsync();
+        return new ConfigurationBuilder()
+            .AddEnvironmentVariables("PROFILE_").Build();
     }
 }

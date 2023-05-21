@@ -26,6 +26,8 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         
         builder.Property(x => x.NumberOfLockers)
             .IsRequired();
+        builder.Property(x => x.Capacity)
+            .IsRequired();
 
         builder.Property(x => x.IsAvailable)
             .IsRequired();
