@@ -26,11 +26,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: start containers
-      run: docker compose -f docker-compose.test.yml up --detach
-
     - name: Run integration test
-      run: docker compose run --rm backend
+      run: docker compose -f docker-compose.test.yml run --rm backend
 
     - name: stop and remove containers
       run: docker compose down
