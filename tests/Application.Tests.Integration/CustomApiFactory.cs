@@ -36,7 +36,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
             }
 
             var connectionStringBuilder = new NpgsqlConnectionStringBuilder();
-            connectionStringBuilder.Host = "localhost";
+            connectionStringBuilder.Host = "database";
             connectionStringBuilder.Database = "mytestdb";
             connectionStringBuilder.Port = 5423;
             connectionStringBuilder.Username = "profiletester";
