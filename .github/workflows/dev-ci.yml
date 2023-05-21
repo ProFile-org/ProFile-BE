@@ -33,7 +33,7 @@ jobs:
       run: docker compose down
   
   build:
-    if: github.event_name == "push" 
+    if: github.event_name == 'push'
     needs: [unit-test, integration-test]
     runs-on: ubuntu-latest
     steps:
