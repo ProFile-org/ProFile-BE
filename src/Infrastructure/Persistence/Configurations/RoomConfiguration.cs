@@ -11,14 +11,23 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
+
+        builder.HasAlternateKey(x => x.Name);
         builder.Property(x => x.Name)
             .HasMaxLength(64)
             .IsRequired();
+
         builder.Property(x => x.Description)
-            .HasMaxLength(256);
+            .HasMaxLength(256)
+            .IsRequired(false);
+
+        builder.Property(x => x.Capacity)
+            .IsRequired();
+        
         builder.Property(x => x.NumberOfLockers)
             .IsRequired();
 
-        builder.HasOne(x => x.Staff);
+        builder.Property(x => x.IsAvailable)
+            .IsRequired();
     }
 }

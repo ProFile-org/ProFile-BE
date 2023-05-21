@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230520101436_AddFullPhysicalDomain")]
+    partial class AddFullPhysicalDomain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,7 +41,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
@@ -69,7 +72,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DocumentId");
 
-                    b.ToTable("Borrows");
+                    b.ToTable("Borrow");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Document", b =>
@@ -109,7 +112,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ImporterId");
 
-                    b.ToTable("Documents");
+                    b.ToTable("Document");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Folder", b =>
@@ -143,7 +146,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LockerId");
 
-                    b.ToTable("Folders");
+                    b.ToTable("Folder");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>
@@ -176,7 +179,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Lockers");
+                    b.ToTable("Locker");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
@@ -207,7 +210,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Staff", b =>
@@ -225,7 +228,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("RoomId")
                         .IsUnique();
 
-                    b.ToTable("Staffs", (string)null);
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -290,7 +293,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>

@@ -19,6 +19,9 @@ public static class WebApplicationExtensions
         {
         }
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.MapControllers();
 
         app.MapGet("/", () => "Hello from ProFile!");
