@@ -13,17 +13,7 @@ namespace Application.Tests.Integration;
 public class CustomApiFactory : WebApplicationFactory<IApiMarker>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        // builder.ConfigureAppConfiguration(configurationBuilder =>
-        // {
-        //     var integrationConfig = new ConfigurationBuilder()
-        //         .AddJsonFile("appsettings.Test.json")
-        //         .AddEnvironmentVariables()
-        //         .Build();
-        //
-        //     configurationBuilder.AddConfiguration(integrationConfig);
-        // });
-        
+    {        
         builder.ConfigureServices((builderContext, services) =>
         {
             var descriptor = services.SingleOrDefault(
@@ -35,16 +25,17 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
                 services.Remove(descriptor);
             }
 
-            var connectionStringBuilder = new NpgsqlConnectionStringBuilder();
-            connectionStringBuilder.Host = "database";
-            connectionStringBuilder.Database = "mytestdb";
-            connectionStringBuilder.Port = 5432;
-            connectionStringBuilder.Username = "profiletester";
-            connectionStringBuilder.Password = "supasupasecured";
+            var databaseSettings = GetConfiguration().GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql("Server=database;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured" , optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql(databaseSettings.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
+    }
+
+    private IConfiguration GetConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .AddEnvironmentVariables("PROFILE_").Build();
     }
 }
