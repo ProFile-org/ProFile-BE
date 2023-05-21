@@ -20,6 +20,11 @@
 
     <ItemGroup>
       <Folder Include="Helpers\" />
+      <Folder Include="Lockers\Commands\RemoveLocker\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Lockers\Commands\RemoveLocker\RemoveLockerCommand.cs" />
     </ItemGroup>
 
 </Project>

@@ -12,8 +12,8 @@ public class CreateRoomCommandValidator : AbstractValidator<CreateRoomCommand>
 
         RuleLevelCascadeMode = CascadeMode.Stop;
         
-        RuleFor(x => x.NumberOfLockers)
-            .GreaterThanOrEqualTo(0).WithMessage("Number of lockers cannot be less than 0");
+        RuleFor(x => x.Capacity)
+            .GreaterThanOrEqualTo(1).WithMessage("Room's capacity cannot be less than 1");
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
