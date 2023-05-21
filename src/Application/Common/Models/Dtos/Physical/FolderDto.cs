@@ -1,8 +1,4 @@
 using Application.Common.Mappings;
-<<<<<<< HEAD
-using AutoMapper;
-=======
->>>>>>> dev
 using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
