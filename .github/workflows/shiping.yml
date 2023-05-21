@@ -1,14 +1,11 @@
-name: build docker image
+name: Ship to dockerhub
 
 on:
-  workflow_run:
-    workflows: [run-test]
-    type: [completed]
-
+  push:
+    branches: [ "main" ]
 jobs:
-  build:
+  ship:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
 
     - name: Checkout
