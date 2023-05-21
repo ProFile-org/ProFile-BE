@@ -1,12 +1,10 @@
-using Application.Common.Interfaces;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 
-namespace Application.Folders.Commands.CreateFolder;
+namespace Application.Folders.Commands.AddFolder;
 
-public class CreateFolderCommandValidator : AbstractValidator<CreateFolderCommand>
+public class AddFolderCommandValidator : AbstractValidator<AddFolderCommand>
 {
-    public CreateFolderCommandValidator()
+    public AddFolderCommandValidator()
     {
 
         RuleLevelCascadeMode = CascadeMode.Stop;

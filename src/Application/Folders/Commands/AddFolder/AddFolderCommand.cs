@@ -7,9 +7,9 @@ using Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Folders.Commands.CreateFolder;
+namespace Application.Folders.Commands.AddFolder;
 
-public record CreateFolderCommand : IRequest<FolderDto>
+public record AddFolderCommand : IRequest<FolderDto>
 {
     public string Name { get; init; }
     public string? Description { get; init; }
@@ -17,18 +17,18 @@ public record CreateFolderCommand : IRequest<FolderDto>
     public Guid LockerId { get; init; }
 }
 
-public class CreateFolderCommandHandler : IRequestHandler<CreateFolderCommand, FolderDto>
+public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public CreateFolderCommandHandler(IApplicationDbContext context, IMapper mapper)
+    public AddFolderCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
     }
 
-    public async Task<FolderDto> Handle(CreateFolderCommand request, CancellationToken cancellationToken)
+    public async Task<FolderDto> Handle(AddFolderCommand request, CancellationToken cancellationToken)
     {
         var locker = await _context.Lockers
             .FirstOrDefaultAsync(l => 
