@@ -32,8 +32,12 @@ public class MappingTests
     [Theory]
     [InlineData(typeof(Department), typeof(DepartmentDto))]
     [InlineData(typeof(User), typeof(UserDto))]
+    [InlineData(typeof(Staff), typeof(Staff))]    
     [InlineData(typeof(Room), typeof(RoomDto))]
-    [InlineData(typeof(Staff), typeof(Staff))]
+    [InlineData(typeof(Locker), typeof(LockerDto))]
+    [InlineData(typeof(Folder), typeof(FolderDto))]
+    [InlineData(typeof(Document), typeof(DocumentDto))]
+    [InlineData(typeof(Borrow), typeof(BorrowDto))]
     public void ShouldSupportMappingFromSourceToDestination(Type source, Type destination)
     {
         // Arrange
