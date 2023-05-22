@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Folders.Commands.AddFolder;
 using Application.Lockers.Commands.AddLocker;
 using Application.Rooms.Commands.CreateRoom;
@@ -10,6 +11,20 @@ namespace Application.Tests.Integration.Folders.Commands;
 
 public class AddFolderTests : BaseClassFixture
 {
+    private readonly Faker<AddFolderCommand> _folderGenerator = new Faker<AddFolderCommand>()
+            .RuleFor(f => f.Name, faker => faker.Commerce.ProductName())
+            .RuleFor(f => f.Description, faker => faker.Commerce.ProductDescription())
+            .RuleFor(f => f.Capacity, faker => faker.Random.Int(1,9999));
+    
+    private readonly Faker<CreateRoomCommand> _roomGenerator = new Faker<CreateRoomCommand>()
+        .RuleFor(r => r.Name, faker => faker.Commerce.ProductName())
+        .RuleFor(r => r.Description, faker => faker.Commerce.ProductDescription())
+        .RuleFor(r => r.Capacity, faker => faker.Random.Int(1,9999));
+
+    private readonly Faker<AddLockerCommand> _lockerGenerator = new Faker<AddLockerCommand>()
+        .RuleFor(l => l.Name, faker => faker.Commerce.ProductName())
+        .RuleFor(l => l.Description, faker => faker.Commerce.ProductDescription())
+        .RuleFor(l => l.Capacity, faker => faker.Random.Int(1,9999));
     public AddFolderTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
@@ -18,35 +33,22 @@ public class AddFolderTests : BaseClassFixture
     public async Task ShouldAddFolder_WhenAddDetailsAreValid()
     {
         // Arrange
-        var folderGenerator = new Faker<AddFolderCommand>()
-            .RuleFor(f => f.Name, faker => faker.Commerce.ProductName())
-            .RuleFor(f => f.Description, faker => faker.Commerce.ProductDescription())
-            .RuleFor(f => f.Capacity, faker => faker.Random.Int(1,9999));
-        
-        var roomGenerator = new Faker<CreateRoomCommand>()
-            .RuleFor(r => r.Name, faker => faker.Commerce.ProductName())
-            .RuleFor(r => r.Description, faker => faker.Commerce.ProductDescription())
-            .RuleFor(r => r.Capacity, 1);
-
-        var lockerGenerator = new Faker<AddLockerCommand>()
-            .RuleFor(l => l.Name, faker => faker.Commerce.ProductName())
-            .RuleFor(l => l.Description, faker => faker.Commerce.ProductDescription())
-            .RuleFor(l => l.Capacity, 1);
-
-        var addRoomCommand = roomGenerator.Generate();
+        var addRoomCommand = _roomGenerator.Generate();
         var room = await SendAsync(addRoomCommand);
 
-        var addLockerCommand = lockerGenerator.Generate();
+        var addLockerCommand = _lockerGenerator.Generate();
         addLockerCommand = addLockerCommand with
         {
-            RoomId = room.Id
+            RoomId = room.Id,
+            Capacity = 1
         };
         var locker = await SendAsync(addLockerCommand);
         
-        var addFolderCommand = folderGenerator.Generate();
+        var addFolderCommand = _folderGenerator.Generate();
         addFolderCommand =  addFolderCommand with 
         {
-            LockerId = locker.Id
+            LockerId = locker.Id,
+            Capacity = 1
         };
 
         // Act
@@ -67,5 +69,134 @@ public class AddFolderTests : BaseClassFixture
         Remove(folderEntity);
         Remove(lockerEntity);
         Remove(roomEntity);
+    }
+
+    [Fact]
+    public async Task ShouldAddFolder_WhenFoldersHasSameNameButInDifferentLockers()
+    {
+        // Arrange
+        var sameFolderName = new Faker().Commerce.ProductName();
+        var addRoomCommand = _roomGenerator.Generate();
+        addRoomCommand = addRoomCommand with
+        {
+            Capacity = 2
+        };
+        
+        var room = await SendAsync(addRoomCommand);
+        
+        var addLockerCommand = _lockerGenerator.Generate();
+        
+        var addLockerACommand = addLockerCommand with
+        {
+            RoomId = room.Id,
+            Capacity = 1
+        };
+        var addLockerBCommand = addLockerCommand with
+        {
+            RoomId = room.Id,
+            Name = new Faker().Commerce.ProductName(),
+            Capacity = 1
+        };
+        
+        var lockerA = await SendAsync(addLockerACommand);
+        var lockerB = await SendAsync(addLockerBCommand);
+        
+        var addFolderCommand = _folderGenerator.Generate();
+        var addFolderCommandForLockerA =  addFolderCommand with 
+        {
+            Name = sameFolderName,
+            LockerId = lockerA.Id
+        };
+        var addFolderCommandForLockerB =  addFolderCommand with 
+        {
+            Name = sameFolderName,
+            LockerId = lockerB.Id
+        };
+        // Act
+        var folderA = await SendAsync(addFolderCommandForLockerA);
+        var folderB = await SendAsync(addFolderCommandForLockerB);
+        
+        // Assert
+        folderA.Locker.Id.Should().NotBe(folderB.Locker.Id);
+        folderA.Name.Should().Be(folderB.Name);
+        
+        folderB.Name.Should().Be(addFolderCommandForLockerB.Name);
+        folderB.Description.Should().Be(addFolderCommandForLockerB.Description);
+        folderB.Capacity.Should().Be(addFolderCommandForLockerB.Capacity);
+        folderB.Locker.Id.Should().Be(lockerB.Id);
+        folderB.Locker.NumberOfFolders.Should().Be(lockerB.NumberOfFolders + 1);
+        folderB.NumberOfDocuments.Should().Be(0);
+        folderB.IsAvailable.Should().BeTrue();
+        // Clean up
+        var folderAEntity = await FindAsync<Folder>(folderA.Id);
+        var folderBEntity = await FindAsync<Folder>(folderB.Id);
+        var lockerAEntity = await FindAsync<Locker>(lockerA.Id);
+        var lockerBEntity = await FindAsync<Locker>(lockerB.Id);
+        var roomEntity = await FindAsync<Room>(room.Id);
+        Remove(folderAEntity);
+        Remove(folderBEntity);
+        Remove(lockerAEntity);
+        Remove(lockerBEntity);
+        Remove(roomEntity);
+    }
+
+    [Fact]
+    public async Task ShouldThrowConflictException_WhenFolderAlreadyExistsInTheSameLocker()
+    {
+        // Arrange
+        var sameFolderName = new Faker().Commerce.ProductName();
+        var addRoomCommand = _roomGenerator.Generate();
+        var room = await SendAsync(addRoomCommand);
+        
+        var addLockerCommand = _lockerGenerator.Generate();
+        addLockerCommand = addLockerCommand with
+        {
+            RoomId = room.Id,
+            Capacity = 2
+        };
+        var locker = await SendAsync(addLockerCommand);
+        
+        var addFolderCommand = _folderGenerator.Generate();
+        var addFolderCommandForLockerA =  addFolderCommand with 
+        {
+            Name = sameFolderName,
+            LockerId = locker.Id
+        };
+        var addFolderCommandForLockerB =  addFolderCommand with 
+        {
+            Name = sameFolderName,
+            LockerId = locker.Id
+        };
+        // Act
+        var folder = await SendAsync(addFolderCommandForLockerA);
+        var action = async () => await SendAsync(addFolderCommandForLockerB);
+        // Assert
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Folder's name already exists.");
+        
+        // Clean up
+        var folderEntity = await FindAsync<Folder>(folder.Id);
+        var lockerEntity = await FindAsync<Locker>(locker.Id);
+        var roomEntity = await FindAsync<Room>(room.Id);
+        Remove(folderEntity);
+        Remove(lockerEntity);
+        Remove(roomEntity);
+    }
+
+    [Fact]
+    public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
+    {
+        // Arrange
+        // Act
+        // Assert
+        // Clean up
+    }
+
+    [Fact]
+    public async Task ShouldThrowKeyNotFoundException_WhenLockerIdNotExists()
+    {
+        // Arrange
+        // Act
+        // Assert
+        // Clean up
     }
 }
