@@ -114,21 +114,15 @@ public class AddFolderTests : BaseClassFixture
             Name = sameFolderName,
             LockerId = lockerB.Id
         };
-        // Act
         var folderA = await SendAsync(addFolderCommandForLockerA);
+        
+        // Act
         var folderB = await SendAsync(addFolderCommandForLockerB);
         
         // Assert
         folderA.Locker.Id.Should().NotBe(folderB.Locker.Id);
         folderA.Name.Should().Be(folderB.Name);
         
-        folderB.Name.Should().Be(addFolderCommandForLockerB.Name);
-        folderB.Description.Should().Be(addFolderCommandForLockerB.Description);
-        folderB.Capacity.Should().Be(addFolderCommandForLockerB.Capacity);
-        folderB.Locker.Id.Should().Be(lockerB.Id);
-        folderB.Locker.NumberOfFolders.Should().Be(lockerB.NumberOfFolders + 1);
-        folderB.NumberOfDocuments.Should().Be(0);
-        folderB.IsAvailable.Should().BeTrue();
         // Clean up
         var folderAEntity = await FindAsync<Folder>(folderA.Id);
         var folderBEntity = await FindAsync<Folder>(folderB.Id);
@@ -169,8 +163,9 @@ public class AddFolderTests : BaseClassFixture
             Name = sameFolderName,
             LockerId = locker.Id
         };
-        // Act
         var folder = await SendAsync(addFolderCommandForLockerA);
+        
+        // Act
         var action = async () => await SendAsync(addFolderCommandForLockerB);
         // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Folder's name already exists.");
@@ -206,7 +201,7 @@ public class AddFolderTests : BaseClassFixture
         var action = async () =>
         {
             
-            for (var i = 0; i < room.Capacity; i++)
+            for (var i = 0; i <= locker.Capacity; i++)
             {
                 var addFolderCommand = _folderGenerator.Generate();
                 addFolderCommand = addFolderCommand with

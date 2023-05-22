@@ -30,10 +30,7 @@ public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderD
 
     public async Task<FolderDto> Handle(AddFolderCommand request, CancellationToken cancellationToken)
     {
-        var locker = await _context.Lockers
-            .FirstOrDefaultAsync(l => 
-                l.Id == request.LockerId, 
-                cancellationToken);
+        var locker = await _context.Lockers.FirstOrDefaultAsync(l => l.Id == request.LockerId, cancellationToken);
 
         if (locker is null)
         {
@@ -45,10 +42,7 @@ public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderD
             throw new LimitExceededException("This locker cannot accept more folders.");
         }
 
-        var folder = await _context.Folders
-            .FirstOrDefaultAsync(x => 
-                x.Name.Trim().Equals(request.Name.Trim()) && x.Locker.Id.Equals(request.LockerId), 
-                cancellationToken);
+        var folder = await _context.Folders.FirstOrDefaultAsync(x => x.Name.Trim().Equals(request.Name.Trim()) && x.Locker.Id.Equals(request.LockerId), cancellationToken);
 
         if (folder is not null)
         {
