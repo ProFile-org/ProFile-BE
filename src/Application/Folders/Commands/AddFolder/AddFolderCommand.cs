@@ -37,12 +37,12 @@ public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderD
 
         if (locker is null)
         {
-            throw new KeyNotFoundException("Locker does not exist");
+            throw new KeyNotFoundException("Locker does not exist.");
         }
 
         if (locker.NumberOfFolders >= locker.Capacity)
         {
-            throw new LimitExceededException("This locker cannot accept more folders");
+            throw new LimitExceededException("This locker cannot accept more folders.");
         }
 
         var folder = await _context.Folders
@@ -52,7 +52,7 @@ public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderD
 
         if (folder is not null)
         {
-            throw new ConflictException("Folder's name already exists");
+            throw new ConflictException("Folder's name already exists.");
         }
 
         var entity = new Folder
