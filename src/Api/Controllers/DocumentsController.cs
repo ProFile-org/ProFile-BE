@@ -2,6 +2,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Departments.Commands.CreateDepartment;
 using Application.Documents.Commands.ImportDocument;
+using Application.Documents.Queries.GetDocumentTypes;
 using Application.Users.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,5 +20,14 @@ public class DocumentsController : ApiControllerBase
     {
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
+    }
+
+    [HttpGet("types")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IEnumerable<string>>> GetDocumentTypes()
+    {
+        var result = await Mediator.Send(new GetDocumentTypesQuery());
+        return Ok(Result<IEnumerable<string>>.Succeed(result));
     }
 }
