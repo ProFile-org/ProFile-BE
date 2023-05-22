@@ -10,11 +10,11 @@ namespace Application.Documents.Commands.ImportDocument;
 
 public record ImportDocumentCommand : IRequest<DocumentDto>
 {
-    public string Title { get; set; }
-    public string? Description { get; set; }
-    public string DocumentType { get; set; }
-    public Guid ImporterId { get; set; }
-    public Guid FolderId { get; set; }
+    public string Title { get; init; }
+    public string? Description { get; init; }
+    public string DocumentType { get; init; }
+    public Guid ImporterId { get; init; }
+    public Guid FolderId { get; init; }
 }
 
 public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentCommand, DocumentDto>
@@ -44,7 +44,7 @@ public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentComman
             && x.Importer.Id == request.ImporterId);
         if (document is not null)
         {
-            throw new ConflictException($"Document title already exists for user {importer.FirstName}");
+            throw new ConflictException($"Document title already exists for user {importer.LastName}");
         }
         
         var folder = await _context.Folders
