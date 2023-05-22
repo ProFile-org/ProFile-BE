@@ -11,6 +11,11 @@ namespace Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]    
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> CreateUser([FromBody] CreateUserCommand command)
     {
         var result = await Mediator.Send(command);
@@ -19,6 +24,8 @@ public class UsersController : ApiControllerBase
 
     [Authorize]
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int page, int size)
     {
         var query = new GetUsersByNameQuery
@@ -32,6 +39,9 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpPost("disable")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<UserDto>>> DisableUser([FromBody] DisableUserCommand command)
     {
         var result = await Mediator.Send(command);
