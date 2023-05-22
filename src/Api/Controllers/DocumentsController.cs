@@ -25,9 +25,9 @@ public class DocumentsController : ApiControllerBase
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<string>>> GetDocumentTypes()
+    public async Task<ActionResult<IEnumerable<string>>> GetAllDocumentTypes()
     {
-        var result = await Mediator.Send(new GetDocumentTypesQuery());
+        var result = await Mediator.Send(new GetAllDocumentTypesQuery());
         return Ok(Result<IEnumerable<string>>.Succeed(result));
     }
 }
