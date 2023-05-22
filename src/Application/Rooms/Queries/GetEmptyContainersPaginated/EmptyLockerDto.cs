@@ -11,7 +11,7 @@ public class EmptyLockerDto : IMapFrom<Locker>
     public string Name { get; set; }
     public string Description { get; set; }
     public int NumberOfFreeFolders { get; set; }
-    public ICollection<EmptyFolderDto> Folders { get; set; }
+    public IEnumerable<EmptyFolderDto> Folders { get; set; }
 
     public void Mapping(Profile profile)
     {

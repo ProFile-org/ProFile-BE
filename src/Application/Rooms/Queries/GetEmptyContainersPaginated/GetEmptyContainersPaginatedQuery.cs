@@ -1,12 +1,12 @@
 using Application.Common.Interfaces;
 using Application.Common.Mappings;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Application.Rooms.Queries.GetEmptyContainersPaginated;
 
@@ -35,14 +35,18 @@ public class GetEmptyContainersPaginatedQueryHandler : IRequestHandler<GetEmptyC
             throw new KeyNotFoundException("Room does not exist");
         }
 
-        var result = await _context.Lockers
-            .Include(x => x.Folders.Where(y => y.NumberOfDocuments < y.Capacity && y.IsAvailable))
+
+        var lockers = _context.Lockers
             .Where(x => x.Room.Id == request.RoomId
-                        && x.IsAvailable)
+                        && x.IsAvailable
+                        && x.Folders.Any(y => y.Capacity > y.NumberOfDocuments && y.IsAvailable))
             .ProjectTo<EmptyLockerDto>(_mapper.ConfigurationProvider)
-            .Where(x => x.NumberOfFreeFolders > 0)
-            .OrderByDescending(x => x.NumberOfFreeFolders)
-            .PaginatedListAsync(request.Page, request.Size);
+            .AsEnumerable()
+            .ToList();
+        
+        lockers.ForEach(x => x.Folders = x.Folders.Where(x => x.Slot > 0));
+
+        var result = new PaginatedList<EmptyLockerDto>(lockers.ToList(), lockers.Count(), request.Page, request.Size);
         return result;
     }
 } 
