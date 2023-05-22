@@ -31,9 +31,11 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
+            {typeof(InvalidOperationException),HandleInvalidOperationException }
         };
     }
 
+ 
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
@@ -50,6 +52,7 @@ public class ExceptionMiddleware : IMiddleware
         Console.WriteLine(ex.ToString());
     }
 
+    
     private async void HandleKeyNotFoundException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -87,6 +90,13 @@ public class ExceptionMiddleware : IMiddleware
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
+    
+    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {

@@ -26,25 +26,17 @@ public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, Roo
     public async Task<RoomDto> Handle(DisableRoomCommand request, CancellationToken cancellationToken)
     {
         var room = await _context.Rooms
-            .Include(r => r.Lockers)
-            .ThenInclude(l => l.Folders)
             .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId) && x.IsAvailable == true, cancellationToken: cancellationToken);
         if (room is null)
         {
             throw new KeyNotFoundException("Room does not exist");
         }
-
-        // var canDisable = room.Lockers
-        //     .SelectMany(locker => locker.Folders)
-        //     .All(folder => folder.NumberOfDocuments == 0);
-
-        var canDisable = room.NumberOfLockers == 0 ||
-                      room.Lockers.All(locker => locker.NumberOfFolders == 0 ||
-                                                 locker.Folders.All(folder => folder.NumberOfDocuments == 0));
-
-        if (!canDisable)
+        
+        var canDisable = await _context.Documents.CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
+        
+        if (canDisable > 0)
         {
-                throw new ConflictException("Room cannot be disabled because it contains documents");
+                throw new InvalidOperationException("Room cannot be disabled because it contains documents");
         }
         
         room.IsAvailable = false;

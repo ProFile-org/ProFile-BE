@@ -11,9 +11,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Rooms.Commands;
 
-public class DisableRoomTest : BaseClassFixture
+public class DisableRoomTests : BaseClassFixture
 {
-    public DisableRoomTest(CustomApiFactory apiFactory) : base(apiFactory)
+    public DisableRoomTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
     
@@ -23,21 +23,21 @@ public class DisableRoomTest : BaseClassFixture
         //Arrange 
         var folder = new Folder()
         {
-            Id = new Guid("1A1D4BB8-5303-4DED-BC4A-04A1C16E84FE"),
+            Id = Guid.NewGuid(),
             Name = "Folder",
             NumberOfDocuments = 0,
             Capacity = 20,
             Description = new Faker().Lorem.Sentence(),
             Locker = new Locker()
             {
-                Id = new Guid("81BC4A24-FD35-424E-BAEA-907F0D574F4D"),
+                Id = Guid.NewGuid(),
                 Name = "Locker",
                 Capacity = 20,
                 NumberOfFolders = 1,
                 IsAvailable = true,
                 Room = new Room()
                 {
-                    Id = new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9"),
+                    Id = Guid.NewGuid(),
                     Capacity = 20,
                     Name = "Room",
                     IsAvailable = true,
@@ -50,15 +50,15 @@ public class DisableRoomTest : BaseClassFixture
         await AddAsync(folder);
         var disableRoomCommand = new DisableRoomCommand()
         {
-            RoomId = new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9")
+            RoomId = folder.Locker.Room.Id
         };
         //Act
         var result = await SendAsync(disableRoomCommand);
         //Assert
         result.IsAvailable.Should().BeFalse();
         //Cleanup
-        var lockerEntity = await FindAsync<Locker>(new Guid("81BC4A24-FD35-424E-BAEA-907F0D574F4D"));
-        var roomEntity = await FindAsync<Room>(new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9"));
+        var lockerEntity = await FindAsync<Locker>(folder.Locker.Id);
+        var roomEntity = await FindAsync<Room>(folder.Locker.Room.Id);
 
         Remove(folder);
         Remove(lockerEntity);
@@ -80,55 +80,32 @@ public class DisableRoomTest : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowConfictException_WhenRoomIsNotEmptyOfDocuments()
+    public async Task ShouldThrowInvalidOperationException_WhenRoomIsNotEmptyOfDocuments()
     {
         //Arrange
         var document = new Document()
         {
-            Id = new Guid("50251F22-2F3A-49C1-9259-37CBC6991AAC"),
+            Id = Guid.NewGuid(),
             Title = "doc something",
             DocumentType = "something something type",
-            Importer = new User()
-            {
-                Id = new Guid("D92411EA-496C-4025-87D9-2535DEF50ED2"),
-                Username = new Faker().Internet.UserName(),
-                PasswordHash = SecurityUtil.Hash(new Faker().Internet.Password()),
-                Department = new Department()
-                {
-                    Id = new Guid("E7059201-9199-4330-B574-EDE06670DCF0"),
-                    Name = "Something Something Department"
-                },
-                Role = "Admin",
-                IsActivated = true,
-                IsActive = true,
-                FirstName = new Faker().Person.FirstName,
-                LastName = new Faker().Person.LastName,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
-                Email = new Faker().Internet.Email(),
-                Position = new Faker().Name.JobDescriptor(),
-            },
-            Department = new Department()
-            {   
-                Id = new Guid("DF51AFF1-CA79-4FA9-9977-ECF1184F8A0B"),
-                Name = "Something Department"
-            },
+            
             Folder = new Folder()
             {
-                Id = new Guid("1A1D4BB8-5303-4DED-BC4A-04A1C16E84FE"),
+                Id = Guid.NewGuid(),
                 Name = "Folder01",
                 NumberOfDocuments = 1,
                 Capacity = 20,
                 Description = new Faker().Lorem.Sentence(),
                 Locker = new Locker()
                 {
-                    Id = new Guid("81BC4A24-FD35-424E-BAEA-907F0D574F4D"),
+                    Id = Guid.NewGuid(),
                     Name = "Locker01",
                     Capacity = 20,
                     NumberOfFolders = 1,
                     IsAvailable = true,
                     Room = new Room()
                     {
-                        Id = new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9"),
+                        Id = Guid.NewGuid(),
                         Capacity = 20,
                         Name = "Room01",
                         IsAvailable = true,
@@ -141,27 +118,21 @@ public class DisableRoomTest : BaseClassFixture
         await AddAsync(document);
         var disableRoomCommand = new DisableRoomCommand()
         {
-            RoomId = new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9")
+            RoomId = document.Folder.Locker.Room.Id
         };
         //Act
         var action = async () => await SendAsync(disableRoomCommand);
         //Assert
-        await action.Should().ThrowAsync<ConflictException>()
+        await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Room cannot be disabled because it contains documents");
         //Cleanup
-        var lockerEntity = await FindAsync<Locker>(new Guid("81BC4A24-FD35-424E-BAEA-907F0D574F4D"));
-        var roomEntity = await FindAsync<Room>(new Guid("DF666431-C8DD-438C-941A-BD1FA15D67B9"));
-        var folderEntity = await FindAsync<Folder>(new Guid("1A1D4BB8-5303-4DED-BC4A-04A1C16E84FE"));
-        var department01Entity = await FindAsync<Department>(new Guid("DF51AFF1-CA79-4FA9-9977-ECF1184F8A0B"));
-        var department02Entity = await FindAsync<Department>(new Guid("E7059201-9199-4330-B574-EDE06670DCF0"));
-        var userEntity = await FindAsync<User>(new Guid("D92411EA-496C-4025-87D9-2535DEF50ED2"));
+        var lockerEntity = await FindAsync<Locker>(document.Folder.Locker.Id);
+        var roomEntity = await FindAsync<Room>(document.Folder.Locker.Room.Id);
+        var folderEntity = await FindAsync<Folder>(document.Folder.Id);
         
         Remove(document);
         Remove(folderEntity);
         Remove(lockerEntity);
         Remove(roomEntity);
-        Remove(userEntity);
-        Remove(department01Entity);
-        Remove(department02Entity);
     }
 }
