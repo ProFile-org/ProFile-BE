@@ -9,6 +9,9 @@ namespace Api.Controllers;
 public class RoomsController : ApiControllerBase
 {
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Result<RoomDto>>> AddRoom(CreateRoomCommand command)
     {
         var result = await Mediator.Send(command);
@@ -16,6 +19,9 @@ public class RoomsController : ApiControllerBase
     }
 
     [HttpGet("empty-containers")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PaginatedList<EmptyLockerDto>>> GetEmptyContainers(GetEmptyContainersPaginatedQuery query)
     {
         var result = await Mediator.Send(query);
