@@ -1,4 +1,5 @@
-﻿using Application.Lockers.Commands.AddLocker;
+﻿using Application.Common.Exceptions;
+using Application.Lockers.Commands.AddLocker;
 using Application.Lockers.Commands.DisableLocker;
 using Bogus;
 using Domain.Entities.Physical;
@@ -15,7 +16,7 @@ public class DisableLockerTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldRemoveLocker_WhenLockerExists()
+    public async Task ShouldDisableLocker_WhenLockerExistsAndIsAvailable()
     {
         //Arrange
         var room = new Room()
@@ -82,5 +83,49 @@ public class DisableLockerTests : BaseClassFixture
         await action.Should()
             .ThrowAsync<KeyNotFoundException>()
             .WithMessage("Locker does not exist.");
+    }
+
+    [Fact]
+    public async Task ShouldThrowKeyNotFoundException_WhenLockerIsAlreadyDisabled()
+    {
+        //Arrange 
+        var room = new Room()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.ProductName(),
+            Description = new Faker().Lorem.Sentence(),
+            Capacity = 1,
+            IsAvailable = true,
+            NumberOfLockers = 0,
+        };
+        
+        await AddAsync(room);
+
+        var createLockerCommand = new AddLockerCommand()
+        {
+            Name = new Faker().Commerce.ProductName(),
+            Description = new Faker().Lorem.Sentence(),
+            Capacity = 2,
+            RoomId = room.Id,
+        };
+        
+        var locker = await SendAsync(createLockerCommand);
+        var removeLockerCommand = new DisableLockerCommand()
+        {
+            LockerId = locker.Id,
+        };
+        
+        //Act 
+        await SendAsync(removeLockerCommand);
+        var action = async () => await SendAsync(removeLockerCommand);
+        
+        //Assert
+        await action.Should().ThrowAsync<EntityNotAvailableException>().WithMessage("Locker has already been disabled.");
+        
+        //Cleanup
+        var roomEntity = await FindAsync<Room>(room.Id);
+        var lockerEntity = await FindAsync<Locker>(locker.Id);
+        Remove(lockerEntity);
+        Remove(roomEntity);
     }
 }

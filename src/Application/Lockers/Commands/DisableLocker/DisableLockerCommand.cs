@@ -1,4 +1,5 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using MediatR;
@@ -26,10 +27,15 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
     {
         var locker = await _context.Lockers
             .Include(x => x.Room)
-            .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId) && x.IsAvailable == true, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
         if (locker is null)
         {
             throw new KeyNotFoundException("Locker does not exist.");
+        }
+
+        if (locker.IsAvailable == false)
+        {
+            throw new EntityNotAvailableException("Locker has already been disabled.");
         }
 
         locker.IsAvailable = false;
