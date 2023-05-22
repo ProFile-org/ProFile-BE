@@ -23,7 +23,7 @@ public class GetDocumentTypesTests : BaseClassFixture
             DocumentType = new Faker().Commerce.ProductName(),
         };
         await AddAsync(document);
-        var query = new GetDocumentTypesQuery();
+        var query = new GetAllDocumentTypesQuery();
 
         // Act
         var result = await SendAsync(query);
@@ -39,7 +39,7 @@ public class GetDocumentTypesTests : BaseClassFixture
     public async Task ShouldReturnEmptyList_WhenNoDocumentTypesExist()
     {
         // Arrange
-        var query = new GetDocumentTypesQuery();
+        var query = new GetAllDocumentTypesQuery();
 
         // Act
         var result = await SendAsync(query);
