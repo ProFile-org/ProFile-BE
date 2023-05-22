@@ -12,12 +12,12 @@ public record DisableRoomCommand : IRequest<RoomDto>
     public Guid RoomId { get; init; }
 }
 
-public class RemoveRoomCommandHandler : IRequestHandler<DisableRoomCommand, RoomDto>
+public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, RoomDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public RemoveRoomCommandHandler(IApplicationDbContext context, IMapper mapper)
+    public DisableRoomCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
