@@ -201,7 +201,7 @@ public class AddFolderTests : BaseClassFixture
         var action = async () =>
         {
             
-            for (var i = 0; i < room.Capacity; i++)
+            for (var i = 0; i <= locker.Capacity; i++)
             {
                 var addFolderCommand = _folderGenerator.Generate();
                 addFolderCommand = addFolderCommand with
