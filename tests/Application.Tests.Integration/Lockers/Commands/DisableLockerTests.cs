@@ -1,5 +1,5 @@
 ﻿using Application.Lockers.Commands.AddLocker;
-using Application.Lockers.Commands.RemoveLocker;
+using Application.Lockers.Commands.DisableLocker;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -7,9 +7,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Lockers.Commands;
 
-public class RemoveLockerTests : BaseClassFixture
+public class DisableLockerTests : BaseClassFixture
 {
-    public RemoveLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public DisableLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
         
     }
@@ -41,7 +41,7 @@ public class RemoveLockerTests : BaseClassFixture
         var locker = await SendAsync(createLockerCommand);
         room.NumberOfLockers += 1;
 
-        var removeLockerCommand = new RemoveLockerCommand()
+        var removeLockerCommand = new DisableLockerCommand()
         {
             LockerId = locker.Id,
         };
@@ -70,7 +70,7 @@ public class RemoveLockerTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         //Arrange
-        var removeLockerCommand = new RemoveLockerCommand()
+        var removeLockerCommand = new DisableLockerCommand()
         {
             LockerId = Guid.NewGuid(),
         };

@@ -1,20 +1,18 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
-using Domain.Entities.Physical;
-using Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Lockers.Commands.RemoveLocker;
+namespace Application.Lockers.Commands.DisableLocker;
 
-public record RemoveLockerCommand : IRequest<LockerDto>
+public record DisableLockerCommand : IRequest<LockerDto>
 {
     public Guid LockerId { get; init; }
     public Guid RoomId { get; init; }
 }
 
-public class RemoveLockerCommandHandler : IRequestHandler<RemoveLockerCommand, LockerDto>
+public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, LockerDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -25,7 +23,7 @@ public class RemoveLockerCommandHandler : IRequestHandler<RemoveLockerCommand, L
         _mapper = mapper;
     }
 
-    public async Task<LockerDto> Handle(RemoveLockerCommand request, CancellationToken cancellationToken)
+    public async Task<LockerDto> Handle(DisableLockerCommand request, CancellationToken cancellationToken)
     {
         var locker = await _context.Lockers.Include(x => x.Room).FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId) && x.IsAvailable == true, cancellationToken);
         if (locker is null)
