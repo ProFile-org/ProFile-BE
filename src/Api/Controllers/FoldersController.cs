@@ -13,7 +13,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> AddFolders([FromBody] AddFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
