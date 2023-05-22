@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Documents.Queries;
 
-public class GetDocumentTypesTests : BaseClassFixture
+public class GetAllDocumentTypesTests : BaseClassFixture
 {
-    public GetDocumentTypesTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public GetAllDocumentTypesTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
 

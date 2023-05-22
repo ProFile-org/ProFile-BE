@@ -5,17 +5,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Documents.Queries.GetDocumentTypes;
 
-public record GetDocumentTypesQuery : IRequest<IEnumerable<string>>;
+public record GetAllDocumentTypesQuery : IRequest<IEnumerable<string>>;
 
-public class GetDocumentTypesQueryHandler : IRequestHandler<GetDocumentTypesQuery, IEnumerable<string>>
+public class GetAllDocumentTypesQueryHandler : IRequestHandler<GetAllDocumentTypesQuery, IEnumerable<string>>
 {
     private readonly IApplicationDbContext _context;
 
-    public GetDocumentTypesQueryHandler(IApplicationDbContext context)
+    public GetAllDocumentTypesQueryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
-    public async Task<IEnumerable<string>> Handle(GetDocumentTypesQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<string>> Handle(GetAllDocumentTypesQuery request, CancellationToken cancellationToken)
     {
         return new ReadOnlyCollection<string>(await _context.Documents.Select(x => x.DocumentType)
             .ToListAsync(cancellationToken));
