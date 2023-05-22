@@ -45,19 +45,10 @@ public class AddLockerCommandHandler : IRequestHandler<CreateLockerCommand, Lock
         }
 
         var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name) && x.Room.Id.Equals(request.RoomId));
-        if (locker is not null && locker.IsAvailable)
+        if (locker is not null)
         {
             throw new ConflictException("Locker's name already exists");
         }
-        if (locker is not null && !locker.IsAvailable)
-        {
-            locker.IsAvailable = true;
-            room.NumberOfLockers += 1;
-            var enabledresult = _context.Lockers.Update(locker);
-            _context.Rooms.Update(room);
-            await _context.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<LockerDto>(enabledresult.Entity);
-        } 
         
         var entity = new Locker
         {
