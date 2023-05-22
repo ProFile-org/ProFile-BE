@@ -1,9 +1,11 @@
 using Application.Common.Exceptions;
+using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands.AddFolder;
 using Application.Lockers.Commands.AddLocker;
 using Application.Rooms.Commands.CreateRoom;
 using Bogus;
 using Domain.Entities.Physical;
+using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
 
@@ -186,17 +188,64 @@ public class AddFolderTests : BaseClassFixture
     public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
     {
         // Arrange
+        var addRoomCommand = _roomGenerator.Generate();
+        var room = await SendAsync(addRoomCommand);
+        
+        var addLockerCommand = _lockerGenerator.Generate();
+        addLockerCommand = addLockerCommand with
+        {
+            RoomId = room.Id,
+            Capacity = new Faker().Random.Int(1,10)
+        };
+        var locker = await SendAsync(addLockerCommand);
+        
+
+        var list = new List<FolderDto>();
         // Act
+        
+        var action = async () =>
+        {
+            
+            for (var i = 0; i < room.Capacity; i++)
+            {
+                var addFolderCommand = _folderGenerator.Generate();
+                addFolderCommand = addFolderCommand with
+                {
+                    LockerId = locker.Id
+                };
+                list.Add(await SendAsync(addFolderCommand));    
+            }
+        };
         // Assert
+        await action.Should().ThrowAsync<LimitExceededException>()
+            .WithMessage("This locker cannot accept more folders.");
+        
         // Clean up
+        foreach (var f in list)
+        {
+            var folderEntity = await FindAsync<Folder>(f.Id);
+            Remove(folderEntity);
+        }
+        var lockerEntity = await FindAsync<Locker>(locker.Id);
+        var roomEntity = await FindAsync<Room>(room.Id);
+        Remove(lockerEntity);
+        Remove(roomEntity);
     }
 
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenLockerIdNotExists()
     {
         // Arrange
+        var addFolderCommand = _folderGenerator.Generate();
+        addFolderCommand =  addFolderCommand with 
+        {
+            LockerId = Guid.NewGuid()
+        };
+        
         // Act
+        var folder = async () => await SendAsync(addFolderCommand);
         // Assert
-        // Clean up
+        await folder.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage("Locker does not exist.");
     }
 }
