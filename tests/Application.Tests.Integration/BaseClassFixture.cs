@@ -2,6 +2,7 @@ using Application.Departments.Commands.CreateDepartment;
 using Bogus;
 using Domain.Common;
 using Domain.Entities;
+using FluentAssertions;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
