@@ -11,7 +11,6 @@ namespace Application.Lockers.Commands.RemoveLocker;
 public record RemoveLockerCommand : IRequest<LockerDto>
 {
     public Guid LockerId { get; init; }
-    public Guid RoomId { get; init; }
 }
 
 public class RemoveLockerCommandHandler : IRequestHandler<RemoveLockerCommand, LockerDto>
@@ -27,7 +26,9 @@ public class RemoveLockerCommandHandler : IRequestHandler<RemoveLockerCommand, L
 
     public async Task<LockerDto> Handle(RemoveLockerCommand request, CancellationToken cancellationToken)
     {
-        var locker = await _context.Lockers.Include(x => x.Room).FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId) && x.IsAvailable == true, cancellationToken);
+        var locker = await _context.Lockers
+            .Include(x => x.Room)
+            .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId) && x.IsAvailable == true, cancellationToken);
         if (locker is null)
         {
             throw new KeyNotFoundException("Locker does not exist.");

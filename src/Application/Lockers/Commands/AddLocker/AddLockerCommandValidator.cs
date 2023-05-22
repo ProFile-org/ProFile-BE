@@ -3,11 +3,11 @@ using FluentValidation;
 
 namespace Application.Lockers.Commands.AddLocker;
 
-public class CreateLockerCommandValidator : AbstractValidator<CreateLockerCommand>
+public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
 {
     private readonly IApplicationDbContext _context;
 
-    public CreateLockerCommandValidator(IApplicationDbContext context)
+    public AddLockerCommandValidator(IApplicationDbContext context)
     {
         _context = context;
 

@@ -9,13 +9,13 @@ namespace Api.Controllers;
 public class LockersController : ApiControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<Result<LockerDto>>> AddLocker([FromBody] CreateLockerCommand command)
+    public async Task<ActionResult<Result<LockerDto>>> AddLocker([FromBody] AddLockerCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
     }
 
-    [HttpPost("remove")]
+    [HttpDelete]
     public async Task<ActionResult<Result<LockerDto>>> RemoveLocker([FromBody] RemoveLockerCommand command)
     {
         var result = await Mediator.Send(command);

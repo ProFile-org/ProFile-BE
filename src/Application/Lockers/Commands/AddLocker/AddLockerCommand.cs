@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Lockers.Commands.AddLocker;
 
-public record CreateLockerCommand : IRequest<LockerDto>
+public record AddLockerCommand : IRequest<LockerDto>
 {
     public string Name { get; init; }
     public string Description { get; init; }
@@ -17,7 +17,7 @@ public record CreateLockerCommand : IRequest<LockerDto>
     public int Capacity { get; init; }
 }
 
-public class AddLockerCommandHandler : IRequestHandler<CreateLockerCommand, LockerDto>
+public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -28,7 +28,7 @@ public class AddLockerCommandHandler : IRequestHandler<CreateLockerCommand, Lock
         _mapper = mapper;
     }
 
-    public async Task<LockerDto> Handle(CreateLockerCommand request, CancellationToken cancellationToken)
+    public async Task<LockerDto> Handle(AddLockerCommand request, CancellationToken cancellationToken)
     {
         var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
