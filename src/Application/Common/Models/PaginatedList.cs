@@ -26,7 +26,6 @@ public class PaginatedList<T>
     {
         var count = await source.CountAsync();
         var query = source.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-        Console.WriteLine(query.ToQueryString());
         var items = await query.ToListAsync();
         return new PaginatedList<T>(items, count, pageNumber, pageSize);
     }

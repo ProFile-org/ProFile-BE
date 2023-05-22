@@ -7,12 +7,12 @@ namespace Application.Documents.Queries.GetAllDocumentsPaginated;
 public class DocumentItemDto : IMapFrom<Document>
 {
     public Guid Id { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public string DocumentType { get; set; }
-    public Guid DepartmentId { get; set; }
-    public Guid ImporterId { get; set; }
-    public Guid FolderId { get; set; }
+    public string Title { get; set; } = null!;
+    public string? Description { get; set; }
+    public string DocumentType { get; set; } = null!;
+    public Guid? DepartmentId { get; set; }
+    public Guid? ImporterId { get; set; }
+    public Guid? FolderId { get; set; }
 
     public void Mapping(Profile profile)
     {
