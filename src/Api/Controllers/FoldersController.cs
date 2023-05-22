@@ -8,7 +8,7 @@ namespace Api.Controllers;
 public class FoldersController : ApiControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<Result<FolderDto>>> AddFolders(AddFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> AddFolders([FromBody] AddFolderCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
