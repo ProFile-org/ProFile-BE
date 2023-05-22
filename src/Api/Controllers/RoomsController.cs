@@ -29,7 +29,7 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
     }
 
-    [HttpDelete]
+    [HttpPost]
     public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromBody] DisableRoomCommand command)
     {
         var result = await Mediator.Send(command);
