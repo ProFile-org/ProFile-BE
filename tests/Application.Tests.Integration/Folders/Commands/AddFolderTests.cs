@@ -163,8 +163,9 @@ public class AddFolderTests : BaseClassFixture
             Name = sameFolderName,
             LockerId = locker.Id
         };
-        // Act
         var folder = await SendAsync(addFolderCommandForLockerA);
+        
+        // Act
         var action = async () => await SendAsync(addFolderCommandForLockerB);
         // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Folder's name already exists.");
