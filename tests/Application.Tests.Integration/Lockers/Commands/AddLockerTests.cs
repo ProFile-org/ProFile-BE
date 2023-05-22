@@ -163,9 +163,9 @@ public class AddLockerTests : BaseClassFixture
         var locker2 = await SendAsync(createLockerCommand2);
         
         //Assert
-        locker2.Name.Should().Be(createLockerCommand.Name);
-        locker2.Description.Should().Be(createLockerCommand.Description);
-        locker2.Capacity.Should().Be(createLockerCommand.Capacity);
+        locker2.Name.Should().Be(createLockerCommand2.Name);
+        locker2.Description.Should().Be(createLockerCommand2.Description);
+        locker2.Capacity.Should().Be(createLockerCommand2.Capacity);
         locker2.NumberOfFolders.Should().Be(0);
         locker2.IsAvailable.Should().BeTrue();
         locker2.Room.Id.Should().Be(room2.Id);
