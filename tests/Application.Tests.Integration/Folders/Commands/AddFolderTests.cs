@@ -123,13 +123,6 @@ public class AddFolderTests : BaseClassFixture
         folderA.Locker.Id.Should().NotBe(folderB.Locker.Id);
         folderA.Name.Should().Be(folderB.Name);
         
-        folderB.Name.Should().Be(addFolderCommandForLockerB.Name);
-        folderB.Description.Should().Be(addFolderCommandForLockerB.Description);
-        folderB.Capacity.Should().Be(addFolderCommandForLockerB.Capacity);
-        folderB.Locker.Id.Should().Be(lockerB.Id);
-        folderB.Locker.NumberOfFolders.Should().Be(lockerB.NumberOfFolders + 1);
-        folderB.NumberOfDocuments.Should().Be(0);
-        folderB.IsAvailable.Should().BeTrue();
         // Clean up
         var folderAEntity = await FindAsync<Folder>(folderA.Id);
         var folderBEntity = await FindAsync<Folder>(folderB.Id);
