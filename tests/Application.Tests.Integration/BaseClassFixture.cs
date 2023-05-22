@@ -15,7 +15,7 @@ public class BaseClassFixture
 {
     protected readonly Faker<CreateDepartmentCommand> _departmentGenerator = new Faker<CreateDepartmentCommand>()
         .RuleFor(x => x.Name, faker => faker.Commerce.Department());
-    private static IServiceScopeFactory _scopeFactory = null!;
+    protected static IServiceScopeFactory _scopeFactory = null!;
 
     protected BaseClassFixture(CustomApiFactory apiFactory)
     {
@@ -52,6 +52,18 @@ public class BaseClassFixture
     }
 
     protected static async Task AddAsync<TEntity>(TEntity entity)
+        where TEntity : class
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await context.AddAsync(entity);
+
+        await context.SaveChangesAsync();
+    }
+    
+    protected static async Task Add<TEntity>(TEntity entity)
         where TEntity : class
     {
         using var scope = _scopeFactory.CreateScope();
