@@ -8,6 +8,10 @@ namespace Api.Controllers;
 public class LockersController : ApiControllerBase
 {
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> AddLocker([FromBody] AddLockerCommand command)
     {
         var result = await Mediator.Send(command);
