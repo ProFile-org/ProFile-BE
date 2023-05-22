@@ -114,8 +114,9 @@ public class AddFolderTests : BaseClassFixture
             Name = sameFolderName,
             LockerId = lockerB.Id
         };
-        // Act
         var folderA = await SendAsync(addFolderCommandForLockerA);
+        
+        // Act
         var folderB = await SendAsync(addFolderCommandForLockerB);
         
         // Assert
