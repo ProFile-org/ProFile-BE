@@ -32,11 +32,8 @@ public class DisableFolderCommandHandler : IRequestHandler<DisableFolderCommand,
         {
             throw new KeyNotFoundException("Folder does not exist.");
         }
-
-        var numberOfDocumentsInFolder = await _context.Documents
-            .CountAsync(d => d.Folder!.Id.Equals(request.FolderId), cancellationToken);
-
-        if (numberOfDocumentsInFolder > 0)
+        
+        if (folder.NumberOfDocuments > 0)
         {
             throw new InvalidOperationException("Folder cannot be disabled because it contains documents.");
         }
