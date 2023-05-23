@@ -26,13 +26,19 @@ public class DisableFolderCommandHandler : IRequestHandler<DisableFolderCommand,
     {
         var folder = await _context.Folders
             .Include(f => f.Locker)
-            .FirstOrDefaultAsync(f => 
-                f.Id.Equals(request.FolderId) && f.IsAvailable,
-                cancellationToken);
+            .FirstOrDefaultAsync(f => f.Id.Equals(request.FolderId) && f.IsAvailable, cancellationToken);
 
         if (folder is null)
         {
             throw new KeyNotFoundException("Folder does not exist.");
+        }
+
+        var numberOfDocumentsInFolder = await _context.Documents
+            .CountAsync(d => d.Folder!.Id.Equals(request.FolderId), cancellationToken);
+
+        if (numberOfDocumentsInFolder > 0)
+        {
+            throw new InvalidOperationException("Folder cannot be disabled because it contains documents.");
         }
 
         folder.IsAvailable = false;

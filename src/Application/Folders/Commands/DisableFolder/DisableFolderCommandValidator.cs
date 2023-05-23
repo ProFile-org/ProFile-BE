@@ -9,6 +9,6 @@ public class DisableFolderCommandValidator : AbstractValidator<DisableFolderComm
         RuleLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(f => f.FolderId)
-            .NotEmpty().WithMessage("FolderId is required");
+            .NotEmpty().WithMessage("FolderId is required.");
     }
 }
