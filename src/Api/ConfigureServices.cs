@@ -16,7 +16,12 @@ public static class ConfigureServices
 
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowAllOrigins", builder => builder.AllowAnyOrigin());
+            options.AddPolicy("AllowAllOrigins", builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+            });
         });
         
         // For swagger
