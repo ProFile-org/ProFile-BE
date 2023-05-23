@@ -95,6 +95,7 @@ public class GetDocumentsByTitleTest : BaseClassFixture
         Remove(room);
         Remove(sale);
         Remove(saleDepartment);
+        Remove(hrDepartment);
     }
     
 }
