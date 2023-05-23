@@ -5,12 +5,9 @@ namespace Application.Lockers.Commands.AddLocker;
 
 public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
 {
-    private readonly IApplicationDbContext _context;
 
-    public AddLockerCommandValidator(IApplicationDbContext context)
+    public AddLockerCommandValidator()
     {
-        _context = context;
-
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(x => x.Capacity)
             .GreaterThan(0).WithMessage("Locker's capacity cannot be less than 1");
