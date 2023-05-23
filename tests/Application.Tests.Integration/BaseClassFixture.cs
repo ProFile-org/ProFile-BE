@@ -96,7 +96,7 @@ public class BaseClassFixture
             {
                 Id = Guid.NewGuid(),
                 Title = new Faker().Commerce.ProductName(),
-                DocumentType = "Hop Dong",
+                DocumentType = "Something Something Type",
             };
             list.Add(document);
         }
@@ -111,7 +111,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfDocuments = 1,
+            NumberOfDocuments = documents.Length,
             IsAvailable = true
         };
 
@@ -130,7 +130,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfFolders = 1,
+            NumberOfFolders = folders.Length,
             IsAvailable = true
         };
 
@@ -149,7 +149,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfLockers = 1,
+            NumberOfLockers = lockers.Length,
             IsAvailable = true
         };
 

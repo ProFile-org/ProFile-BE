@@ -21,7 +21,9 @@ public class DisableRoomTests : BaseClassFixture
     public async Task ShouldDisableRoom_WhenRoomHaveNoDocument()
     {
         // Arrange 
-        var room = CreateRoom();
+        var folder = CreateFolder();
+        var locker = CreateLocker(folder);
+        var room = CreateRoom(locker);
         await AddAsync(room);
        
         var disableRoomCommand = new DisableRoomCommand()
@@ -33,9 +35,16 @@ public class DisableRoomTests : BaseClassFixture
         var result = await SendAsync(disableRoomCommand);
         
         // Assert
+        var folderResult = await FindAsync<Folder>(folder.Id);
+        var lockerResult = await FindAsync<Locker>(locker.Id);
+        
         result.IsAvailable.Should().BeFalse();
+        folderResult.IsAvailable.Should().BeFalse();
+        lockerResult.IsAvailable.Should().BeFalse();
         
         // Cleanup
+        Remove(folder);
+        Remove(locker);
         Remove(room);
     }
 
