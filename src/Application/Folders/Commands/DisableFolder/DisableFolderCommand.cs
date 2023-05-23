@@ -35,7 +35,7 @@ public class DisableFolderCommandHandler : IRequestHandler<DisableFolderCommand,
 
         if (!folder.IsAvailable)
         {
-            throw new InvalidOperationException("Folder already disabled.");
+            throw new InvalidOperationException("Folder has already been disabled.");
         }
         
         if (folder.NumberOfDocuments > 0)
