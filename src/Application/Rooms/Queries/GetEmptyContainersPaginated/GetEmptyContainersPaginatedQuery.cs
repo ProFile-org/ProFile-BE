@@ -1,12 +1,9 @@
 using Application.Common.Interfaces;
-using Application.Common.Mappings;
 using Application.Common.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Application.Rooms.Queries.GetEmptyContainersPaginated;
 
