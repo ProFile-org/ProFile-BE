@@ -126,7 +126,7 @@ public class BaseClassFixture
             {
                 Id = Guid.NewGuid(),
                 Title = new Faker().Commerce.ProductName(),
-                DocumentType = "Something Something Type",
+                DocumentType = "Hop Dong",
             };
             list.Add(document);
         }
@@ -141,7 +141,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfDocuments = documents.Length,
+            NumberOfDocuments = 1,
             IsAvailable = true
         };
 
@@ -160,7 +160,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfFolders = folders.Length,
+            NumberOfFolders = 1,
             IsAvailable = true
         };
 
@@ -168,10 +168,10 @@ public class BaseClassFixture
         {
             locker.Folders.Add(folder);
         }
-
+            
         return locker;
     }
-
+        
     protected Room CreateRoom(params Locker[] lockers)
     {
         var room = new Room()
@@ -179,7 +179,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
-            NumberOfLockers = lockers.Length,
+            NumberOfLockers = 1,
             IsAvailable = true
         };
 
@@ -187,7 +187,7 @@ public class BaseClassFixture
         {
             room.Lockers.Add(locker);
         }
-
+            
         return room;
     }
 }
