@@ -14,6 +14,11 @@ public static class ConfigureServices
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAllOrigins", builder => builder.AllowAnyOrigin());
+        });
+        
         // For swagger
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
