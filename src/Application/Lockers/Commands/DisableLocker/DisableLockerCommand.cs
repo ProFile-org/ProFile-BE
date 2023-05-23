@@ -37,6 +37,15 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
         {
             throw new EntityNotAvailableException("Locker has already been disabled.");
         }
+        
+        var canNotDisable = await _context.Documents
+                                .CountAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken)
+                            > 0;
+
+        if (canNotDisable)
+        {
+            throw new InvalidOperationException("Locker cannot be disabled because it contains documents.");
+        }
 
         locker.IsAvailable = false;
         locker.Room.NumberOfLockers -= 1;

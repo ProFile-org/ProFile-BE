@@ -31,7 +31,8 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
-            { typeof(EntityNotAvailableException), HandleEntityNotAvailableException }
+            { typeof(EntityNotAvailableException), HandleEntityNotAvailableException },
+            { typeof(InvalidOperationException),HandleInvalidOperationException }
         };
     }
 
@@ -92,6 +93,12 @@ public class ExceptionMiddleware : IMiddleware
     private async void HandleLimitExceededException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
         await WriteExceptionMessageAsync(context, ex);
     }
 
