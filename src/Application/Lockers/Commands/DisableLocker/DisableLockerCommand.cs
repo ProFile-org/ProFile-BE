@@ -46,7 +46,15 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
         {
             throw new InvalidOperationException("Locker cannot be disabled because it contains documents.");
         }
-
+        
+        var folders = _context.Folders.Where(x => x.Locker.Room.Id.Equals(locker.Id));
+        
+        foreach (var folder in folders)
+        {
+            folder.IsAvailable = false;
+        }
+        _context.Folders.UpdateRange(folders);
+        
         locker.IsAvailable = false;
         locker.Room.NumberOfLockers -= 1;
         var result = _context.Lockers.Update(locker);
