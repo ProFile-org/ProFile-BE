@@ -16,6 +16,7 @@ namespace Api.Controllers;
 
 [AllowAnonymous]
 [ApiController]
+[Route("api/v1/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IApplicationDbContext _context;
@@ -32,13 +33,15 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public ActionResult<Result<object>> Login([FromBody] LoginModel loginModel)
     {
         var user = _context.Users.FirstOrDefault(x => x.Username.Equals(loginModel.Username)
                                            || x.Email.Equals(loginModel.Username));
         if (user is null)
         {
-            return NotFound();
+            return Unauthorized();
         }
 
         if (!SecurityUtil.Hash(loginModel.Password).Equals(user.PasswordHash))

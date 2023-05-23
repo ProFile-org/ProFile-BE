@@ -37,6 +37,8 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
         result.Items.First().Name.Should().Be(room.Lockers.ElementAt(0).Name);
         result.Items.First().Description.Should().Be(room.Lockers.ElementAt(0).Description);
         result.Items.First().NumberOfFreeFolders.Should().Be(1);
+        result.Items.First().Capacity.Should().Be(4);
+        result.Items.First().NumberOfFolders.Should().Be(2);
         result.Items.First().Folders.First().Id.Should().Be(room.Lockers.ElementAt(0).Folders.First().Id);
         result.Items.First().Folders.First().Name.Should().Be(room.Lockers.ElementAt(0).Folders.First().Name);
         result.Items.First().Folders.First().Description.Should().Be(room.Lockers.ElementAt(0).Folders.First().Description);
@@ -91,6 +93,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
             Name = new Faker().Person.UserName,
             Room = room,
             Capacity = 4,
+            IsAvailable = false,
             NumberOfFolders = 1
         };
 
