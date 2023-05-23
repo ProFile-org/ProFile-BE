@@ -17,7 +17,7 @@ public class GetAllDocumentTypesQueryHandler : IRequestHandler<GetAllDocumentTyp
     }
     public async Task<IEnumerable<string>> Handle(GetAllDocumentTypesQuery request, CancellationToken cancellationToken)
     {
-        return new ReadOnlyCollection<string>(await _context.Documents.Select(x => x.DocumentType)
+        return new ReadOnlyCollection<string>(await _context.Documents.Select(x => x.DocumentType).Distinct()
             .ToListAsync(cancellationToken));
     }
 } 
