@@ -26,19 +26,44 @@ public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, Roo
     public async Task<RoomDto> Handle(DisableRoomCommand request, CancellationToken cancellationToken)
     {
         var room = await _context.Rooms
-            .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId) && x.IsAvailable == true, cancellationToken: cancellationToken);
+            .Include(x => x.Lockers)
+            .ThenInclude(y => y.Folders)
+            .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
+        
         if (room is null)
         {
             throw new KeyNotFoundException("Room does not exist");
         }
-        
-        var canDisable = await _context.Documents.CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
-        
-        if (canDisable > 0)
+
+        if (!room.IsAvailable)
         {
-                throw new InvalidOperationException("Room cannot be disabled because it contains documents");
+            throw new InvalidOperationException("Room have already been disabled");
         }
+
+        var canNotDisable = await _context.Documents
+                             .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken)
+                             > 0;
         
+        if (canNotDisable)
+        {
+            throw new InvalidOperationException("Room cannot be disabled because it contains documents");
+        }
+
+        var lockers =  _context.Lockers.Where(x => x.Room.Id.Equals(room.Id));
+        var folders = _context.Folders.Where(x => x.Locker.Room.Id.Equals(room.Id));
+
+        foreach (var folder in folders)
+        {
+            folder.IsAvailable = false;
+        }
+        _context.Folders.UpdateRange(folders);
+        
+        foreach (var locker in lockers)
+        {
+            locker.IsAvailable = false;
+        }
+        _context.Lockers.UpdateRange(lockers);
+
         room.IsAvailable = false;
         var result = _context.Rooms.Update(room);
         await _context.SaveChangesAsync(cancellationToken);

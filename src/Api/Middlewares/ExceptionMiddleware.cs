@@ -93,7 +93,7 @@ public class ExceptionMiddleware : IMiddleware
     
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
         await WriteExceptionMessageAsync(context, ex);
     }
 

@@ -32,7 +32,7 @@ public class RoomsController : ApiControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromBody] DisableRoomCommand command)
     {
         var result = await Mediator.Send(command);
