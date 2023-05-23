@@ -58,9 +58,7 @@ public class AddLockerTests : BaseClassFixture
         locker.Room.NumberOfLockers.Should().Be(room.NumberOfLockers);
         
         //Cleanup
-        var lockerEntity = await FindAsync<Locker>(locker.Id);
         var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(lockerEntity);
         Remove(roomEntity);
     }
 
@@ -98,16 +96,14 @@ public class AddLockerTests : BaseClassFixture
         
         // Act
         
-        var locker = await SendAsync(createLockerCommand);
+        await SendAsync(createLockerCommand);
         var action = async () => await SendAsync(createLockerCommand2);
         
         //Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker's name already exists.");
         
         //Cleanup
-        var lockerEntity = await FindAsync<Locker>(locker.Id);
         var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(lockerEntity);
         Remove(roomEntity);
     }
 
@@ -159,7 +155,7 @@ public class AddLockerTests : BaseClassFixture
         
         // Act
         
-        var locker1 = await SendAsync(createLockerCommand);
+        await SendAsync(createLockerCommand);
         var locker2 = await SendAsync(createLockerCommand2);
         
         //Assert
@@ -172,12 +168,8 @@ public class AddLockerTests : BaseClassFixture
         locker2.Room.NumberOfLockers.Should().Be(room2.NumberOfLockers);
         
         //Cleanup
-        var locker1Entity = await FindAsync<Locker>(locker1.Id);
-        var locker2Entity = await FindAsync<Locker>(locker2.Id);
         var room1Entity = await FindAsync<Room>(room1.Id);
         var room2Entity = await FindAsync<Room>(room2.Id);
-        Remove(locker1Entity);
-        Remove(locker2Entity);
         Remove(room1Entity);
         Remove(room2Entity);
     }
@@ -215,16 +207,14 @@ public class AddLockerTests : BaseClassFixture
         };
         
         // Act
-        var locker = await SendAsync(createLockerCommand);
+        await SendAsync(createLockerCommand);
         var action = async () => await SendAsync(createLockerCommand2);
         
         //Assert
         await action.Should().ThrowAsync<LimitExceededException>().WithMessage("This room cannot accept more lockers.");
         
         //Cleanup
-        var lockerEntity = await FindAsync<Locker>(locker.Id);
         var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(lockerEntity);
         Remove(roomEntity);
     }
 }
