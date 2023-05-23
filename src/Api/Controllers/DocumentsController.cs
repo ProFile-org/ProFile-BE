@@ -33,6 +33,10 @@ public class DocumentsController : ApiControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<PaginatedList<DocumentItemDto>>>> GetAllDocuments(Guid? roomId, Guid? lockerId, Guid? folderId, int? page, int? size, string? sortBy, string? sortOrder)
     {
         var query = new GetAllDocumentsPaginatedQuery()

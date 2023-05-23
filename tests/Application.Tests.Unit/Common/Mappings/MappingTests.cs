@@ -2,6 +2,7 @@ using System.Runtime.Serialization;
 using Application.Common.Mappings;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
+using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
@@ -36,7 +37,9 @@ public class MappingTests
     [InlineData(typeof(Staff), typeof(Staff))]    
     [InlineData(typeof(Room), typeof(RoomDto))]
     [InlineData(typeof(Locker), typeof(LockerDto))]
+    [InlineData(typeof(Locker), typeof(EmptyLockerDto))]
     [InlineData(typeof(Folder), typeof(FolderDto))]
+    [InlineData(typeof(Folder), typeof(EmptyFolderDto))]
     [InlineData(typeof(Document), typeof(DocumentDto))]
     [InlineData(typeof(Document), typeof(DocumentItemDto))]
     [InlineData(typeof(Borrow), typeof(BorrowDto))]

@@ -73,7 +73,7 @@ public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocume
 
             if (locker.Room.Id != request.RoomId)
             {
-                throw new ConflictException("Room does not match locker");
+                throw new ConflictException("Room does not match locker.");
             }
 
             documents = documents.Where(x => x.Folder!.Locker.Id == request.LockerId);
