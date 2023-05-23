@@ -52,6 +52,11 @@ public class RemoveRoomTests : BaseClassFixture
         //Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Can not remove room when room still have documents");
+        //Cleanup
+        Remove(documents.First());
+        Remove(folder);
+        Remove(locker);
+        Remove(room);
 
     }
 
