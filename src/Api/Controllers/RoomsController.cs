@@ -18,7 +18,7 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomDto>.Succeed(result));
     }
 
-    [HttpGet("empty-containers")]
+    [HttpPost("empty-containers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
