@@ -120,7 +120,7 @@ public class DisableFolderTests : BaseClassFixture
 
         // Assert
         await result.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Folder already disabled.");
+            .WithMessage("Folder has already been disabled.");
         
         // Clean up
         Remove(folder);
