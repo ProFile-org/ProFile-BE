@@ -35,7 +35,7 @@ public class RemoveRoomTests : BaseClassFixture
     [Fact]
     public async Task ShouldThrowInvalidOperationException_WhenRoomHaveDocuments()
     {
-        //Arrange
+        // Arrange
         var documents = CreateNDocuments(1);
         var folder = CreateFolder(documents);
         var locker = CreateLocker(folder);
@@ -47,12 +47,14 @@ public class RemoveRoomTests : BaseClassFixture
             RoomId = room.Id
         };
         
-        //Act
+        // Act
         var action = async () => await SendAsync(command);
-        //Assert
+        
+        // Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Can not remove room when room still have documents");
-        //Cleanup
+        
+        // Cleanup
         Remove(documents.First());
         Remove(folder);
         Remove(locker);
@@ -63,91 +65,17 @@ public class RemoveRoomTests : BaseClassFixture
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
-        //Arrange
+        // Arrange
         var command = new RemoveRoomCommand()
         {
             RoomId = Guid.NewGuid()
         };
-        //Act
+        
+        // Act
         var action = async () => await SendAsync(command);
-        //Assert
+        
+        // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("Room does not exist");
     }
-
-
-    private Document[] CreateNDocuments(int n)
-    {
-        var list = new List<Document>();
-        for (var i = 0; i < n; i++)
-        {
-            var document = new Document()
-            {
-                Id = Guid.NewGuid(),
-                Title = new Faker().Commerce.ProductName(),
-                DocumentType = "Something Department",
-            };
-            list.Add(document);
-        }
-
-        return list.ToArray();
-    }
-    
-    private Folder CreateFolder(params Document[] documents)
-    {
-        var folder = new Folder()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Capacity = 3,
-            NumberOfDocuments = documents.Length,
-            IsAvailable = true
-        };
-
-        foreach (var document in documents)
-        {
-            folder.Documents.Add(document);
-        }
-
-        return folder;
-    }
-    
-    private Locker CreateLocker(params Folder[] folders)
-    {
-        var locker = new Locker()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Capacity = 3,
-            NumberOfFolders = folders.Length,
-            IsAvailable = true
-        };
-
-        foreach (var folder in folders)
-        {
-            locker.Folders.Add(folder);
-        }
-            
-        return locker;
-    }
-    
-    private Room CreateRoom(params Locker[] lockers)
-    {
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Capacity = 3,
-            NumberOfLockers = lockers.Length,
-            IsAvailable = true
-        };
-
-        foreach (var locker in lockers)
-        {
-            room.Lockers.Add(locker);
-        }
-            
-        return room;
-    }
-
 }

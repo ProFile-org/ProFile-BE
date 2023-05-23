@@ -34,6 +34,7 @@ public class RemoveRoomCommandHandler : IRequestHandler<RemoveRoomCommand, RoomD
 
         var canRemove = await _context.Documents
             .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
+        
         if (canRemove > 0)
         {
             throw new InvalidOperationException("Can not remove room when room still have documents");
