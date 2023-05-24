@@ -3,6 +3,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Departments.Commands.CreateDepartment;
 using Application.Documents.Commands.ImportDocument;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
+using Application.Documents.Queries.GetDocumentById;
 using Application.Documents.Queries.GetDocumentTypes;
 using Application.Users.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -51,5 +52,16 @@ public class DocumentsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
+    }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<DocumentDto>> GetDocumentById(Guid id)
+    {
+        var query = new GetDocumentByIdQuery()
+        {
+            Id = id
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentDto>.Succeed(result));
     }
 }
