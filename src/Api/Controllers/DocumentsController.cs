@@ -1,3 +1,4 @@
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Departments.Commands.CreateDepartment;
@@ -5,13 +6,21 @@ using Application.Documents.Commands.ImportDocument;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
 using Application.Documents.Queries.GetDocumentsByTitle;
 using Application.Documents.Queries.GetDocumentTypes;
+using Application.Identity;
 using Application.Users.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 public class DocumentsController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+    public DocumentsController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -54,12 +63,20 @@ public class DocumentsController : ApiControllerBase
         return Ok(Result<PaginatedList<DocumentItemDto>>.Succeed(result));
     }
 
+    [Authorize]
     [HttpGet("search-documents")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetDocumentsByTitle(
-        [FromQuery] GetDocumentsByTitleQuery query)
+    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetDocumentsByTitle(int? page, int? size, string? searchTerm)
     {
+        var query = new GetDocumentsByTitleQuery()
+        {
+            Page = page,
+            Size = size,
+            SearchTerm = searchTerm,
+            CurrentUserRole = _currentUserService.GetRole(),
+            CurrentUserDepartment = _currentUserService.GetDepartment()
+        };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
     }

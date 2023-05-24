@@ -1,4 +1,8 @@
-﻿using Application.Documents.Queries.GetDocumentsByTitle;
+﻿using Application.Common.Mappings;
+using Application.Common.Models.Dtos.Physical;
+using Application.Documents.Queries.GetDocumentsByTitle;
+using Application.Identity;
+using AutoMapper;
 using FluentAssertions;
 using Xunit;
 
@@ -6,36 +10,28 @@ namespace Application.Tests.Integration.Documents.Queries;
 
 public class GetDocumentsByTitleTest : BaseClassFixture
 {
+    private readonly IMapper _mapper;
     public GetDocumentsByTitleTest(CustomApiFactory apiFactory) : base(apiFactory)
     {
+        var configuration = new MapperConfiguration(config => config.AddProfile<MappingProfile>());
+
+        _mapper = configuration.CreateMapper();
     }
     
     [Fact]
     public async Task ShouldReturnAllDocuments_WhenUserRoleIsAdmin()
     {
         // Arrange
-        var adminDepartment = CreateDepartment();
-        var saleDepartment = CreateDepartment();
-
-        var admin = CreateUser(adminDepartment);
-        admin.Role = "Admin";
-        await AddAsync(admin);
-        
+       
         var documents = CreateNDocuments(2);
-        documents[0].Department = null;
         documents[0].Title = "doc1";
-
-        documents[1].Department = saleDepartment;
         documents[1].Title = "doc2";
-
-        var folder = CreateFolder(documents);
-        var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
-        await AddAsync(room);
-
+        await AddAsync(documents[0]);
+        await AddAsync(documents[1]);
+        
         var query = new GetDocumentsByTitleQuery()
         {
-            SearchTerm = "doc"
+            CurrentUserRole = IdentityData.Roles.Admin
         };
 
         // Act
@@ -43,57 +39,130 @@ public class GetDocumentsByTitleTest : BaseClassFixture
         
         // Assert
         result.TotalCount.Should().Be(2);
-        result.Items.First().Department.Should().BeNull();
         
         // Cleanup
         Remove(documents[0]);
         Remove(documents[1]);
-        Remove(folder);
-        Remove(locker);
-        Remove(room);
-        Remove(admin);
-        Remove(adminDepartment);
-        Remove(saleDepartment);
     }
 
     [Fact]
     public async Task ShouldReturnDocumentsOfUsersDepartment()
     {
         // Arrange
-        var saleDepartment = CreateDepartment();
         var hrDepartment = CreateDepartment();
-
-        var sale = CreateUser(saleDepartment);
-        await AddAsync(sale);
+        var saleDepartment = CreateDepartment();
         
-        var documents = CreateNDocuments(1);
-        documents.First().Department = hrDepartment;
-        documents.First().Title = "document";
+        var documents = CreateNDocuments(2);
+        documents[0].Department = hrDepartment;
+        documents[0].Title = "doc2";
+        documents[1].Department = saleDepartment;
+        documents[1].Title = "doc2";
 
-        var folder = CreateFolder(documents);
-        var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
-        await AddAsync(room);
+        await AddAsync(documents[0]);
+        await AddAsync(documents[1]);
 
         var query = new GetDocumentsByTitleQuery()
         {
             SearchTerm = "doc",
+            CurrentUserDepartment = hrDepartment.Name,
+            CurrentUserRole = IdentityData.Roles.Staff
         };
         
         // Act 
         var result = await SendAsync(query);
         
         // Assert
+        result.TotalCount.Should().Be(1); 
+        result.Items.Should().ContainEquivalentOf(_mapper.Map<DocumentDto>(documents.First()));
+
+        // Cleanup
+        Remove(documents[0]);
+        Remove(documents[1]);
+        Remove(hrDepartment);
+        Remove(saleDepartment);
+    }
+
+    [Fact]
+    public async Task ShouldReturnNoDocuments_WhenUserDepartmentIsNull()
+    {
+        // Arrange
+        var documents = CreateNDocuments(1);
+        documents.First().Title = "document";
+        await AddAsync(documents.First());
+
+        var query = new GetDocumentsByTitleQuery()
+        {
+            SearchTerm = "doc",
+            CurrentUserDepartment = null,
+            CurrentUserRole = IdentityData.Roles.Staff
+        };
+        
+        // Act
+        var result = await SendAsync(query);
+
+        // Assert
         result.TotalCount.Should().Be(0);
-                
+
         // Cleanup
         Remove(documents.First());
-        Remove(folder);
-        Remove(locker);
-        Remove(room);
-        Remove(sale);
-        Remove(saleDepartment);
-        Remove(hrDepartment);
     }
-    
+
+    [Fact]
+    public async Task ShouldReturnAllDocumentsWithValidConstraint_WhenSearchTermIsNull()
+    {
+        // Arrange
+        var department = CreateDepartment();
+        var documents = CreateNDocuments(2);
+        documents[0].Title = "doc1";
+        documents[0].Department = department;
+        documents[1].Title = "doc2";
+        await AddAsync(documents[0]);
+        await AddAsync(documents[1]);
+
+        var query = new GetDocumentsByTitleQuery()
+        {
+            CurrentUserDepartment = department.Name,
+            CurrentUserRole = IdentityData.Roles.Staff
+        };
+        
+        // Act
+        var result = await SendAsync(query);
+
+        // Assert
+        result.TotalCount.Should().Be(1);
+        result.Items.Should().ContainEquivalentOf(_mapper.Map<DocumentDto>(documents.First()));
+
+        // Cleanup
+        Remove(documents[0]);
+        Remove(documents[1]);
+        Remove(department);
+    }
+
+    [Fact]
+    public async Task ShouldReturnEmptyListOfDocuments_WhenThereAreNoDocumentsContainSearchTerm()
+    {
+        // Arrange
+        var documents = CreateNDocuments(2);
+        documents[0].Title = "doc1";
+        documents[1].Title = "doc2";
+        await AddAsync(documents[0]);
+        await AddAsync(documents[1]);
+
+        var query = new GetDocumentsByTitleQuery()
+        {
+            SearchTerm = "who am i",
+            CurrentUserRole = IdentityData.Roles.Admin
+        };
+
+        // Act
+        var result = await SendAsync(query);
+        
+        // Assert
+        result.TotalCount.Should().Be(0);
+        
+        // Cleanup
+        Remove(documents[0]);
+        Remove(documents[1]);
+    }
+
 }

@@ -10,7 +10,7 @@ public class DocumentDto : IMapFrom<Document>
     public string Title { get; set; }
     public string Description { get; set; }
     public string DocumentType { get; set; }
-    public DepartmentDto Department { get; set; }
+    public DepartmentDto? Department { get; set; }
     public UserDto Importer { get; set; }
     public FolderDto Folder { get; set; }
 }

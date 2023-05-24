@@ -20,4 +20,4 @@ services:
       - POSTGRES_PASSWORD=supasecured
       - POSTGRES_DB=mydb
     ports:
-      - '5432:5432'
+      - '5432:5432' 

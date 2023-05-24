@@ -16,53 +16,74 @@ public record GetDocumentsByTitleQuery : IRequest<PaginatedList<DocumentDto>>
     public string? SearchTerm { get; init; }
     public int? Page { get; init; }
     public int? Size { get; init; }
+    public string CurrentUserRole { get; init; } = null!;
+    public string? CurrentUserDepartment { get; init; }
 }
 
 public class GetDocumentsByTitleQueryHandler : IRequestHandler<GetDocumentsByTitleQuery, PaginatedList<DocumentDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    private readonly ICurrentUserService _service;
 
-    public GetDocumentsByTitleQueryHandler(IApplicationDbContext context, IMapper mapper, ICurrentUserService service)
+    public GetDocumentsByTitleQueryHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
-        _service = service;
     }
 
     public async Task<PaginatedList<DocumentDto>> Handle(GetDocumentsByTitleQuery request, CancellationToken cancellationToken)
     {
-        var currentUserRole = _service.GetRole();
-        var currentUserDepartmentName = _service.GetDepartment();
-
         var pageNumber = request.Page ?? 1;
         var sizeNumber = request.Size ?? 5;
 
-        if (currentUserDepartmentName is null)
+        var documents = _context.Documents.AsQueryable();
+        documents = documents
+            .Include(x => x.Department);
+
+        
+        if (request.SearchTerm is not null)
+        {
+            documents = documents
+                .Where(x => x.Title.Trim().ToLower()
+                    .Contains(request.SearchTerm.Trim().ToLower()));
+        }
+
+        var result = await documents
+            .ProjectTo<DocumentDto>(_mapper.ConfigurationProvider)
+            .ToListAsync(cancellationToken);
+
+        if (CurrentUserIsAdmin(request.CurrentUserRole))
+        {
+            return new PaginatedList<DocumentDto>(result, result.Count(), pageNumber, sizeNumber);
+        }
+
+        if (request.CurrentUserDepartment is null)
         {
             return new PaginatedList<DocumentDto>(new List<DocumentDto>(), 0, pageNumber, sizeNumber);
         }
+       
+        result = result.Where(x => 
+                x.Department != null
+                && x.Department.Name.Equals(request.CurrentUserDepartment))
+            .ToList();
         
-        var documents = _context.Documents.AsQueryable();
-        documents = documents.Include(x => x.Department);
-        if (CurrentUserIsNotAdmin(currentUserRole))
-        {
-            documents = documents.Where(x => BelongToDepartment(x, currentUserDepartmentName));
-        }
+        // if (string.IsNullOrEmpty(request.SearchTerm))
+        // {
+        //     result = result.Where(x => 
+        //             x.Department != null
+        //             && x.Department.Name.Equals(request.CurrentUserDepartment))
+        //         .ToList();
+        // }
         
-        var result = await documents
-            .ProjectTo<DocumentDto>(_mapper.ConfigurationProvider)
-            .OrderBy(x => x.Title)
-            .PaginatedListAsync(pageNumber, sizeNumber);
+        var paginatedList = new PaginatedList<DocumentDto>(result, result.Count(), pageNumber, sizeNumber);
         
-        return result;
+        return paginatedList;
     }
 
-    private bool CurrentUserIsNotAdmin(string currentUserRole) 
-        => !currentUserRole.Equals(IdentityData.Roles.Admin);
+    private static bool CurrentUserIsAdmin(string currentUserRole) 
+        => currentUserRole.Equals(IdentityData.Roles.Admin);
 
-    private bool BelongToDepartment(Document document, string currentUserDepartmentName)
+    private static bool BelongToDepartment(DocumentDto document, string currentUserDepartmentName)
         => document.Department!.Name.Equals(currentUserDepartmentName);
 
 
