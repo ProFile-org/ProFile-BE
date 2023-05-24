@@ -31,12 +31,9 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
-<<<<<<< HEAD
             { typeof(InvalidOperationException), HandleInvalidOperationException},
-=======
-            { typeof(InvalidOperationException), HandleInvalidOperationException}
->>>>>>> c1ccb3a241f8c045812e2fbcbc97cf1414630869
-            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
+            { typeof(InvalidOperationException), HandleInvalidOperationException},
+            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException }
         };
     }
 
@@ -94,31 +91,18 @@ public class ExceptionMiddleware : IMiddleware
         await WriteExceptionMessageAsync(context, ex);
     }
 
-<<<<<<< HEAD
-=======
-
-    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
-    {
-        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
-        await WriteExceptionMessageAsync(context, ex);
-    }
-
->>>>>>> c1ccb3a241f8c045812e2fbcbc97cf1414630869
     private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await WriteExceptionMessageAsync(context, ex);
     }
 
-<<<<<<< HEAD
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
         await WriteExceptionMessageAsync(context, ex);
     }
-=======
 
->>>>>>> c1ccb3a241f8c045812e2fbcbc97cf1414630869
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {
         await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(Result<string>.Fail(ex)));
