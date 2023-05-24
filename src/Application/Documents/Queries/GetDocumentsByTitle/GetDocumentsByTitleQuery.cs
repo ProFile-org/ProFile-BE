@@ -67,14 +67,6 @@ public class GetDocumentsByTitleQueryHandler : IRequestHandler<GetDocumentsByTit
                 && x.Department.Name.Equals(request.CurrentUserDepartment))
             .ToList();
         
-        // if (string.IsNullOrEmpty(request.SearchTerm))
-        // {
-        //     result = result.Where(x => 
-        //             x.Department != null
-        //             && x.Department.Name.Equals(request.CurrentUserDepartment))
-        //         .ToList();
-        // }
-        
         var paginatedList = new PaginatedList<DocumentDto>(result, result.Count(), pageNumber, sizeNumber);
         
         return paginatedList;
