@@ -2,6 +2,7 @@
 using Application.Common.Mappings;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
@@ -13,8 +14,8 @@ public record GetDocumentsByTitleQuery : IRequest<PaginatedList<DocumentDto>>
 {
     public Guid UserId { get; init; }
     public string? SearchTerm { get; init; }
-    public int Page { get; init; } = 1;
-    public int Size { get; init; } = 10;
+    public int? Page { get; init; }
+    public int? Size { get; init; }
 }
 
 public class GetDocumentsByTitleQueryHandler : IRequestHandler<GetDocumentsByTitleQuery, PaginatedList<DocumentDto>>
@@ -36,25 +37,27 @@ public class GetDocumentsByTitleQueryHandler : IRequestHandler<GetDocumentsByTit
 
         if (currentUser is null)
         {
-            throw new KeyNotFoundException("User does not exist");
+            throw new KeyNotFoundException("User does not exist.");
         }
 
         if (currentUser.Department is null)
         {
-            throw new KeyNotFoundException("Department does not exist");
+            throw new KeyNotFoundException("Department does not exist.");
         }
 
         var currentUserDepartmentId = currentUser.Department.Id;
-
+        var pageNumber = request.Page ?? 1;
+        var sizeNumber = request.Size ?? 5;
+        
         var documents = await _context.Documents
             .Include(x => x.Department)
-            .Where(x => (currentUser.Role.Equals("Admin") 
+            .Where(x => (currentUser.Role.Equals(IdentityData.Roles.Admin) 
                          || (x.Department != null && x.Department.Id.Equals(currentUserDepartmentId))) 
                         && !string.IsNullOrEmpty(request.SearchTerm)
                         && x.Title.ToLower().Contains(request.SearchTerm.ToLower()))
             .ProjectTo<DocumentDto>(_mapper.ConfigurationProvider)
             .OrderBy(x => x.Title)
-            .PaginatedListAsync(request.Page, request.Size);
+            .PaginatedListAsync(pageNumber, sizeNumber);
         return documents;
     }
 }

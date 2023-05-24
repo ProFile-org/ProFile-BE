@@ -55,7 +55,9 @@ public class DocumentsController : ApiControllerBase
     }
 
     [HttpGet("search-documents")]
-    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetDocumentsById(
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetDocumentsByTitle(
         [FromQuery] GetDocumentsByTitleQuery query)
     {
         var result = await Mediator.Send(query);
