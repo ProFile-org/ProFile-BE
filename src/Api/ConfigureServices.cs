@@ -23,6 +23,8 @@ public static class ConfigureServices
                 builder.AllowAnyMethod();
             });
         });
+
+        services.AddHttpContextAccessor();
         
         // For swagger
         services.AddEndpointsApiExplorer();
