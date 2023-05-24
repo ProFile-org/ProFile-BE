@@ -6,6 +6,7 @@ using Domain.Entities.Physical;
 
 namespace Application.Documents.Queries.GetAllDocumentsPaginated;
 
+[Obsolete]
 public class DocumentItemDto : IMapFrom<Document>
 {
     public Guid Id { get; set; }

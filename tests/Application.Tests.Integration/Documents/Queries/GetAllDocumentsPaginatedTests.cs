@@ -1,6 +1,7 @@
     using Application.Common.Exceptions;
     using Application.Common.Extensions;
     using Application.Common.Mappings;
+    using Application.Common.Models.Dtos.Physical;
     using Application.Documents.Queries.GetAllDocumentsPaginated;
     using AutoMapper;
     using Bogus;
@@ -376,14 +377,14 @@
         }
 
         [Theory]
-        [InlineData(nameof(DocumentItemDto.Id), "asc")]
-        [InlineData(nameof(DocumentItemDto.Title), "asc")]
-        [InlineData(nameof(DocumentItemDto.DocumentType), "asc")]
-        [InlineData(nameof(DocumentItemDto.Description), "asc")]
-        [InlineData(nameof(DocumentItemDto.Id), "desc")]
-        [InlineData(nameof(DocumentItemDto.Title), "desc")]
-        [InlineData(nameof(DocumentItemDto.DocumentType), "desc")]
-        [InlineData(nameof(DocumentItemDto.Description), "desc")]
+        [InlineData(nameof(DocumentDto.Id), "asc")]
+        [InlineData(nameof(DocumentDto.Title), "asc")]
+        [InlineData(nameof(DocumentDto.DocumentType), "asc")]
+        [InlineData(nameof(DocumentDto.Description), "asc")]
+        [InlineData(nameof(DocumentDto.Id), "desc")]
+        [InlineData(nameof(DocumentDto.Title), "desc")]
+        [InlineData(nameof(DocumentDto.DocumentType), "desc")]
+        [InlineData(nameof(DocumentDto.Description), "desc")]
         public async Task ShouldReturnSortedByPropertyPaginatedList_WhenSortByIsPresent(string sortBy, string sortOrder)
         {
             // Arrange

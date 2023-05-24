@@ -3,6 +3,7 @@ using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Mappings;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Documents.Queries.GetAllDocumentsPaginated;
 
-public record GetAllDocumentsPaginatedQuery : IRequest<PaginatedList<DocumentItemDto>>
+public record GetAllDocumentsPaginatedQuery : IRequest<PaginatedList<DocumentDto>>
 {
     public Guid? RoomId { get; init; }
     public Guid? LockerId { get; init; }
@@ -21,7 +22,7 @@ public record GetAllDocumentsPaginatedQuery : IRequest<PaginatedList<DocumentIte
     public string? SortOrder { get; init; }
 }
 
-public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocumentsPaginatedQuery, PaginatedList<DocumentItemDto>>
+public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocumentsPaginatedQuery, PaginatedList<DocumentDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -32,7 +33,7 @@ public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocume
         _mapper = mapper;
     }
 
-    public async Task<PaginatedList<DocumentItemDto>> Handle(GetAllDocumentsPaginatedQuery request,
+    public async Task<PaginatedList<DocumentDto>> Handle(GetAllDocumentsPaginatedQuery request,
         CancellationToken cancellationToken)
     {
         var documents = _context.Documents.AsQueryable();
@@ -94,12 +95,12 @@ public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocume
             documents = documents.Where(x => x.Folder!.Locker.Room.Id == request.RoomId);
         }
 
-        var sortBy = request.SortBy ?? nameof(DocumentItemDto.Id);
+        var sortBy = request.SortBy ?? nameof(DocumentDto.Id);
         var sortOrder = request.SortOrder ?? "asc";
         var pageNumber = request.Page ?? 1;
         var sizeNumber = request.Size ?? 5;
         var result = await documents
-            .ProjectTo<DocumentItemDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<DocumentDto>(_mapper.ConfigurationProvider)
             .OrderByCustom(sortBy, sortOrder)
             .PaginatedListAsync(pageNumber, sizeNumber);
 
