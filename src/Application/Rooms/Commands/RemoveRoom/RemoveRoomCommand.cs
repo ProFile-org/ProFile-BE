@@ -29,7 +29,7 @@ public class RemoveRoomCommandHandler : IRequestHandler<RemoveRoomCommand, RoomD
 
         if (room is null)
         {
-            throw new KeyNotFoundException("Room does not exist");
+            throw new KeyNotFoundException("Room does not exist.");
         }
 
         var canRemove = await _context.Documents
@@ -37,7 +37,7 @@ public class RemoveRoomCommandHandler : IRequestHandler<RemoveRoomCommand, RoomD
         
         if (canRemove > 0)
         {
-            throw new InvalidOperationException("Can not remove room when room still have documents");
+            throw new InvalidOperationException("Room cannot be disabled because it contains documents.");
         }
 
         room.IsAvailable = false;

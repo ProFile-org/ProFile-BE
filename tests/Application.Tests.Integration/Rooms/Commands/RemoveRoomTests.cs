@@ -52,7 +52,7 @@ public class RemoveRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Can not remove room when room still have documents");
+            .WithMessage("Room cannot be disabled because it contains documents.");
         
         // Cleanup
         Remove(documents.First());
@@ -76,6 +76,6 @@ public class RemoveRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Room does not exist");
+            .WithMessage("Room does not exist.");
     }
 }
