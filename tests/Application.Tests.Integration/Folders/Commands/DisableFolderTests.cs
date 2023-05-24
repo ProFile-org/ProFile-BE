@@ -78,7 +78,7 @@ public class DisableFolderTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowKeyInvalidOperationException_WhenFolderAlreadyDisabled()
+    public async Task ShouldThrowInvalidOperationException_WhenFolderAlreadyDisabled()
     {
         // Arrange
         var room = new Room()
@@ -129,7 +129,7 @@ public class DisableFolderTests : BaseClassFixture
     }
     
     [Fact]
-    public async Task ShouldThrowKeyInvalidOperationException_WhenFolderHaveDocuments()
+    public async Task ShouldThrowInvalidOperationException_WhenFolderHaveDocuments()
     {
         // Arrange
         var room = new Room()
