@@ -24,6 +24,12 @@ public class GetDocumentByIdQueryHandler : IRequestHandler<GetDocumentByIdQuery,
     public async Task<DocumentDto> Handle(GetDocumentByIdQuery request, CancellationToken cancellationToken)
     {
         var document = await _context.Documents.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+
+        if (document is null)
+        {
+            throw new KeyNotFoundException("Document does not exist.");
+        }
+        
         return _mapper.Map<DocumentDto>(document);
     }
 }
