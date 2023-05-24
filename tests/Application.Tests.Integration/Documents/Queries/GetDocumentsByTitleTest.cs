@@ -35,8 +35,7 @@ public class GetDocumentsByTitleTest : BaseClassFixture
 
         var query = new GetDocumentsByTitleQuery()
         {
-            SearchTerm = "doc",
-            UserId = admin.Id
+            SearchTerm = "doc"
         };
 
         // Act
@@ -79,7 +78,6 @@ public class GetDocumentsByTitleTest : BaseClassFixture
         var query = new GetDocumentsByTitleQuery()
         {
             SearchTerm = "doc",
-            UserId = sale.Id
         };
         
         // Act 

@@ -19,7 +19,7 @@ public static class ConfigureServices
     {
         services.AddApplicationDbContext(configuration);
         services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
-
+        
         services.AddJweAuthentication(configuration);
 
         services.AddAuthorization();

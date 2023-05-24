@@ -56,7 +56,7 @@ public class DocumentsController : ApiControllerBase
 
     [HttpGet("search-documents")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetDocumentsByTitle(
         [FromQuery] GetDocumentsByTitleQuery query)
     {
