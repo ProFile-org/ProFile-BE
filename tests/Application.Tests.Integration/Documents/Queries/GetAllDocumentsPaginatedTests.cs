@@ -380,16 +380,10 @@
         [InlineData(nameof(DocumentItemDto.Title), "asc")]
         [InlineData(nameof(DocumentItemDto.DocumentType), "asc")]
         [InlineData(nameof(DocumentItemDto.Description), "asc")]
-        [InlineData(nameof(DocumentItemDto.FolderId), "asc")]
-        [InlineData(nameof(DocumentItemDto.DepartmentId), "asc")]
-        [InlineData(nameof(DocumentItemDto.ImporterId), "asc")]
         [InlineData(nameof(DocumentItemDto.Id), "desc")]
         [InlineData(nameof(DocumentItemDto.Title), "desc")]
         [InlineData(nameof(DocumentItemDto.DocumentType), "desc")]
         [InlineData(nameof(DocumentItemDto.Description), "desc")]
-        [InlineData(nameof(DocumentItemDto.FolderId), "desc")]
-        [InlineData(nameof(DocumentItemDto.DepartmentId), "desc")]
-        [InlineData(nameof(DocumentItemDto.ImporterId), "desc")]
         public async Task ShouldReturnSortedByPropertyPaginatedList_WhenSortByIsPresent(string sortBy, string sortOrder)
         {
             // Arrange

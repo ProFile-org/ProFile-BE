@@ -40,6 +40,8 @@ public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocume
         var lockerExists = request.LockerId is not null;
         var folderExists = request.FolderId is not null;
 
+        documents = documents.Include(x => x.Department);
+
         if (folderExists)
         {
             var folder = await _context.Folders
@@ -58,7 +60,8 @@ public class GetAllDocumentsPaginatedQueryHandler : IRequestHandler<GetAllDocume
                 throw new ConflictException("Either locker or room does not match folder.");
             }
             
-            documents = documents.Where(x => x.Folder!.Id == request.FolderId);
+            documents = documents
+                .Where(x => x.Folder!.Id == request.FolderId);
         }
         else if (lockerExists)
         {
