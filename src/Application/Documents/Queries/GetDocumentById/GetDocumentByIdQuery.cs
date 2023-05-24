@@ -23,7 +23,13 @@ public class GetDocumentByIdQueryHandler : IRequestHandler<GetDocumentByIdQuery,
     }
     public async Task<DocumentDto> Handle(GetDocumentByIdQuery request, CancellationToken cancellationToken)
     {
-        var document = await _context.Documents.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+        var document = await _context.Documents
+            .Include(x => x.Department)
+            .Include(x => x.Importer)
+            .Include(x => x.Folder)
+            .ThenInclude(y => y.Locker)
+            .ThenInclude(z => z.Room)
+            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
         if (document is null)
         {
