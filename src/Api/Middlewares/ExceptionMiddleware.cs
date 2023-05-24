@@ -31,6 +31,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
+            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
     }
 
@@ -85,6 +86,12 @@ public class ExceptionMiddleware : IMiddleware
     private async void HandleLimitExceededException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+
+    private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await WriteExceptionMessageAsync(context, ex);
     }
 

@@ -4,6 +4,7 @@ using Api.Controllers.Payload;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Helpers;
+using Application.Identity;
 using Infrastructure.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,6 @@ public class AuthController : ControllerBase
             new(JwtRegisteredClaimNames.Sub, user.Username),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Iat, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, user.Role),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
         var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};
