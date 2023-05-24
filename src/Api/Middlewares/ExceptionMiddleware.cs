@@ -32,6 +32,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
             { typeof(InvalidOperationException), HandleInvalidOperationException}
+            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
     }
 
@@ -89,11 +90,20 @@ public class ExceptionMiddleware : IMiddleware
         await WriteExceptionMessageAsync(context, ex);
     }
 
+
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
         await WriteExceptionMessageAsync(context, ex);
     }
+
+    private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+
+
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {
         await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(Result<string>.Fail(ex)));
