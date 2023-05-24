@@ -4,6 +4,9 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Domain.Entities;
+using Application.Helpers;
+using Application.Identity;
+using Infrastructure.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -39,7 +42,6 @@ public class AuthController : ControllerBase
     [HttpPost]
     public ActionResult<Result<Result<AuthenticationResult>>> Logout()
     {
-        
         return Ok();
     }
 

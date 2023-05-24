@@ -9,6 +9,7 @@ public class EmptyFolderDto : IMapFrom<Folder>
     public Guid Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
+    public int Capacity { get; set; }
     public int Slot { get; set; }
     
     public void Mapping(Profile profile)
