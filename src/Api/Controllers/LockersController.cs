@@ -1,13 +1,16 @@
 ﻿using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using Application.Lockers.Commands.AddLocker;
 using Application.Lockers.Commands.RemoveLocker;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 public class LockersController : ApiControllerBase
 {
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

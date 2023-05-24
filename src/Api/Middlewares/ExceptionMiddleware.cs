@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using System.Text.Json;
 using Application.Common.Exceptions;
 using Application.Common.Models;
@@ -31,6 +32,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
+            { typeof(AuthenticationException) , HandleAuthenticationException },
         };
     }
 
@@ -85,6 +87,12 @@ public class ExceptionMiddleware : IMiddleware
     private async void HandleLimitExceededException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private async void HandleAuthenticationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await WriteExceptionMessageAsync(context, ex);
     }
 

@@ -10,8 +10,8 @@ namespace Application.Users.Queries.GetUsersByName;
 public record GetUsersByNameQuery : IRequest<PaginatedList<UserDto>>
 {
     public string? SearchTerm { get; init; }
-    public int Page { get; init; }
-    public int Size { get; init; }
+    public int? Page { get; init; }
+    public int? Size { get; init; }
 }
 
 public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, PaginatedList<UserDto>>
@@ -26,13 +26,15 @@ public class GetUsersByNameQueryHandler : IRequestHandler<GetUsersByNameQuery, P
 
     public async Task<PaginatedList<UserDto>> Handle(GetUsersByNameQuery request, CancellationToken cancellationToken)
     {
+        var pageNumber = request.Page ?? 1;
+        var sizeNumber = request.Size ?? 5;
         var users = await _context.Users
             .Where(x => string.IsNullOrEmpty(request.SearchTerm) 
                         || x.FirstName.ToLower().Contains(request.SearchTerm.ToLower())
                         || x.LastName.ToLower().Contains(request.SearchTerm.ToLower()))
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .OrderBy(x => x.Username)
-            .PaginatedListAsync(request.Page, request.Size);
+            .PaginatedListAsync(pageNumber, sizeNumber);
         return users;
     }
 }
