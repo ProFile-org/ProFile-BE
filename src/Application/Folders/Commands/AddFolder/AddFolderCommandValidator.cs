@@ -17,7 +17,7 @@ public class AddFolderCommandValidator : AbstractValidator<AddFolderCommand>
             .MaximumLength(256).WithMessage("Description cannot exceed 256 characters.");
 
         RuleFor(f => f.Capacity)
-            .NotEmpty().WithMessage("Folder is required.")
+            .NotEmpty().WithMessage("Folder capacity is required.")
             .GreaterThanOrEqualTo(1).WithMessage("Folder's capacity cannot be less than 1.");
 
         RuleFor(f => f.LockerId)
