@@ -92,7 +92,7 @@ public class ExceptionMiddleware : IMiddleware
     
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
 
