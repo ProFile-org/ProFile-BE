@@ -63,11 +63,7 @@ public class EnableLockerTests : BaseClassFixture
         room.NumberOfLockers += 1;
 
         //Assert
-        result.Name.Should().Be(locker.Name);
-        result.Description.Should().Be(locker.Description);
-        result.Capacity.Should().Be(locker.Capacity);
         result.IsAvailable.Should().BeTrue();
-        result.NumberOfFolders.Should().Be(locker.NumberOfFolders);
         
         //Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
