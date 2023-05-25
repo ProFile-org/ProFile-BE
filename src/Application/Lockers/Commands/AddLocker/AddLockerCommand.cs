@@ -37,7 +37,7 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
             throw new KeyNotFoundException("Room does not exist.");
         }
 
-        if (room.NumberOfLockers == room.Capacity)
+        if (room.NumberOfLockers >= room.Capacity)
         {
             throw new LimitExceededException(
                 "This room cannot accept more lockers."

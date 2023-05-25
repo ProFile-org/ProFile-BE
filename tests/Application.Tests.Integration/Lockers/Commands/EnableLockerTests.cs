@@ -1,22 +1,24 @@
 ﻿using Application.Common.Exceptions;
 using Application.Lockers.Commands.AddLocker;
 using Application.Lockers.Commands.DisableLocker;
+using Application.Lockers.Commands.EnableLocker;
 using Bogus;
 using Domain.Entities.Physical;
+using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
 
 namespace Application.Tests.Integration.Lockers.Commands;
 
-public class DisableLockerTests : BaseClassFixture
+public class EnableLockerTests : BaseClassFixture
 {
-    public DisableLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public EnableLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
         
     }
 
     [Fact]
-    public async Task ShouldDisableLocker_WhenLockerExistsAndIsAvailable()
+    public async Task ShouldEnableLocker_WhenLockerExistsAndIsNotAvailable()
     {
         // Arrange
         var room = new Room()
@@ -40,22 +42,25 @@ public class DisableLockerTests : BaseClassFixture
         };
 
         var locker = await SendAsync(createLockerCommand);
-        room.NumberOfLockers += 1;
 
         var disableLockerCommand = new DisableLockerCommand()
         {
             LockerId = locker.Id,
         };
         
-        // Act
-        var result = await SendAsync(disableLockerCommand);
+        await SendAsync(disableLockerCommand);
         
+        // Act
+        
+        var enableLockerCommand = new EnableLockerCommand()
+        {
+            LockerId = locker.Id,
+        };
+        
+        var result = await SendAsync(enableLockerCommand);
+
         // Assert
-        result.Name.Should().Be(locker.Name);
-        result.Description.Should().Be(locker.Description);
-        result.Capacity.Should().Be(locker.Capacity);
-        result.IsAvailable.Should().BeFalse();
-        result.NumberOfFolders.Should().Be(locker.NumberOfFolders);
+        result.IsAvailable.Should().BeTrue();
         
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
@@ -66,13 +71,13 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         // Arrange
-        var disableLockerCommand = new DisableLockerCommand()
+        var enableLockerCommand = new EnableLockerCommand()
         {
             LockerId = Guid.NewGuid(),
         };
         
         // Act
-        var action = async () => await SendAsync(disableLockerCommand);
+        var action = async () => await SendAsync(enableLockerCommand);
         
         // Assert
         await action.Should()
@@ -81,7 +86,7 @@ public class DisableLockerTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowConflictException_WhenLockerIsAlreadyDisabled()
+    public async Task ShouldThrowConflictException_WhenLockerIsAlreadyEnabled()
     {
         // Arrange 
         var room = new Room()
@@ -105,17 +110,18 @@ public class DisableLockerTests : BaseClassFixture
         };
         
         var locker = await SendAsync(createLockerCommand);
-        var disableLockerCommand = new DisableLockerCommand()
+        var enableLockerCommand = new EnableLockerCommand()
         {
             LockerId = locker.Id,
         };
         
         // Act 
-        await SendAsync(disableLockerCommand);
-        var action = async () => await SendAsync(disableLockerCommand);
+        var action = async () => await SendAsync(enableLockerCommand);
         
         // Assert
-        await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker has already been disabled.");
+        await action.Should()
+            .ThrowAsync<ConflictException>()
+            .WithMessage("Locker has already been enabled.");
         
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
