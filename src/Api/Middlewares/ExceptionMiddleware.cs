@@ -38,6 +38,7 @@ public class ExceptionMiddleware : IMiddleware
         };
     }
 
+ 
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
@@ -54,6 +55,7 @@ public class ExceptionMiddleware : IMiddleware
         Console.WriteLine(ex.ToString());
     }
 
+    
     private async void HandleKeyNotFoundException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
