@@ -3,7 +3,6 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Lockers.Commands.AddLocker;
 using Application.Lockers.Commands.DisableLocker;
-using Application.Lockers.Commands.RemoveLocker;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
