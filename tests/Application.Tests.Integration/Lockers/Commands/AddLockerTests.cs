@@ -12,10 +12,8 @@ namespace Application.Tests.Integration.Lockers.Commands;
 
 public class AddLockerTests : BaseClassFixture
 {
-    private static IServiceScopeFactory _scopeFactory = null!;
     public AddLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
-        _scopeFactory = apiFactory.Services.GetRequiredService<IServiceScopeFactory>();
     }
 
     [Fact]
