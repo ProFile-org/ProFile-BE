@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using System.Text.Json;
 using Application.Common.Exceptions;
 using Application.Common.Models;
@@ -32,10 +33,11 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
             { typeof(InvalidOperationException), HandleInvalidOperationException},
-            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException }
+            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
     }
 
+ 
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
@@ -52,6 +54,7 @@ public class ExceptionMiddleware : IMiddleware
         Console.WriteLine(ex.ToString());
     }
 
+    
     private async void HandleKeyNotFoundException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -83,10 +86,22 @@ public class ExceptionMiddleware : IMiddleware
         };
         await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(result));
     }
-
+    
     private async void HandleLimitExceededException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private async void HandleAuthenticationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await WriteExceptionMessageAsync(context, ex);
     }
 

@@ -37,14 +37,14 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
             throw new KeyNotFoundException("Room does not exist.");
         }
 
-        if (room.NumberOfLockers == room.Capacity)
+        if (room.NumberOfLockers >= room.Capacity)
         {
             throw new LimitExceededException(
                 "This room cannot accept more lockers."
                 );
         }
 
-        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Equals(request.Name) && x.Room.Id.Equals(request.RoomId));
+        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Trim().Equals(request.Name.Trim()) && x.Room.Id.Equals(request.RoomId));
         if (locker is not null)
         {
             throw new ConflictException("Locker's name already exists.");
@@ -52,7 +52,7 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
         
         var entity = new Locker
         {
-            Name = request.Name,
+            Name = request.Name.Trim(),
             Description = request.Description,
             NumberOfFolders = 0,
             Capacity = request.Capacity,
