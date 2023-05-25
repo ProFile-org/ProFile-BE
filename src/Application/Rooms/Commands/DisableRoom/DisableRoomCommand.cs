@@ -32,12 +32,12 @@ public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, Roo
         
         if (room is null)
         {
-            throw new KeyNotFoundException("Room does not exist");
+            throw new KeyNotFoundException("Room does not exist.");
         }
 
         if (!room.IsAvailable)
         {
-            throw new InvalidOperationException("Room have already been disabled");
+            throw new InvalidOperationException("Room have already been disabled.");
         }
 
         var canNotDisable = await _context.Documents
@@ -46,24 +46,21 @@ public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, Roo
         
         if (canNotDisable)
         {
-            throw new InvalidOperationException("Room cannot be disabled because it contains documents");
+            throw new InvalidOperationException("Room cannot be disabled because it contains documents.");
         }
 
-        var lockers =  _context.Lockers.Where(x => x.Room.Id.Equals(room.Id));
-        var folders = _context.Folders.Where(x => x.Locker.Room.Id.Equals(room.Id));
-
-        foreach (var folder in folders)
-        {
-            folder.IsAvailable = false;
-        }
-        _context.Folders.UpdateRange(folders);
+        var lockers =  _context.Lockers.Include(x=> x.Folders)
+            .Where(x => x.Room.Id.Equals(room.Id));
         
         foreach (var locker in lockers)
         {
+            foreach (var folder in locker.Folders)
+            {
+                folder.IsAvailable = false;
+            }
             locker.IsAvailable = false;
         }
         _context.Lockers.UpdateRange(lockers);
-
         room.IsAvailable = false;
         var result = _context.Rooms.Update(room);
         await _context.SaveChangesAsync(cancellationToken);

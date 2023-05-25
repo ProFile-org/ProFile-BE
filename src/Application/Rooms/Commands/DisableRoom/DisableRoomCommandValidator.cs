@@ -9,6 +9,6 @@ public class DisableRoomCommandValidator : AbstractValidator<DisableRoomCommand>
         RuleLevelCascadeMode = CascadeMode.Stop;
 
         RuleFor(x => x.RoomId)
-            .NotEmpty().WithMessage("RoomId can not be empty");
+            .NotEmpty().WithMessage("RoomId is required.");
     }
 }

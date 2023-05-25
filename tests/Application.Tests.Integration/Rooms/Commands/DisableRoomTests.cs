@@ -62,7 +62,7 @@ public class DisableRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Room does not exist");
+            .WithMessage("Room does not exist.");
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class DisableRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Room cannot be disabled because it contains documents");
+            .WithMessage("Room cannot be disabled because it contains documents.");
         
         // Cleanup
         Remove(documents.First());
@@ -118,6 +118,4 @@ public class DisableRoomTests : BaseClassFixture
         // Cleanup
         Remove(room);
     }
-    
-    
 }

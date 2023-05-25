@@ -31,7 +31,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
-            {typeof(InvalidOperationException),HandleInvalidOperationException }
+            {typeof(InvalidOperationException),HandleInvalidOperationException },
         };
     }
 
@@ -93,7 +93,7 @@ public class ExceptionMiddleware : IMiddleware
     
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
 
