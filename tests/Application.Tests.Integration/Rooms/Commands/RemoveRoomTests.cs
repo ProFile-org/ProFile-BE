@@ -52,14 +52,13 @@ public class RemoveRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Room cannot be disabled because it contains documents.");
+            .WithMessage("Room cannot be removed because it contains documents.");
         
         // Cleanup
         Remove(documents.First());
         Remove(folder);
         Remove(locker);
         Remove(room);
-
     }
 
     [Fact]

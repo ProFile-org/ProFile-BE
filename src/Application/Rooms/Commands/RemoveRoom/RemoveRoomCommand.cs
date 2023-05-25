@@ -32,13 +32,13 @@ public class RemoveRoomCommandHandler : IRequestHandler<RemoveRoomCommand, RoomD
             throw new KeyNotFoundException("Room does not exist.");
         }
 
-        var canRemove = await _context.Documents
+        var canNotRemove = await _context.Documents
             .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken)
             > 0;
         
-        if (!canRemove)
+        if (canNotRemove)
         {
-            throw new InvalidOperationException("Room cannot be disabled because it contains documents.");
+            throw new InvalidOperationException("Room cannot be removed because it contains documents.");
         }
 
         room.IsAvailable = false;
