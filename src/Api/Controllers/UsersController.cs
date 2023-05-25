@@ -1,8 +1,10 @@
 using Application.Common.Models;
+using Application.Identity;
 using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DisableUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetUsersByName;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,10 +25,11 @@ public class UsersController : ApiControllerBase
     }
 
     [Authorize]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int page, int size)
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int? page, int? size)
     {
         var query = new GetUsersByNameQuery
         {
@@ -39,6 +42,7 @@ public class UsersController : ApiControllerBase
     }
 
     [HttpPost("disable")]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

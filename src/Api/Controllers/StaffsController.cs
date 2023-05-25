@@ -1,12 +1,15 @@
 using Application.Common.Models;
+using Application.Identity;
 using Application.Staffs.Commands.CreateStaff;
 using Application.Users.Queries.Physical;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 public class StaffsController : ApiControllerBase
 {
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
