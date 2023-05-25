@@ -7,7 +7,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Helpers;
-using Application.Identity;
+using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Persistence;
@@ -100,8 +100,7 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        storedRefreshToken.IsUsed = true;
-        _context.RefreshTokens.Update(storedRefreshToken);
+        _context.RefreshTokens.Remove(storedRefreshToken);
         await _context.SaveChangesAsync();
 
         return await GenerateAuthenticationResultForUserAsync(user);
@@ -140,7 +139,7 @@ public class IdentityService : IIdentityService
         }
     }
 
-    public async Task<AuthenticationResult> LoginAsync(string email, string password)
+    public async Task<(AuthenticationResult, UserDto)> LoginAsync(string email, string password)
     {
         var user = _context.Users.FirstOrDefault(x => x.Email!.Equals(email));
 
@@ -149,7 +148,33 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("Username or password is invalid.");
         }
         
-        return await GenerateAuthenticationResultForUserAsync(user);
+        return (await GenerateAuthenticationResultForUserAsync(user), _mapper.Map<UserDto>(user));
+    }
+
+    public async Task<bool> LogoutAsync(string token, string refreshToken)
+    {
+        var validatedToken = GetPrincipalFromToken(token);
+
+        if (validatedToken is null)
+        {
+            throw new AuthenticationException("Invalid token.");
+        }
+
+        var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
+        var storedRefreshToken =
+            await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+
+        if (storedRefreshToken is null) return true;
+        
+        if (!storedRefreshToken!.JwtId.Equals(jti))
+        {
+            throw new AuthenticationException("This refresh token does not match this Jwt.");
+        }
+
+        _context.RefreshTokens.Remove(storedRefreshToken);
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)
