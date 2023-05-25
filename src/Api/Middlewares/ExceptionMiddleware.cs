@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using System.Text.Json;
 using Application.Common.Exceptions;
 using Application.Common.Models;
@@ -32,6 +33,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
             { typeof(InvalidOperationException), HandleInvalidOperationException },
+            { typeof(AuthenticationException) , HandleAuthenticationException },
             { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
     }
@@ -90,9 +92,16 @@ public class ExceptionMiddleware : IMiddleware
         await WriteExceptionMessageAsync(context, ex);
     }
     
+
     private async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+
+    private async void HandleAuthenticationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await WriteExceptionMessageAsync(context, ex);
     }
 
