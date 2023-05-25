@@ -86,7 +86,7 @@ public class EnableLockerTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowAvailableEntityException_WhenLockerIsAlreadyEnabled()
+    public async Task ShouldThrowConflictException_WhenLockerIsAlreadyEnabled()
     {
         // Arrange 
         var room = new Room()
