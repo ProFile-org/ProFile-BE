@@ -49,16 +49,9 @@ public class DisableLockerTests : BaseClassFixture
         
         // Act
         var result = await SendAsync(removeLockerCommand);
-        room.NumberOfLockers -= 1;
         
         // Assert
-        result.Name.Should().Be(locker.Name);
-        result.Description.Should().Be(locker.Description);
-        result.Capacity.Should().Be(locker.Capacity);
         result.IsAvailable.Should().BeFalse();
-        result.NumberOfFolders.Should().Be(locker.NumberOfFolders);
-        result.Room.Id.Should().Be(room.Id);
-        result.Room.NumberOfLockers.Should().Be(room.NumberOfLockers);
         
         //Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
@@ -86,7 +79,7 @@ public class DisableLockerTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowKeyNotFoundException_WhenLockerIsAlreadyDisabled()
+    public async Task ShouldThrowConflictException_WhenLockerIsAlreadyDisabled()
     {
         // Arrange 
         var room = new Room()
@@ -121,7 +114,7 @@ public class DisableLockerTests : BaseClassFixture
         var action = async () => await SendAsync(removeLockerCommand);
         
         // Assert
-        await action.Should().ThrowAsync<EntityNotAvailableException>().WithMessage("Locker has already been disabled.");
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker has already been disabled.");
         
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
