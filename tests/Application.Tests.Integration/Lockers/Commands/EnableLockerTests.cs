@@ -42,7 +42,6 @@ public class EnableLockerTests : BaseClassFixture
         };
 
         var locker = await SendAsync(createLockerCommand);
-        room.NumberOfLockers += 1;
 
         var disableLockerCommand = new DisableLockerCommand()
         {
