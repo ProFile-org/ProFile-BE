@@ -46,14 +46,6 @@ public class JweAuthenticationHandler : AuthenticationHandler<JweAuthenticationO
                 ? AuthenticateResult.Fail("Invalid token.")
                 : AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, Scheme.Name));
         }
-        catch (SecurityTokenExpiredException ex)
-        {
-            return AuthenticateResult.Fail(ex);
-        }
-        catch (SecurityTokenKeyWrapException ex)
-        {
-            return AuthenticateResult.Fail(ex);
-        }
         catch (Exception ex)
         {
             return AuthenticateResult.Fail(ex);
