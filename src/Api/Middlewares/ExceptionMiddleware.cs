@@ -32,7 +32,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
-            { typeof(InvalidOperationException),HandleInvalidOperationException }
+            { typeof(InvalidOperationException),HandleInvalidOperationException },
             { typeof(AuthenticationException) , HandleAuthenticationException },
             { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
