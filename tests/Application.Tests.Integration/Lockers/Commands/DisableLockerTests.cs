@@ -49,7 +49,6 @@ public class DisableLockerTests : BaseClassFixture
         
         //Act
         var result = await SendAsync(disableLockerCommand);
-        room.NumberOfLockers -= 1;
         
         //Assert
         result.Name.Should().Be(locker.Name);
@@ -57,8 +56,6 @@ public class DisableLockerTests : BaseClassFixture
         result.Capacity.Should().Be(locker.Capacity);
         result.IsAvailable.Should().BeFalse();
         result.NumberOfFolders.Should().Be(locker.NumberOfFolders);
-        result.Room.Id.Should().Be(room.Id);
-        result.Room.NumberOfLockers.Should().Be(room.NumberOfLockers);
         
         //Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
@@ -118,7 +115,7 @@ public class DisableLockerTests : BaseClassFixture
         var action = async () => await SendAsync(disableLockerCommand);
         
         //Assert
-        await action.Should().ThrowAsync<EntityNotAvailableException>().WithMessage("Locker has already been disabled.");
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker has already been disabled.");
         
         //Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);

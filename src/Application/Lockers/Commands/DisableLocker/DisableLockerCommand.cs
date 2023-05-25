@@ -26,7 +26,6 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
     public async Task<LockerDto> Handle(DisableLockerCommand request, CancellationToken cancellationToken)
     {
         var locker = await _context.Lockers
-            .Include(x => x.Room)
             .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
         if (locker is null)
         {
@@ -35,13 +34,11 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
 
         if (locker.IsAvailable == false)
         {
-            throw new EntityNotAvailableException("Locker has already been disabled.");
+            throw new ConflictException("Locker has already been disabled.");
         }
 
         locker.IsAvailable = false;
-        locker.Room.NumberOfLockers -= 1;
         var result = _context.Lockers.Update(locker);
-        _context.Rooms.Update(locker.Room);
         await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<LockerDto>(result.Entity);
     }

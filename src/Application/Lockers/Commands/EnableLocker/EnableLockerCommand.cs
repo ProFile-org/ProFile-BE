@@ -27,7 +27,6 @@ public class EnableLockerCommandHandler : IRequestHandler<EnableLockerCommand, L
     public async Task<LockerDto> Handle(EnableLockerCommand request, CancellationToken cancellationToken)
     {
         var locker = await _context.Lockers
-            .Include(x => x.Room)
             .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
         if (locker is null)
         {
@@ -36,18 +35,11 @@ public class EnableLockerCommandHandler : IRequestHandler<EnableLockerCommand, L
 
         if (locker.IsAvailable == true)
         {
-            throw new AvailableEntityException("Locker has already been enabled.");
-        }
-
-        if (locker.Room.NumberOfLockers >= locker.Room.Capacity)
-        {
-            throw new LimitExceededException("This room cannot accept more lockers.");
+            throw new ConflictException("Locker has already been enabled.");
         }
         
         locker.IsAvailable = true;
-        locker.Room.NumberOfLockers += 1;
         var result = _context.Lockers.Update(locker);
-        _context.Rooms.Update(locker.Room);
         await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<LockerDto>(result.Entity);
     }
