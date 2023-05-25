@@ -113,7 +113,7 @@ public class DisableRoomTests : BaseClassFixture
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Room have already been disabled");
+            .WithMessage("Room have already been disabled.");
 
         // Cleanup
         Remove(room);
