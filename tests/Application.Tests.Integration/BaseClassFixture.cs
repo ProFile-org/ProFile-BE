@@ -96,7 +96,7 @@ public class BaseClassFixture
             {
                 Id = Guid.NewGuid(),
                 Title = new Faker().Commerce.ProductName(),
-                DocumentType = "Something Something Type",
+                DocumentType = "Something Department",
             };
             list.Add(document);
         }

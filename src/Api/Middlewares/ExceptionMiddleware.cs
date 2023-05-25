@@ -32,8 +32,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
             { typeof(LimitExceededException) , HandleLimitExceededException },
-            { typeof(InvalidOperationException),HandleInvalidOperationException },
-            { typeof(AuthenticationException) , HandleAuthenticationException },
+            { typeof(InvalidOperationException), HandleInvalidOperationException},
             { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
         };
     }
@@ -93,13 +92,7 @@ public class ExceptionMiddleware : IMiddleware
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
-    
-    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
-    {
-        context.Response.StatusCode = StatusCodes.Status409Conflict;
-        await WriteExceptionMessageAsync(context, ex);
-    }
-    
+
     private async void HandleAuthenticationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -109,6 +102,12 @@ public class ExceptionMiddleware : IMiddleware
     private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await WriteExceptionMessageAsync(context, ex);
+    }
+
+    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
 

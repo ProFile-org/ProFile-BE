@@ -2,7 +2,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands.CreateRoom;
-using Application.Rooms.Commands.DisableRoom;
+using Application.Rooms.Commands.RemoveRoom;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +33,11 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
     }
 
-    [HttpPost]
+    [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromBody] DisableRoomCommand command)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RoomDto>>> RemoveRoom(RemoveRoomCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
