@@ -27,6 +27,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<Borrow> Borrows => Set<Borrow>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Scan for entity configurations using FluentAPI

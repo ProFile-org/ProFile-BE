@@ -14,6 +14,8 @@ public static class ConfigureServices
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
+        services.AddHttpContextAccessor();
+        
         services.AddCors(options =>
         {
             options.AddPolicy("AllowAllOrigins", builder =>
@@ -23,6 +25,8 @@ public static class ConfigureServices
                 builder.AllowAnyMethod();
             });
         });
+
+        services.AddHttpContextAccessor();
         
         // For swagger
         services.AddEndpointsApiExplorer();
