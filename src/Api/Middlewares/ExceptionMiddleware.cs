@@ -31,13 +31,12 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(ConflictException), HandleConflictException },
             { typeof(NotAllowedException), HandleNotAllowedException },
             { typeof(RequestValidationException), HandleRequestValidationException },
-            { typeof(LimitExceededException) , HandleLimitExceededException },
-            { typeof(InvalidOperationException), HandleInvalidOperationException},
-            { typeof(UnauthorizedAccessException) , HandleUnauthorizedAccessException },
+            { typeof(LimitExceededException), HandleLimitExceededException },
+            { typeof(InvalidOperationException), HandleInvalidOperationException },
+            { typeof(AuthenticationException), HandleAuthenticationException },
+            { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
         };
     }
-
- 
 
     private async Task HandleExceptionAsync(HttpContext context, Exception ex)
     {

@@ -123,7 +123,7 @@ public class AddFolderTests : BaseClassFixture
         folderA.Locker.Id.Should().NotBe(folderB.Locker.Id);
         folderA.Name.Should().Be(folderB.Name);
         
-        // Clean up
+        // Cleanup
         var folderAEntity = await FindAsync<Folder>(folderA.Id);
         var folderBEntity = await FindAsync<Folder>(folderB.Id);
         var lockerAEntity = await FindAsync<Locker>(lockerA.Id);
@@ -167,10 +167,11 @@ public class AddFolderTests : BaseClassFixture
         
         // Act
         var action = async () => await SendAsync(addFolderCommandForLockerB);
+        
         // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Folder's name already exists.");
         
-        // Clean up
+        // Cleanup
         var folderEntity = await FindAsync<Folder>(folder.Id);
         var lockerEntity = await FindAsync<Locker>(locker.Id);
         var roomEntity = await FindAsync<Room>(room.Id);
@@ -193,11 +194,9 @@ public class AddFolderTests : BaseClassFixture
             Capacity = new Faker().Random.Int(1,10)
         };
         var locker = await SendAsync(addLockerCommand);
-        
-
         var list = new List<FolderDto>();
-        // Act
         
+        // Act
         var action = async () =>
         {
             
@@ -211,11 +210,12 @@ public class AddFolderTests : BaseClassFixture
                 list.Add(await SendAsync(addFolderCommand));    
             }
         };
+        
         // Assert
         await action.Should().ThrowAsync<LimitExceededException>()
             .WithMessage("This locker cannot accept more folders.");
         
-        // Clean up
+        // Cleanup
         foreach (var f in list)
         {
             var folderEntity = await FindAsync<Folder>(f.Id);
@@ -239,6 +239,7 @@ public class AddFolderTests : BaseClassFixture
         
         // Act
         var folder = async () => await SendAsync(addFolderCommand);
+        
         // Assert
         await folder.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("Locker does not exist.");
