@@ -14,6 +14,7 @@ public class AddLockerTests : BaseClassFixture
 {
     public AddLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
+    
     }
 
     [Fact]
@@ -31,8 +32,8 @@ public class AddLockerTests : BaseClassFixture
         };
         
         await AddAsync(room);
-
-        var createLockerCommand = new AddLockerCommand()
+        
+        var addLockerCommand = new AddLockerCommand()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -44,12 +45,12 @@ public class AddLockerTests : BaseClassFixture
         
         // Act
         
-        var locker = await SendAsync(createLockerCommand);
+        var locker = await SendAsync(addLockerCommand);
         
         // Assert
-        locker.Name.Should().Be(createLockerCommand.Name);
-        locker.Description.Should().Be(createLockerCommand.Description);
-        locker.Capacity.Should().Be(createLockerCommand.Capacity);
+        locker.Name.Should().Be(addLockerCommand.Name);
+        locker.Description.Should().Be(addLockerCommand.Description);
+        locker.Capacity.Should().Be(addLockerCommand.Capacity);
         locker.NumberOfFolders.Should().Be(0);
         locker.IsAvailable.Should().BeTrue();
         locker.Room.Id.Should().Be(room.Id);
@@ -76,7 +77,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new AddLockerCommand()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -84,18 +85,10 @@ public class AddLockerTests : BaseClassFixture
             RoomId = room.Id,
         };
         
-        var createLockerCommand2 = new AddLockerCommand()
-        {
-            Name = createLockerCommand.Name,
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            RoomId = room.Id,
-        };
+        await SendAsync(addLockerCommand);
         
         // Act
-        
-        await SendAsync(createLockerCommand);
-        var action = async () => await SendAsync(createLockerCommand2);
+        var action = async () => await SendAsync(addLockerCommand);
         
         // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker's name already exists.");
@@ -133,7 +126,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room2);
 
-        var createLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new AddLockerCommand()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -141,9 +134,9 @@ public class AddLockerTests : BaseClassFixture
             RoomId = room1.Id,
         };
         
-        var createLockerCommand2 = new AddLockerCommand()
+        var addLockerCommand2 = new AddLockerCommand()
         {
-            Name = createLockerCommand.Name,
+            Name = addLockerCommand.Name,
             Description = new Faker().Lorem.Sentence(),
             Capacity = 1,
             RoomId = room2.Id,
@@ -151,15 +144,15 @@ public class AddLockerTests : BaseClassFixture
 
         room2.NumberOfLockers += 1;
         
-        // Act
+        var locker1 = await SendAsync(addLockerCommand);
         
-        await SendAsync(createLockerCommand);
-        var locker2 = await SendAsync(createLockerCommand2);
+        // Act
+        var locker2 = await SendAsync(addLockerCommand2);
         
         // Assert
-        locker2.Name.Should().Be(createLockerCommand2.Name);
-        locker2.Description.Should().Be(createLockerCommand2.Description);
-        locker2.Capacity.Should().Be(createLockerCommand2.Capacity);
+        locker2.Name.Should().Be(addLockerCommand2.Name);
+        locker2.Description.Should().Be(addLockerCommand2.Description);
+        locker2.Capacity.Should().Be(addLockerCommand2.Capacity);
         locker2.NumberOfFolders.Should().Be(0);
         locker2.IsAvailable.Should().BeTrue();
         locker2.Room.Id.Should().Be(room2.Id);
@@ -188,7 +181,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new AddLockerCommand()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -196,17 +189,18 @@ public class AddLockerTests : BaseClassFixture
             RoomId = room.Id,
         };
         
-        var createLockerCommand2 = new AddLockerCommand()
+        var addLockerCommand2 = new AddLockerCommand()
         {
-            Name = createLockerCommand.Name,
+            Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
             Capacity = 1,
             RoomId = room.Id,
         };
         
+        var locker = await SendAsync(addLockerCommand);
+        
         // Act
-        await SendAsync(createLockerCommand);
-        var action = async () => await SendAsync(createLockerCommand2);
+        var action = async () => await SendAsync(addLockerCommand2);
         
         // Assert
         await action.Should().ThrowAsync<LimitExceededException>().WithMessage("This room cannot accept more lockers.");

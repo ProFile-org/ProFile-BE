@@ -27,16 +27,34 @@ public class RemoveLockerCommandHandler : IRequestHandler<DisableLockerCommand, 
     {
         var locker = await _context.Lockers
             .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
+            
         if (locker is null)
         {
             throw new KeyNotFoundException("Locker does not exist.");
         }
 
-        if (locker.IsAvailable == false)
+        if (!locker.IsAvailable)
         {
             throw new ConflictException("Locker has already been disabled.");
         }
+        
+        var canNotDisable = await _context.Documents
+                                .CountAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken)
+                            > 0;
 
+        if (canNotDisable)
+        {
+            throw new InvalidOperationException("Locker cannot be disabled because it contains documents.");
+        }
+        
+        var folders = _context.Folders.Where(x => x.Locker.Room.Id.Equals(locker.Id));
+        
+        foreach (var folder in folders)
+        {
+            folder.IsAvailable = false;
+        }
+        _context.Folders.UpdateRange(folders);
+        
         locker.IsAvailable = false;
         var result = _context.Lockers.Update(locker);
         await _context.SaveChangesAsync(cancellationToken);

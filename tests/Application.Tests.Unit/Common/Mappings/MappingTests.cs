@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using Application.Common.Mappings;
+using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
@@ -43,6 +44,7 @@ public class MappingTests
     [InlineData(typeof(Document), typeof(DocumentDto))]
     [InlineData(typeof(Document), typeof(DocumentItemDto))]
     [InlineData(typeof(Borrow), typeof(BorrowDto))]
+    [InlineData(typeof(RefreshToken), typeof(RefreshTokenDto))]
     public void ShouldSupportMappingFromSourceToDestination(Type source, Type destination)
     {
         // Arrange
