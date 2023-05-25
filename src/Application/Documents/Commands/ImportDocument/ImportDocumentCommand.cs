@@ -65,6 +65,8 @@ public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentComman
         };
 
         var result = await _context.Documents.AddAsync(entity, cancellationToken);
+        folder.NumberOfDocuments += 1;
+        _context.Folders.Update(folder);
         await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<DocumentDto>(result.Entity);
     }
