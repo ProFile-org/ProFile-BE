@@ -55,7 +55,7 @@ public class AddLockerTests : BaseClassFixture
         locker.Room.Id.Should().Be(room.Id);
         locker.Room.NumberOfLockers.Should().Be(room.NumberOfLockers);
         
-        //Cleanup
+        // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
     }
@@ -63,7 +63,7 @@ public class AddLockerTests : BaseClassFixture
     [Fact]
     public async Task ShouldThrowConflictException_WhenLockerAlreadyExistsInTheSameRoom()
     {
-        //Arrange
+        // Arrange
         var room = new Room()
         {
             Id = Guid.NewGuid(),
@@ -97,10 +97,10 @@ public class AddLockerTests : BaseClassFixture
         await SendAsync(createLockerCommand);
         var action = async () => await SendAsync(createLockerCommand2);
         
-        //Assert
+        // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker's name already exists.");
         
-        //Cleanup
+        // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
     }
@@ -108,7 +108,7 @@ public class AddLockerTests : BaseClassFixture
     [Fact]
     public async Task ShouldReturnLocker_WhenLockersHasSameNameButInDifferentRooms()
     {
-        //Arrange
+        // Arrange
         var room1 = new Room()
         {
             Id = Guid.NewGuid(),
@@ -156,7 +156,7 @@ public class AddLockerTests : BaseClassFixture
         await SendAsync(createLockerCommand);
         var locker2 = await SendAsync(createLockerCommand2);
         
-        //Assert
+        // Assert
         locker2.Name.Should().Be(createLockerCommand2.Name);
         locker2.Description.Should().Be(createLockerCommand2.Description);
         locker2.Capacity.Should().Be(createLockerCommand2.Capacity);
@@ -165,7 +165,7 @@ public class AddLockerTests : BaseClassFixture
         locker2.Room.Id.Should().Be(room2.Id);
         locker2.Room.NumberOfLockers.Should().Be(room2.NumberOfLockers);
         
-        //Cleanup
+        // Cleanup
         var room1Entity = await FindAsync<Room>(room1.Id);
         var room2Entity = await FindAsync<Room>(room2.Id);
         Remove(room1Entity);
@@ -175,7 +175,7 @@ public class AddLockerTests : BaseClassFixture
     [Fact]
     public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
     {
-        //Arrange
+        // Arrange
         var room = new Room()
         {
             Id = Guid.NewGuid(),
@@ -208,10 +208,10 @@ public class AddLockerTests : BaseClassFixture
         await SendAsync(createLockerCommand);
         var action = async () => await SendAsync(createLockerCommand2);
         
-        //Assert
+        // Assert
         await action.Should().ThrowAsync<LimitExceededException>().WithMessage("This room cannot accept more lockers.");
         
-        //Cleanup
+        // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
     }
