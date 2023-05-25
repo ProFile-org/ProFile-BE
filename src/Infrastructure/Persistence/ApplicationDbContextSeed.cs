@@ -11,8 +11,10 @@ namespace Infrastructure.Persistence;
 
 public class ApplicationDbContextSeed
 {
-    public static async Task Seed(ApplicationDbContext context, ILogger logger)
+    public static async Task Seed(ApplicationDbContext context, IConfiguration configuration, ILogger logger)
     {
+        if (!configuration.GetValue<bool>("Seed")) return;
+
         try
         {
             await TrySeedAsync(context);
