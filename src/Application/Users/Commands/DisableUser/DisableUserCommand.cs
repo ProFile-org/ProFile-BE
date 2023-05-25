@@ -26,13 +26,18 @@ public class DisableUserCommandHandler : IRequestHandler<DisableUserCommand, Use
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
         if (user is null)
         {
-            throw new KeyNotFoundException("User does not exist");
+            throw new KeyNotFoundException("User does not exist.");
+        }
+
+        if (!user.IsActive)
+        {
+            throw new InvalidOperationException("User has already been disabled.");
         }
 
         user.IsActive = false;
 
         var result = _context.Users.Update(user);
         await _context.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<UserDto>(result);
+        return _mapper.Map<UserDto>(result.Entity);
     }
 }

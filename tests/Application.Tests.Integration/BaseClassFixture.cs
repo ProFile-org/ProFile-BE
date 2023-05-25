@@ -34,7 +34,7 @@ public class BaseClassFixture
         return await mediator.Send(request);
     }
 
-    protected void Remove<TEntity>(TEntity entity) where TEntity : BaseEntity
+    protected void Remove<TEntity>(TEntity entity) where TEntity : BaseEntity?
     {
         using var scope = _scopeFactory.CreateScope();
 
