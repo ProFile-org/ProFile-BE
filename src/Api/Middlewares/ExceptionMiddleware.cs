@@ -92,13 +92,7 @@ public class ExceptionMiddleware : IMiddleware
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
-    
-    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
-    {
-        context.Response.StatusCode = StatusCodes.Status409Conflict;
-        await WriteExceptionMessageAsync(context, ex);
-    }
-    
+
     private async void HandleAuthenticationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
