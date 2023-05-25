@@ -50,7 +50,6 @@ public class EnableLockerTests : BaseClassFixture
         };
         
         await SendAsync(disableLockerCommand);
-        room.NumberOfLockers -= 1;
         
         // Act
         
@@ -60,7 +59,6 @@ public class EnableLockerTests : BaseClassFixture
         };
         
         var result = await SendAsync(enableLockerCommand);
-        room.NumberOfLockers += 1;
 
         // Assert
         result.IsAvailable.Should().BeTrue();
