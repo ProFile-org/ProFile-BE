@@ -59,8 +59,8 @@ public class AuthController : ControllerBase
 
         if (!loggedOut) return Ok();
         
-        RemoveJweToken(jweToken);
-        RemoveRefreshToken(refreshToken);
+        RemoveJweToken();
+        RemoveRefreshToken();
 
         return Ok();
     }
@@ -117,23 +117,13 @@ public class AuthController : ControllerBase
         Response.Cookies.Append(nameof(RefreshToken), newRefreshToken.Token.ToString(), cookieOptions);
     }
     
-    private void RemoveJweToken(string jweToken)
+    private void RemoveJweToken()
     {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Expires = DateTimeOffset.FromUnixTimeSeconds(0)
-        };
-        Response.Cookies.Append("JweToken", jweToken, cookieOptions);
+        Response.Cookies.Delete("JweToken");
     }
     
-    private void RemoveRefreshToken(string newRefreshToken)
+    private void RemoveRefreshToken()
     {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Expires = DateTimeOffset.FromUnixTimeSeconds(0)
-        };
-        Response.Cookies.Append(nameof(RefreshToken), newRefreshToken, cookieOptions);
+        Response.Cookies.Delete(nameof(RefreshToken));
     }
 }
