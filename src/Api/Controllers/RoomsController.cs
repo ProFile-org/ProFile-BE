@@ -31,9 +31,8 @@ public class RoomsController : ApiControllerBase
 
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-
     public async Task<ActionResult<Result<RoomDto>>> RemoveRoom(RemoveRoomCommand command)
     {
         var result = await Mediator.Send(command);

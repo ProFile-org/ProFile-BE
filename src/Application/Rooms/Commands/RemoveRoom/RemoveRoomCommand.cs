@@ -33,9 +33,10 @@ public class RemoveRoomCommandHandler : IRequestHandler<RemoveRoomCommand, RoomD
         }
 
         var canRemove = await _context.Documents
-            .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
+            .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken)
+            > 0;
         
-        if (canRemove > 0)
+        if (!canRemove)
         {
             throw new InvalidOperationException("Room cannot be disabled because it contains documents.");
         }

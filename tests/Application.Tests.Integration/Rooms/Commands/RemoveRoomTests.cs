@@ -15,7 +15,7 @@ public class RemoveRoomTests : BaseClassFixture
     [Fact]
     public async Task ShouldRemoveRoom_WhenRoomHasNoDocuments()
     {
-        //Arrange
+        // Arrange
         var room = CreateRoom();
         await Add(room);
 
@@ -23,11 +23,11 @@ public class RemoveRoomTests : BaseClassFixture
         {
             RoomId = room.Id
         };
-        //Act
+        // Act
         var result = await SendAsync(command);
-        var deletedRoom = await FindAsync<Room>(room.Id);
 
-        //Assert
+        // Assert
+        var deletedRoom = await FindAsync<Room>(room.Id);
         result.IsAvailable.Should().BeFalse();
         deletedRoom.Should().BeNull();
     }
