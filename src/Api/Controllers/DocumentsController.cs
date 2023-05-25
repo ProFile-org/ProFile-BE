@@ -5,7 +5,9 @@ using Application.Documents.Commands.ImportDocument;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
 using Application.Documents.Queries.GetDocumentById;
 using Application.Documents.Queries.GetDocumentTypes;
+using Application.Identity;
 using Application.Users.Queries;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -18,21 +20,25 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     public async Task<ActionResult<Result<DocumentDto>>> ImportDocument([FromBody] ImportDocumentCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
 
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    
     public async Task<ActionResult<Result<IEnumerable<string>>>> GetAllDocumentTypes()
     {
         var result = await Mediator.Send(new GetAllDocumentTypesQuery());
         return Ok(Result<IEnumerable<string>>.Succeed(result));
     }
 
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

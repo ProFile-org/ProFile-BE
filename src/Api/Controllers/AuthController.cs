@@ -1,83 +1,122 @@
-using System.Security.Claims;
-using System.Security.Cryptography;
-using Api.Controllers.Payload;
+using System.IdentityModel.Tokens.Jwt;
+using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Responses;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Helpers;
-using Application.Identity;
-using Infrastructure.Shared;
+using Application.Common.Models.Dtos;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace Api.Controllers;
 
-[AllowAnonymous]
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/[controller]/[action]")]
 public class AuthController : ControllerBase
 {
-    private readonly IApplicationDbContext _context;
-    private readonly JweSettings _jweSettings;
-    private readonly RSA _encryptionKey;
-    private readonly ECDsa _signingKey;
+    private readonly IIdentityService _identityService;
 
-    public AuthController(IApplicationDbContext context, IOptions<JweSettings> jweSettings, ECDsa signingKey, RSA encryptionKey)
+    public AuthController(IIdentityService identityService)
     {
-        _context = context;
-        _signingKey = signingKey;
-        _encryptionKey = encryptionKey;
-        _jweSettings = jweSettings.Value;
+        _identityService = identityService;
     }
 
-    [HttpPost("[action]")]
+    [AllowAnonymous]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public ActionResult<Result<object>> Login([FromBody] LoginModel loginModel)
+    public async Task<ActionResult<Result<LoginResult>>> Login([FromBody] LoginModel loginModel)
     {
-        var user = _context.Users.FirstOrDefault(x => x.Username.Equals(loginModel.Username)
-                                           || x.Email.Equals(loginModel.Username));
-        if (user is null)
-        {
-            return Unauthorized();
-        }
-
-        if (!SecurityUtil.Hash(loginModel.Password).Equals(user.PasswordHash))
-        {
-            return Unauthorized();
-        }
+        var result = await _identityService.LoginAsync(loginModel.Email, loginModel.Password);
         
-        var authClaims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, user.Username),
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new(JwtRegisteredClaimNames.Iat, Guid.NewGuid().ToString()),
-        };
-        var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
-        var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};
+        SetRefreshToken(result.AuthResult.RefreshToken);
+        SetJweToken(result.AuthResult.Token);
 
-        var tokenDescriptor = new SecurityTokenDescriptor()
+        var loginResult = new LoginResult()
         {
-            Subject = new ClaimsIdentity(authClaims),
-            SigningCredentials = 
-                new SigningCredentials(privateSigningKey, SecurityAlgorithms.EcdsaSha256),
-            EncryptingCredentials = 
-                new EncryptingCredentials(publicEncryptionKey, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)
+            Id = result.UserCredentials.Id,
+            Username = result.UserCredentials.Username,
+            Email = result.UserCredentials.Email,
+            Department = result.UserCredentials.Department,
+            Position = result.UserCredentials.Position,
+            Role = result.UserCredentials.Role,
+            FirstName = result.UserCredentials.FirstName,
+            LastName = result.UserCredentials.LastName,
         };
+        
+        return Ok(Result<LoginResult>.Succeed(loginResult));
+    }
 
-        var handler = new JsonWebTokenHandler
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies[nameof(RefreshToken)];
+        var jweToken = Request.Cookies["JweToken"];
+
+        var loggedOut = await _identityService.LogoutAsync(jweToken!, refreshToken!);
+
+        if (!loggedOut) return Ok();
+        
+        RemoveJweToken(jweToken);
+        RemoveRefreshToken(refreshToken);
+
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Refresh()
+    {
+        var refreshToken = Request.Cookies[nameof(RefreshToken)];
+        var jweToken = Request.Cookies["JweToken"];
+        
+        var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
+        
+        SetRefreshToken(authResult.RefreshToken);
+        SetJweToken(authResult.Token);
+        
+        return Ok();
+    }
+    
+    private void SetJweToken(SecurityToken jweToken)
+    {
+        var cookieOptions = new CookieOptions
         {
-            TokenLifetimeInMinutes = 1
+            HttpOnly = true,
         };
-
-        var token = handler.CreateToken(tokenDescriptor);
-        return Ok(new {
-                token,
-                Expires = DateTime.Now.AddMinutes(handler.TokenLifetimeInMinutes)
-            }
-        );
+        var handler = new JwtSecurityTokenHandler();
+        Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);
+    }
+    
+    private void SetRefreshToken(RefreshTokenDto newRefreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = newRefreshToken.ExpiryDateTime
+        };
+        Response.Cookies.Append(nameof(RefreshToken), newRefreshToken.Token.ToString(), cookieOptions);
+    }
+    
+    private void RemoveJweToken(string jweToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTimeOffset.FromUnixTimeSeconds(0)
+        };
+        Response.Cookies.Append("JweToken", jweToken, cookieOptions);
+    }
+    
+    private void RemoveRefreshToken(string newRefreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTimeOffset.FromUnixTimeSeconds(0)
+        };
+        Response.Cookies.Append(nameof(RefreshToken), newRefreshToken, cookieOptions);
     }
 }

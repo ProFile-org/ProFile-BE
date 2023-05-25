@@ -38,7 +38,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
@@ -164,7 +164,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<int>("NumberOfFolders")
                         .HasColumnType("integer");
@@ -207,7 +208,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Staff", b =>
@@ -225,7 +226,43 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("RoomId")
                         .IsUnique();
 
-                    b.ToTable("Staffs", (string)null);
+                    b.ToTable("Staffs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Token")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("CreationDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<LocalDateTime>("ExpiryDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsInvalidated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsUsed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("JwtId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -290,7 +327,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
@@ -370,6 +407,17 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

@@ -1,13 +1,16 @@
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using Application.Rooms.Commands.CreateRoom;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 public class RoomsController : ApiControllerBase
 {
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -18,6 +21,7 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomDto>.Succeed(result));
     }
 
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost("empty-containers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
