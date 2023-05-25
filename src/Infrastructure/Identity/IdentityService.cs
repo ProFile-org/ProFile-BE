@@ -39,6 +39,65 @@ public class IdentityService : IIdentityService
         _mapper = mapper;
     }
 
+    public async Task<bool> Validate(string token, string refreshToken)
+    {
+        var validatedToken = GetPrincipalFromToken(token);
+
+        if (validatedToken is null)
+        {
+            return false;
+        }
+
+        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+        
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        
+        var user = await _context.Users.FirstOrDefaultAsync(x =>
+            x.Username.Equals(email)
+            || x.Email!.Equals(email));
+        
+        if (user is null)
+        {
+            return false;
+        }
+        
+        var expiryDateUnix =
+            long.Parse(validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
+
+        var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddSeconds(expiryDateUnix);
+
+        if (expiryDateTimeUtc < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
+        var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+
+        if (storedRefreshToken is null)
+        {
+            return false;
+        }
+
+        if (DateTime.UtcNow > storedRefreshToken.ExpiryDateTime.ToDateTimeUnspecified().ToUniversalTime())
+        {
+            return false;
+        }
+
+        if (storedRefreshToken.IsInvalidated)
+        {
+            return false;
+        }
+
+        if (storedRefreshToken.IsUsed)
+        {
+            return false;
+        }
+
+        return storedRefreshToken.JwtId.Equals(jti);
+    }
+
     public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
     {
         var validatedToken = GetPrincipalFromToken(token);
