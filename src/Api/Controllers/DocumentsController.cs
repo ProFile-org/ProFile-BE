@@ -61,7 +61,7 @@ public class DocumentsController : ApiControllerBase
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<DocumentDto>> GetDocumentById(Guid id)
+    public async Task<ActionResult<Result<DocumentDto>>> GetDocumentById(Guid id)
     {
         var query = new GetDocumentByIdQuery()
         {
