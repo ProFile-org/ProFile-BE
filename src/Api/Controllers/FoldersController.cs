@@ -23,7 +23,7 @@ public class FoldersController : ApiControllerBase
         return Ok(Result<FolderDto>.Succeed(result));
     }
 
-    [HttpPost("disable")]
+    [HttpPut("disable")]
     public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromBody] DisableFolderCommand command)
     {
         var result = await Mediator.Send(command);

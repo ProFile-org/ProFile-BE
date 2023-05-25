@@ -56,7 +56,7 @@ public class DisableFolderTests : BaseClassFixture
         // Assert
         disabledFolder.IsAvailable.Should().BeFalse();
         
-        // Clean up
+        // Cleanup
         Remove(folder);
         Remove(locker);
         Remove(room);
@@ -70,15 +70,17 @@ public class DisableFolderTests : BaseClassFixture
         {
             FolderId = Guid.NewGuid()
         };
+        
         // Act
         var result = async () => await SendAsync(disableFolderCommand);
+        
         // Assert
         await result.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("Folder does not exist.");
     }
 
     [Fact]
-    public async Task ShouldThrowInvalidOperationException_WhenFolderAlreadyDisabled()
+    public async Task ShouldThrowInvalidOperationException_WhenFolderIsAlreadyDisabled()
     {
         // Arrange
         var room = new Room()
@@ -122,14 +124,14 @@ public class DisableFolderTests : BaseClassFixture
         await result.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Folder has already been disabled.");
         
-        // Clean up
+        // Cleanup
         Remove(folder);
         Remove(locker);
         Remove(room);
     }
     
     [Fact]
-    public async Task ShouldThrowInvalidOperationException_WhenFolderHaveDocuments()
+    public async Task ShouldThrowInvalidOperationException_WhenFolderHasDocuments()
     {
         // Arrange
         var room = new Room()
@@ -182,7 +184,7 @@ public class DisableFolderTests : BaseClassFixture
         await result.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Folder cannot be disabled because it contains documents.");
         
-        // Clean up
+        // Cleanup
         Remove(document);
         Remove(folder);
         Remove(locker);

@@ -25,7 +25,6 @@ public class DisableFolderCommandHandler : IRequestHandler<DisableFolderCommand,
     public async Task<FolderDto> Handle(DisableFolderCommand request, CancellationToken cancellationToken)
     {
         var folder = await _context.Folders
-            .Include(f => f.Locker)
             .FirstOrDefaultAsync(f => f.Id.Equals(request.FolderId), cancellationToken);
 
         if (folder is null)
