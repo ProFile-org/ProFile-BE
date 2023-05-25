@@ -25,7 +25,7 @@ try
 
     app.MigrateDatabase<ApplicationDbContext>((context, _) =>
         {
-            ApplicationDbContextSeed.Seed(context, builder.Configuration, Log.Logger).Wait();
+            ApplicationDbContextSeed.Seed(context, Log.Logger).Wait();
         })
         .Run();
 }
