@@ -20,6 +20,6 @@ public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
             .MaximumLength(256).WithMessage("Locker's description cannot exceed 256 characters.");
 
         RuleFor(x => x.RoomId)
-            .NotEmpty().WithMessage("Room Id is required.");
+            .NotEmpty().WithMessage("RoomId is required.");
     }
 }

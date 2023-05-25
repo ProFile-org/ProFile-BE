@@ -33,7 +33,7 @@ public class EnableLockerCommandHandler : IRequestHandler<EnableLockerCommand, L
             throw new KeyNotFoundException("Locker does not exist.");
         }
 
-        if (locker.IsAvailable == true)
+        if (locker.IsAvailable)
         {
             throw new ConflictException("Locker has already been enabled.");
         }
