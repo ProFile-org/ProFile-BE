@@ -1,6 +1,7 @@
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands.AddFolder;
+using Application.Folders.Commands.DisableFolder;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,13 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<FolderDto>.Succeed(result));
+    }
+
+    [HttpPut("disable")]
+    public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromBody] DisableFolderCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));

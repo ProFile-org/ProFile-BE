@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
         var result = await _identityService.LoginAsync(loginModel.Email, loginModel.Password);
         
         SetRefreshToken(result.AuthResult.RefreshToken);
-        SetJweToken(result.AuthResult.Token);
+        SetJweToken(result.AuthResult.Token, result.AuthResult.RefreshToken);
 
         var loginResult = new LoginResult()
         {
@@ -74,7 +74,7 @@ public class AuthController : ControllerBase
         var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
         
         SetRefreshToken(authResult.RefreshToken);
-        SetJweToken(authResult.Token);
+        SetJweToken(authResult.Token, authResult.RefreshToken);
         
         return Ok();
     }
@@ -85,12 +85,13 @@ public class AuthController : ControllerBase
     {
         return Ok();
     }
-    
-    private void SetJweToken(SecurityToken jweToken)
+
+    private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
+            Expires = newRefreshToken.ExpiryDateTime
         };
         var handler = new JwtSecurityTokenHandler();
         Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);

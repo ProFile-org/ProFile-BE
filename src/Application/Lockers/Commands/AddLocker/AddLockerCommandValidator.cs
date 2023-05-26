@@ -5,12 +5,9 @@ namespace Application.Lockers.Commands.AddLocker;
 
 public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
 {
-    private readonly IApplicationDbContext _context;
 
-    public AddLockerCommandValidator(IApplicationDbContext context)
+    public AddLockerCommandValidator()
     {
-        _context = context;
-
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(x => x.Capacity)
             .GreaterThan(0).WithMessage("Locker's capacity cannot be less than 1");
@@ -21,15 +18,8 @@ public class AddLockerCommandValidator : AbstractValidator<AddLockerCommand>
 
         RuleFor(x => x.Description)
             .MaximumLength(256).WithMessage("Locker's description cannot exceed 256 characters.");
-    }
 
-    private bool BeUnique(string name)
-    {
-        return _context.Lockers.FirstOrDefault(x => x.Name.Equals(name)) is null;
-    }
-    
-    private bool BeValid(string id)
-    {
-        return Guid.TryParse(id, out _);
+        RuleFor(x => x.RoomId)
+            .NotEmpty().WithMessage("RoomId is required.");
     }
 }
