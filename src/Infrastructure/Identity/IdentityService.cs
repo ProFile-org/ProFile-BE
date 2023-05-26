@@ -119,17 +119,6 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-        
-        var expiryDateUnix =
-            long.Parse(validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
-
-        var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-            .AddSeconds(expiryDateUnix);
-
-        if (expiryDateTimeUtc > DateTime.UtcNow)
-        {
-            throw new AuthenticationException("This token has not expired yet.");
-        }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
         var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
