@@ -63,6 +63,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Refresh()
     {
