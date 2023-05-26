@@ -62,7 +62,7 @@ public class RoomsController : ApiControllerBase
     /// Enable a room
     /// </summary>
     /// <param name="command">Command include the id of the room to be enabled</param>
-    /// <returns></returns>
+    /// <returns>a RoomDto of the enabled room</returns>
     [HttpPut("enable")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -74,6 +74,12 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Update a room
+    /// </summary>
+    /// <param name="roomId">id of the room to be updated</param>
+    /// <param name="request">room update details</param>
+    /// <returns>a RoomDto of the updated room</returns>
     [HttpPut("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -92,6 +98,11 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Get a room based on id
+    /// </summary>
+    /// <param name="roomId">id of the room to be found</param>
+    /// <returns>a RoomDto of the found room</returns>
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
