@@ -46,8 +46,8 @@ public class DepartmentsController : ApiControllerBase
     /// <summary>
     /// Get back a department based on its id
     /// </summary>
-    /// <param name="departmentId">id of the department to be found</param>
-    /// <returns>A DepartmentDto of the found department</returns>
+    /// <param name="departmentId">id of the department to be retrieved</param>
+    /// <returns>A DepartmentDto of the retrieved department</returns>
     [HttpGet("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

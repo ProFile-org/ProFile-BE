@@ -7,6 +7,7 @@ using Application.Lockers.Commands.DisableLocker;
 using Application.Lockers.Commands.EnableLocker;
 using Application.Lockers.Commands.RemoveLocker;
 using Application.Lockers.Commands.UpdateLocker;
+using Application.Lockers.Queries.GetLockerById;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +15,26 @@ namespace Api.Controllers;
 
 public class LockersController : ApiControllerBase
 {
+    /// <summary>
+    /// Get a locker by id
+    /// </summary>
+    /// <param name="lockerId">Id of the locker to be retrieved</param>
+    /// <returns>A LockerDto of the retrieved locker</returns>
+    [HttpGet("{lockerId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<LockerDto>>> GetById([FromRoute] Guid lockerId)
+    {
+        var query = new GetLockerByIdQuery()
+        {
+            LockerId = lockerId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<LockerDto>.Succeed(result));
+    }
+    
     [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]

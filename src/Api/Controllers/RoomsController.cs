@@ -101,10 +101,10 @@ public class RoomsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Get a room based on id
+    /// Get a room by id
     /// </summary>
-    /// <param name="roomId">Id of the room to be found</param>
-    /// <returns>A RoomDto of the found room</returns>
+    /// <param name="roomId">Id of the room to be retrieved</param>
+    /// <returns>A RoomDto of the retrieved room</returns>
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
