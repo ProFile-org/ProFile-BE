@@ -94,7 +94,7 @@ public class ExceptionMiddleware : IMiddleware
 
     private static async void HandleAuthenticationException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await WriteExceptionMessageAsync(context, ex);
     }
 
