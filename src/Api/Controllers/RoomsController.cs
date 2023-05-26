@@ -88,12 +88,13 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
     {
+        Console.WriteLine(request.Description);
         var command = new UpdateRoomCommand()
         {
             RoomId = roomId,
+            Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
-            StaffId = request.StaffId
         };
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
