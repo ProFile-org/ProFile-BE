@@ -186,13 +186,8 @@ public class IdentityService : IIdentityService
 
             return principal;
         }
-        catch (SecurityTokenExpiredException ex)
+        catch
         {
-            return null;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.StackTrace);
             return null;
         }
     }
@@ -235,7 +230,7 @@ public class IdentityService : IIdentityService
         }
 
         _context.RefreshTokens.Remove(storedRefreshToken);
-        await _context.SaveChangesAsync();;
+        await _context.SaveChangesAsync();
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)

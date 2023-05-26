@@ -48,13 +48,12 @@ public class AuthController : ControllerBase
         return Ok(Result<LoginResult>.Succeed(loginResult));
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
-
+        
         RemoveJweToken();
         RemoveRefreshToken();
         
@@ -63,7 +62,6 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Refresh()
     {
