@@ -1,6 +1,10 @@
-﻿using Application.Common.Models;
+﻿using Api.Controllers.Payload.Requests;
+using Application.Common.Models;
 using Application.Departments.Commands.CreateDepartment;
+using Application.Departments.Commands.DeleteDepartment;
+using Application.Departments.Commands.UpdateDepartment;
 using Application.Departments.Queries.GetAllDepartments;
+using Application.Departments.Queries.GetDepartmentById;
 using Application.Identity;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
@@ -37,5 +41,62 @@ public class DepartmentsController : ApiControllerBase
     {
         var result = await Mediator.Send(new GetAllDepartmentsQuery());
         return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get back a department based on its id
+    /// </summary>
+    /// <param name="departmentId">id of the department to be found</param>
+    /// <returns>A DepartmentDto representing the found department</returns>
+    [HttpGet("{departmentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<DepartmentDto>>> GetDepartmentById([FromQuery] Guid departmentId)
+    {
+        var query = new GetDepartmentByIdQuery()
+        {
+            DepartmentId = departmentId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DepartmentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Update a department
+    /// </summary>
+    /// <param name="departmentId">id of the department to be updated</param>
+    /// <returns>A DepartmentDto representing the updated department</returns>
+    [HttpPut("{departmentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DepartmentDto>>> UpdateDepartment([FromQuery] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
+    {
+        var command = new UpdateDepartmentCommand()
+        {
+            DepartmentId = departmentId,
+            Name = request.Name
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<DepartmentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Delete a department
+    /// </summary>
+    /// <param name="departmentId">id of the department to be deleted</param>
+    /// <returns>A DepartmentDto representing the deleted department</returns>
+    [HttpPut("{departmentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DepartmentDto>>> DeleteDepartment([FromQuery] Guid departmentId)
+    {
+        var command = new DeleteDepartmentCommand()
+        {
+            DepartmentId = departmentId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<DepartmentDto>.Succeed(result));
     }
 }

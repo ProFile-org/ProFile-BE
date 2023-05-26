@@ -3,6 +3,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands.CreateRoom;
 using Application.Rooms.Commands.DisableRoom;
+using Application.Rooms.Commands.EnableRoom;
 using Application.Rooms.Commands.RemoveRoom;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Infrastructure.Identity.Authorization;
@@ -53,4 +54,22 @@ public class RoomsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
     }
+    
+    /// <summary>
+    /// Enable a room
+    /// </summary>
+    /// <param name="command">Command include the id of the room to be enabled</param>
+    /// <returns></returns>
+    [HttpPut("enable")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<RoomDto>>> EnableRoom([FromBody] EnableRoomCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    
 }
