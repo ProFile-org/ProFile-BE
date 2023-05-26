@@ -65,7 +65,6 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Refresh()
     {
@@ -82,21 +81,11 @@ public class AuthController : ControllerBase
     
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Validate()
+    public IActionResult Validate()
     {
-        var refreshToken = Request.Cookies[nameof(RefreshToken)];
-        var jweToken = Request.Cookies["JweToken"];
-        
-        var validated = await _identityService.Validate(jweToken!, refreshToken!);
-
-        if (validated)
-        {
-            return Ok();
-        }
-
-        return Unauthorized();
+        return Ok();
     }
-    
+
     private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {
         var cookieOptions = new CookieOptions
