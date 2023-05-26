@@ -23,6 +23,7 @@ public static class ConfigureServices
                 builder.AllowAnyOrigin();
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();
+                builder.AllowCredentials();
             });
         });
 
