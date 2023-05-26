@@ -7,6 +7,7 @@ using Application.Rooms.Commands.DisableRoom;
 using Application.Rooms.Commands.EnableRoom;
 using Application.Rooms.Commands.RemoveRoom;
 using Application.Rooms.Commands.UpdateRoom;
+using Application.Rooms.Queries.GetAllRoomPaginated;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Application.Rooms.Queries.GetRoomById;
 using Infrastructure.Identity.Authorization;
@@ -85,7 +86,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> Update([FromQuery] Guid roomId, [FromBody] UpdateRoomRequest request)
+    public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
     {
         var command = new UpdateRoomCommand()
         {
@@ -107,7 +108,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomDto>>> GetById([FromQuery] Guid roomId)
+    public async Task<ActionResult<Result<RoomDto>>> GetById([FromRoute] Guid roomId)
     {
         var query = new GetRoomByIdQuery()
         {
@@ -115,5 +116,21 @@ public class RoomsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(int? page, int? size, string? sortBy, string? sortOrder)
+    {
+        var query = new GetAllRoomPaginatedQuery()
+        {
+            Page = page,
+            Size = size,
+            SortBy = sortBy,
+            SortOrder = sortOrder
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<RoomDto>>.Succeed(result));
     }
 }

@@ -51,7 +51,7 @@ public class DepartmentsController : ApiControllerBase
     [HttpGet("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<DepartmentDto>>> GetDepartmentById([FromQuery] Guid departmentId)
+    public async Task<ActionResult<Result<DepartmentDto>>> GetDepartmentById([FromRoute] Guid departmentId)
     {
         var query = new GetDepartmentByIdQuery()
         {
@@ -70,7 +70,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DepartmentDto>>> UpdateDepartment([FromQuery] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
+    public async Task<ActionResult<Result<DepartmentDto>>> UpdateDepartment([FromRoute] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
     {
         var command = new UpdateDepartmentCommand()
         {
@@ -86,11 +86,11 @@ public class DepartmentsController : ApiControllerBase
     /// </summary>
     /// <param name="departmentId">id of the department to be deleted</param>
     /// <returns>A DepartmentDto representing the deleted department</returns>
-    [HttpPut("{departmentId:guid}")]
+    [HttpDelete("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DepartmentDto>>> DeleteDepartment([FromQuery] Guid departmentId)
+    public async Task<ActionResult<Result<DepartmentDto>>> DeleteDepartment([FromRoute] Guid departmentId)
     {
         var command = new DeleteDepartmentCommand()
         {
