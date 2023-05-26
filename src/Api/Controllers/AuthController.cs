@@ -50,6 +50,8 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
@@ -67,6 +69,8 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
@@ -82,6 +86,8 @@ public class AuthController : ControllerBase
     
     [Authorize]
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Validate()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
