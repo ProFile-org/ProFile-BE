@@ -13,11 +13,11 @@ public record AddDepartmentCommand : IRequest<DepartmentDto>
     public string Name { get; init; } = null!;
 }
 
-public class CreateDepartmentCommandHandler : IRequestHandler<AddDepartmentCommand, DepartmentDto>
+public class AddDepartmentCommandHandler : IRequestHandler<AddDepartmentCommand, DepartmentDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    public CreateDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
+    public AddDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;

@@ -1,12 +1,12 @@
 using Application.Common.Interfaces;
 using FluentValidation;
 
-namespace Application.Rooms.Commands.CreateRoom;
+namespace Application.Rooms.Commands.AddRoom;
 
-public class CreateRoomCommandValidator : AbstractValidator<CreateRoomCommand>
+public class AddRoomCommandValidator : AbstractValidator<AddRoomCommand>
 {
     private readonly IApplicationDbContext _context;
-    public CreateRoomCommandValidator(IApplicationDbContext context)
+    public AddRoomCommandValidator(IApplicationDbContext context)
     {
         _context = context;
 

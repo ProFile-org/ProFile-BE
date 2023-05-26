@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Departments.Commands;
 
-public class CreateDepartmentTests : BaseClassFixture 
+public class AddDepartmentTests : BaseClassFixture 
 {
-    public CreateDepartmentTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public AddDepartmentTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
 

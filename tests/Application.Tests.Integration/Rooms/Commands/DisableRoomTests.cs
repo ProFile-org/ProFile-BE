@@ -112,7 +112,7 @@ public class DisableRoomTests : BaseClassFixture
         var action = async () => await SendAsync(command);
 
         // Assert
-        await action.Should().ThrowAsync<InvalidOperationException>()
+        await action.Should().ThrowAsync<ConflictException>()
             .WithMessage("Room have already been disabled.");
 
         // Cleanup

@@ -2,7 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands.AddFolder;
 using Application.Lockers.Commands.AddLocker;
-using Application.Rooms.Commands.CreateRoom;
+using Application.Rooms.Commands.AddRoom;
 using Bogus;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
@@ -18,7 +18,7 @@ public class AddFolderTests : BaseClassFixture
             .RuleFor(f => f.Description, faker => faker.Commerce.ProductDescription())
             .RuleFor(f => f.Capacity, faker => faker.Random.Int(1,9999));
     
-    private readonly Faker<CreateRoomCommand> _roomGenerator = new Faker<CreateRoomCommand>()
+    private readonly Faker<AddRoomCommand> _roomGenerator = new Faker<AddRoomCommand>()
         .RuleFor(r => r.Name, faker => faker.Commerce.ProductName())
         .RuleFor(r => r.Description, faker => faker.Commerce.ProductDescription())
         .RuleFor(r => r.Capacity, faker => faker.Random.Int(1,9999));
