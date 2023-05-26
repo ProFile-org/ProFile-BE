@@ -47,7 +47,7 @@ public class DepartmentsController : ApiControllerBase
     /// Get back a department based on its id
     /// </summary>
     /// <param name="departmentId">id of the department to be found</param>
-    /// <returns>A DepartmentDto representing the found department</returns>
+    /// <returns>A DepartmentDto of the found department</returns>
     [HttpGet("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -64,8 +64,9 @@ public class DepartmentsController : ApiControllerBase
     /// <summary>
     /// Update a department
     /// </summary>
-    /// <param name="departmentId">id of the department to be updated</param>
-    /// <returns>A DepartmentDto representing the updated department</returns>
+    /// <param name="departmentId">Id of the department to be updated</param>
+    /// <param name="request">Update department details</param>
+    /// <returns>A DepartmentDto of the updated department</returns>
     [HttpPut("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -84,8 +85,8 @@ public class DepartmentsController : ApiControllerBase
     /// <summary>
     /// Delete a department
     /// </summary>
-    /// <param name="departmentId">id of the department to be deleted</param>
-    /// <returns>A DepartmentDto representing the deleted department</returns>
+    /// <param name="departmentId">Id of the department to be deleted</param>
+    /// <returns>A DepartmentDto of the deleted department</returns>
     [HttpDelete("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

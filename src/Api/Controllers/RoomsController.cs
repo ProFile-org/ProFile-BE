@@ -62,8 +62,8 @@ public class RoomsController : ApiControllerBase
     /// <summary>
     /// Enable a room
     /// </summary>
-    /// <param name="command">Command include the id of the room to be enabled</param>
-    /// <returns>a RoomDto of the enabled room</returns>
+    /// <param name="command">Enable room details</param>
+    /// <returns>A RoomDto of the enabled room</returns>
     [HttpPut("enable")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -78,9 +78,9 @@ public class RoomsController : ApiControllerBase
     /// <summary>
     /// Update a room
     /// </summary>
-    /// <param name="roomId">id of the room to be updated</param>
-    /// <param name="request">room update details</param>
-    /// <returns>a RoomDto of the updated room</returns>
+    /// <param name="roomId">Id of the room to be updated</param>
+    /// <param name="request">Update room details</param>
+    /// <returns>A RoomDto of the updated room</returns>
     [HttpPut("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -102,8 +102,8 @@ public class RoomsController : ApiControllerBase
     /// <summary>
     /// Get a room based on id
     /// </summary>
-    /// <param name="roomId">id of the room to be found</param>
-    /// <returns>a RoomDto of the found room</returns>
+    /// <param name="roomId">Id of the room to be found</param>
+    /// <returns>A RoomDto of the found room</returns>
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -118,6 +118,14 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Get all rooms paginated
+    /// </summary>
+    /// <param name="page">The page index</param>
+    /// <param name="size">The size number</param>
+    /// <param name="sortBy">Criteria</param>
+    /// <param name="sortOrder">The order in which the rooms are sorted</param>
+    /// <returns>A paginated list of rooms</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
