@@ -15,8 +15,9 @@ public class RoomsController : ApiControllerBase
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<RoomDto>>> AddRoom(CreateRoomCommand command)
     {
         var result = await Mediator.Send(command);
@@ -34,7 +35,7 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
     }
 
-    [HttpPut]
+    [HttpPut("disable")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

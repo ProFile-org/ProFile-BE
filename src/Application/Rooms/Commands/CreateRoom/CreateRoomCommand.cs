@@ -9,8 +9,8 @@ namespace Application.Rooms.Commands.CreateRoom;
 
 public record CreateRoomCommand : IRequest<RoomDto>
 {
-    public string Name { get; init; }
-    public string Description { get; init; }
+    public string Name { get; init; } = null!;
+    public string? Description { get; init; }
     public int Capacity { get; init; }
     
 }

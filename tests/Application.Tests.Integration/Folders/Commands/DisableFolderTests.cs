@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Folders.Commands.DisableFolder;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -121,7 +122,7 @@ public class DisableFolderTests : BaseClassFixture
         var result = async () => await SendAsync(disableFolderCommand);
 
         // Assert
-        await result.Should().ThrowAsync<InvalidOperationException>()
+        await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("Folder has already been disabled.");
         
         // Cleanup
