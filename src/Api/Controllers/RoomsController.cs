@@ -8,6 +8,7 @@ using Application.Rooms.Commands.EnableRoom;
 using Application.Rooms.Commands.RemoveRoom;
 using Application.Rooms.Commands.UpdateRoom;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
+using Application.Rooms.Queries.GetRoomById;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -88,6 +89,20 @@ public class RoomsController : ApiControllerBase
             StaffId = request.StaffId
         };
         var result = await Mediator.Send(command);
+        return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    [HttpGet("{roomId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RoomDto>>> GetById([FromQuery] Guid roomId)
+    {
+        var query = new GetRoomByIdQuery()
+        {
+            RoomId = roomId,
+        };
+        var result = await Mediator.Send(query);
         return Ok(Result<RoomDto>.Succeed(result));
     }
 }
