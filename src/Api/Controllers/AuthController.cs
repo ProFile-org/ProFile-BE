@@ -55,12 +55,10 @@ public class AuthController : ControllerBase
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
 
-        var loggedOut = await _identityService.LogoutAsync(jweToken!, refreshToken!);
-
-        if (!loggedOut) return Ok();
-        
         RemoveJweToken();
         RemoveRefreshToken();
+        
+        await _identityService.LogoutAsync(jweToken!, refreshToken!);
 
         return Ok();
     }
