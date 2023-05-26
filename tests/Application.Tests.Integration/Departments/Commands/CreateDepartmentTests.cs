@@ -40,7 +40,7 @@ public class CreateDepartmentTests : BaseClassFixture
         var action = async () => await SendAsync(createDepartmentCommand);
         
         // Assert
-        await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists");
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists.");
         
         // Cleanup
         var departmentEntity = await FindAsync<Department>(department.Id);

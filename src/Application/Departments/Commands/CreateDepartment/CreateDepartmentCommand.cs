@@ -29,7 +29,7 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
         if (department is not null)
         {
-            throw new ConflictException("Department name already exists");
+            throw new ConflictException("Department name already exists.");
         }
         var entity = new Department
         {
