@@ -5,6 +5,7 @@ using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DisableUser;
 using Application.Users.Commands.UpdateUser;
 using Application.Users.Queries;
+using Application.Users.Queries.GetUserById;
 using Application.Users.Queries.GetUsersByName;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Authorization;
@@ -14,6 +15,25 @@ namespace Api.Controllers;
 
 public class UsersController : ApiControllerBase
 {
+    /// <summary>
+    /// Get a user by id
+    /// </summary>
+    /// <param name="userId">Id of the user to be retrieved</param>
+    /// <returns>A UserDto of the retrieved user</returns>
+    [HttpGet("{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<UserDto>>> GetUserById([FromRoute] Guid userId)
+    {
+        var query = new GetUserByIdQuery
+        {
+            UserId = userId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<UserDto>.Succeed(result));
+    }
+    
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
