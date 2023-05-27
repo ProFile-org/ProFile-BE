@@ -49,19 +49,16 @@ public class AuthController : ControllerBase
         return Ok(Result<LoginResult>.Succeed(loginResult));
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
-
-        var loggedOut = await _identityService.LogoutAsync(jweToken!, refreshToken!);
-
-        if (!loggedOut) return Ok();
         
         RemoveJweToken();
         RemoveRefreshToken();
+        
+        await _identityService.LogoutAsync(jweToken!, refreshToken!);
 
         return Ok();
     }
