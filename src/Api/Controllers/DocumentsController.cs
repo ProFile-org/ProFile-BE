@@ -1,7 +1,9 @@
+using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Departments.Commands.CreateDepartment;
 using Application.Documents.Commands.ImportDocument;
+using Application.Documents.Commands.UpdateDocument;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
 using Application.Documents.Queries.GetDocumentById;
 using Application.Documents.Queries.GetDocumentTypes;
@@ -66,6 +68,30 @@ public class DocumentsController : ApiControllerBase
         var query = new GetDocumentByIdQuery()
         {
             Id = id
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Update a document
+    /// </summary>
+    /// <param name="documentId">Id of the document to be updated</param>
+    /// <param name="request">Update document details</param>
+    /// <returns>A DocumentDto of the updated document</returns>
+    [HttpPut("{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<DocumentDto>>> UpdateDocument([FromRoute] Guid documentId, [FromBody] UpdateDocumentRequest request)
+    {
+        var query = new UpdateDocumentCommand()
+        {
+            DocumentId = documentId,
+            Title = request.Title,
+            Description = request.Description,
+            DocumentType = request.DocumentType
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
