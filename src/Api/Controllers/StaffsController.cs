@@ -6,6 +6,7 @@ using Application.Staffs.Commands.RemoveStaffFromRoom;
 using Application.Staffs.Queries;
 using Application.Staffs.Queries.GetAllStaffsPaginated;
 using Application.Staffs.Queries.GetStaffById;
+using Application.Staffs.Queries.GetStaffByRoom;
 using Application.Users.Queries.Physical;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +24,30 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<StaffDto>>> GetById([FromRoute] Guid staffId)
     {
         var query = new GetStaffByIdQuery()
         {
             StaffId = staffId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<StaffDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get a staff by room
+    /// </summary>
+    /// <param name="roomId">Id of the room to retrieve staff</param>
+    /// <returns>A StaffDto of the retrieved staff</returns>
+    [HttpGet("get-by-room/{roomId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<StaffDto>>> GetByRoom([FromRoute] Guid roomId)
+    {
+        var query = new GetStaffByRoomQuery()
+        {
+            RoomId = roomId
         };
         var result = await Mediator.Send(query);
         return Ok(Result<StaffDto>.Succeed(result));
