@@ -4,6 +4,7 @@ using Application.Folders.Commands.AddFolder;
 using Application.Folders.Commands.DisableFolder;
 using Application.Folders.Commands.EnableFolder;
 using Application.Folders.Commands.RemoveFolder;
+using Application.Folders.Queries.GetFolderById;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,26 @@ namespace Api.Controllers;
 
 public class FoldersController : ApiControllerBase
 {
+    /// <summary>
+    /// Get a folder by id
+    /// </summary>
+    /// <param name="folderId">Id of the folder to be retrieved</param>
+    /// <returns>A FolderDto of the retrieved folder</returns>
+    [HttpGet("{folderId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<FolderDto>>> GetById([FromRoute] Guid folderId)
+    {
+        var query = new GetFolderByIdQuery()
+        {
+            FolderId = folderId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<FolderDto>.Succeed(result));
+    }
+    
     /// <summary>
     /// Add a folder
     /// </summary>
