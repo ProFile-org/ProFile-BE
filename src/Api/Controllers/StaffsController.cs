@@ -4,6 +4,8 @@ using Application.Identity;
 using Application.Staffs.Commands.CreateStaff;
 using Application.Staffs.Commands.RemoveStaffFromRoom;
 using Application.Staffs.Queries;
+using Application.Staffs.Queries.GetAllStaffsPaginated;
+using Application.Staffs.Queries.GetStaffById;
 using Application.Users.Queries.Physical;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +32,28 @@ public class StaffsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<StaffDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all staffs paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all staffs query parameters</param>
+    /// <returns>A paginated list of StaffDto</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<StaffDto>>>> GetAllPaginated(
+        [FromQuery] GetAllStaffsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllStaffsPaginatedQuery()
+        {
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<StaffDto>>.Succeed(result));
     }
     
     [RequiresRole(IdentityData.Roles.Admin)]
