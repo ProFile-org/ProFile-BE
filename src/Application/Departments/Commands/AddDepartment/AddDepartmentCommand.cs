@@ -6,30 +6,30 @@ using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Departments.Commands.CreateDepartment;
+namespace Application.Departments.Commands.AddDepartment;
 
-public record CreateDepartmentCommand : IRequest<DepartmentDto>
+public record AddDepartmentCommand : IRequest<DepartmentDto>
 {
-    public string Name { get; init; }
+    public string Name { get; init; } = null!;
 }
 
-public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCommand, DepartmentDto>
+public class AddDepartmentCommandHandler : IRequestHandler<AddDepartmentCommand, DepartmentDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    public CreateDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
+    public AddDepartmentCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
     }
 
-    public async Task<DepartmentDto> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
+    public async Task<DepartmentDto> Handle(AddDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var department = await _context.Departments.FirstOrDefaultAsync(x => x.Name.Equals(request.Name), cancellationToken);
+        var department = await _context.Departments.FirstOrDefaultAsync(x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()), cancellationToken);
 
         if (department is not null)
         {
-            throw new ConflictException("Department name already exists");
+            throw new ConflictException("Department name already exists.");
         }
         var entity = new Department
         {

@@ -11,7 +11,7 @@ namespace Application.Folders.Commands.AddFolder;
 
 public record AddFolderCommand : IRequest<FolderDto>
 {
-    public string Name { get; init; }
+    public string Name { get; init; } = null!;
     public string? Description { get; init; }
     public int Capacity { get; init; }
     public Guid LockerId { get; init; }
@@ -42,7 +42,8 @@ public class AddFolderCommandHandler : IRequestHandler<AddFolderCommand, FolderD
             throw new LimitExceededException("This locker cannot accept more folders.");
         }
 
-        var folder = await _context.Folders.FirstOrDefaultAsync(x => x.Name.Trim().Equals(request.Name.Trim()) && x.Locker.Id.Equals(request.LockerId), cancellationToken);
+        var folder = await _context.Folders.FirstOrDefaultAsync(x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
+                                                                     && x.Locker.Id.Equals(request.LockerId), cancellationToken);
 
         if (folder is not null)
         {

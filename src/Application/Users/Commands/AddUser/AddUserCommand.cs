@@ -9,37 +9,37 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
-namespace Application.Users.Commands.CreateUser;
+namespace Application.Users.Commands.AddUser;
 
-public record CreateUserCommand : IRequest<UserDto>
+public record AddUserCommand : IRequest<UserDto>
 {
-    public string Username { get; init; }
-    public string Email { get; init; }
-    public string Password { get; init; }
-    public string FirstName { get; init; }
-    public string LastName { get; init; }
+    public string Username { get; init; } = null!;
+    public string Email { get; init; } = null!;
+    public string Password { get; init; } = null!;
+    public string? FirstName { get; init; }
+    public string? LastName { get; init; }
     public Guid DepartmentId { get; init; }
-    public string Role { get; init; }
-    public string Position { get; init; }
+    public string Role { get; init; } = null!;
+    public string? Position { get; init; }
 }
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
+public class AddUserCommandHandler : IRequestHandler<AddUserCommand, UserDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    public CreateUserCommandHandler(IApplicationDbContext context, IMapper mapper)
+    public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
     }
-    public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public async Task<UserDto> Handle(AddUserCommand request, CancellationToken cancellationToken)
     {
         var user = await _context.Users.FirstOrDefaultAsync(
             x => x.Username.Equals(request.Username) || x.Email.Equals(request.Email), cancellationToken);
 
         if (user is not null)
         {
-            throw new ConflictException("Username or Email has been taken");
+            throw new ConflictException("Username or Email has been taken.");
         }
 
         var department = await _context.Departments
@@ -47,7 +47,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         
         if (department is null)
         {
-            throw new KeyNotFoundException("Department does not exist");
+            throw new KeyNotFoundException("Department does not exist.");
         }
         
         var entity = new User
@@ -55,8 +55,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             Username = request.Username,
             PasswordHash = SecurityUtil.Hash(request.Password),
             Email = request.Email,
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
+            FirstName = request.FirstName?.Trim(),
+            LastName = request.LastName?.Trim(),
             Department = department,
             Role = request.Role,
             Position = request.Position,

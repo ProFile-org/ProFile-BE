@@ -11,8 +11,8 @@ namespace Application.Lockers.Commands.AddLocker;
 
 public record AddLockerCommand : IRequest<LockerDto>
 {
-    public string Name { get; init; }
-    public string Description { get; init; }
+    public string Name { get; init; } = null!;
+    public string? Description { get; init; }
     public Guid RoomId { get; init; }
     public int Capacity { get; init; }
 }
@@ -44,16 +44,16 @@ public class AddLockerCommandHandler : IRequestHandler<AddLockerCommand, LockerD
                 );
         }
 
-        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Trim().Equals(request.Name.Trim()) && x.Room.Id.Equals(request.RoomId));
+        var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) && x.Room.Id.Equals(request.RoomId) ,cancellationToken);
         if (locker is not null)
         {
-            throw new ConflictException("Locker's name already exists.");
+            throw new ConflictException("Locker name already exists.");
         }
         
         var entity = new Locker
         {
             Name = request.Name.Trim(),
-            Description = request.Description,
+            Description = request.Description?.Trim(),
             NumberOfFolders = 0,
             Capacity = request.Capacity,
             Room = room,

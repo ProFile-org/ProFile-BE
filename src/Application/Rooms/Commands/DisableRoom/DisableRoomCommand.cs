@@ -37,7 +37,7 @@ public class DisableRoomCommandHandler : IRequestHandler<DisableRoomCommand, Roo
 
         if (!room.IsAvailable)
         {
-            throw new InvalidOperationException("Room have already been disabled.");
+            throw new ConflictException("Room have already been disabled.");
         }
 
         var canNotDisable = await _context.Documents
