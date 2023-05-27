@@ -1,9 +1,11 @@
+using Api.Controllers.Payload.Requests.Folders;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands.AddFolder;
 using Application.Folders.Commands.DisableFolder;
 using Application.Folders.Commands.EnableFolder;
 using Application.Folders.Commands.RemoveFolder;
+using Application.Folders.Queries.GetAllFoldersPaginated;
 using Application.Folders.Queries.GetFolderById;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
@@ -31,6 +33,30 @@ public class FoldersController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<FolderDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all folders paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all folders query parameters</param>
+    /// <returns>A paginated list of FolderDto</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<FolderDto>>>> GetAllPaginated(
+        [FromQuery] GetAllFoldersPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllFoldersPaginatedQuery()
+        {
+            RoomId = queryParameters.RoomId,
+            LockerId = queryParameters.LockerId,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<FolderDto>>.Succeed(result));
     }
     
     /// <summary>
