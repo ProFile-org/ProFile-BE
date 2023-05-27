@@ -4,6 +4,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Users.Commands.AddUser;
 using Application.Users.Commands.DisableUser;
+using Application.Users.Commands.EnableUser;
 using Application.Users.Commands.UpdateUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetAllUsersPaginated;
@@ -88,6 +89,26 @@ public class UsersController : ApiControllerBase
     //     var result = await Mediator.Send(query);
     //     return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
     // }
+    
+    /// <summary>
+    /// Disable a user
+    /// </summary>
+    /// <param name="userId">Id of the user to be enabled</param>
+    /// <returns>A UserDto of the enabled user</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpPost("enable/{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<UserDto>>> EnableUser([FromRoute] Guid userId)
+    {
+        var command = new EnableUserCommand()
+        {
+            UserId = userId
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
+    }
 
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost("disable")]
