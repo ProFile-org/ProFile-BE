@@ -91,7 +91,7 @@ public class AddLockerTests : BaseClassFixture
         var action = async () => await SendAsync(addLockerCommand);
         
         // Assert
-        await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker's name already exists.");
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker name already exists.");
         
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);

@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Departments.Commands;
 
-public class CreateDepartmentTests : BaseClassFixture 
+public class AddDepartmentTests : BaseClassFixture 
 {
-    public CreateDepartmentTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public AddDepartmentTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
 
@@ -40,7 +40,7 @@ public class CreateDepartmentTests : BaseClassFixture
         var action = async () => await SendAsync(createDepartmentCommand);
         
         // Assert
-        await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists");
+        await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists.");
         
         // Cleanup
         var departmentEntity = await FindAsync<Department>(department.Id);

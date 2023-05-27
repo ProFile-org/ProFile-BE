@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Users.Queries;
 using AutoMapper;
@@ -31,7 +32,7 @@ public class DisableUserCommandHandler : IRequestHandler<DisableUserCommand, Use
 
         if (!user.IsActive)
         {
-            throw new InvalidOperationException("User has already been disabled.");
+            throw new ConflictException("User has already been disabled.");
         }
 
         user.IsActive = false;

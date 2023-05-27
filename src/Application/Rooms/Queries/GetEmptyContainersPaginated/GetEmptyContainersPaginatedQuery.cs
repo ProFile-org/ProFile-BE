@@ -29,7 +29,7 @@ public class GetEmptyContainersPaginatedQueryHandler : IRequestHandler<GetEmptyC
         var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
         if (room is null)
         {
-            throw new KeyNotFoundException("Room does not exist");
+            throw new KeyNotFoundException("Room does not exist.");
         }
         
         var lockers = _context.Lockers

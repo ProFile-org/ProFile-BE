@@ -10,9 +10,9 @@ namespace Application.Documents.Commands.ImportDocument;
 
 public record ImportDocumentCommand : IRequest<DocumentDto>
 {
-    public string Title { get; init; }
+    public string Title { get; init; } = null!;
     public string? Description { get; init; }
-    public string DocumentType { get; init; }
+    public string DocumentType { get; init; } = null!;
     public Guid ImporterId { get; init; }
     public Guid FolderId { get; init; }
 }
@@ -35,23 +35,23 @@ public class ImportDocumentCommandHandler : IRequestHandler<ImportDocumentComman
             .FirstOrDefaultAsync(x => x.Id == request.ImporterId, cancellationToken);
         if (importer is null)
         {
-            throw new KeyNotFoundException("User does not exist");
+            throw new KeyNotFoundException("User does not exist.");
         }
 
         var document = _context.Documents.FirstOrDefault(x => 
-            x.Title.Equals(request.Title) 
+            x.Title.Trim().ToLower().Equals(request.Title.Trim().ToLower()) 
             && x.Importer != null 
             && x.Importer.Id == request.ImporterId);
         if (document is not null)
         {
-            throw new ConflictException($"Document title already exists for user {importer.LastName}");
+            throw new ConflictException($"Document title already exists for user {importer.LastName}.");
         }
         
         var folder = await _context.Folders
             .FirstOrDefaultAsync(x => x.Id == request.FolderId, cancellationToken);
         if (folder is null)
         {
-            throw new KeyNotFoundException("Folder does not exist");
+            throw new KeyNotFoundException("Folder does not exist.");
         }
 
         var entity = new Document()

@@ -7,6 +7,6 @@ public record UpdateFolderCommand : IRequest<FolderDto>
 {
     public Guid FolderId { get; init; }
     public string Name { get; init; } = null!;
-    public string Description { get; init; } = null!;
+    public string? Description { get; init; }
     public int Capacity { get; init; }
 }

@@ -15,13 +15,13 @@ namespace Api.Controllers;
 
 public class DocumentsController : ApiControllerBase
 {
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     public async Task<ActionResult<Result<DocumentDto>>> ImportDocument([FromBody] ImportDocumentCommand command)
     {
         var result = await Mediator.Send(command);
@@ -32,7 +32,6 @@ public class DocumentsController : ApiControllerBase
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    
     public async Task<ActionResult<Result<IEnumerable<string>>>> GetAllDocumentTypes()
     {
         var result = await Mediator.Send(new GetAllDocumentTypesQuery());
@@ -62,6 +61,9 @@ public class DocumentsController : ApiControllerBase
     }
     
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DocumentDto>>> GetDocumentById(Guid id)
     {
         var query = new GetDocumentByIdQuery()

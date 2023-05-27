@@ -1,4 +1,4 @@
-using Application.Users.Commands.CreateUser;
+using Application.Users.Commands.AddUser;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Application.Tests.Integration.Users.Commands;
 
-public class CreateUserTests : BaseClassFixture
+public class AddUserTests : BaseClassFixture
 {
-    private readonly Faker<CreateUserCommand> _userGenerator = new Faker<CreateUserCommand>()
+    private readonly Faker<AddUserCommand> _userGenerator = new Faker<AddUserCommand>()
         .RuleFor(x => x.Username, faker => faker.Person.UserName)
         .RuleFor(x => x.Email, faker => faker.Person.Email)
         .RuleFor(x => x.FirstName, faker => faker.Person.FirstName)
@@ -16,7 +16,7 @@ public class CreateUserTests : BaseClassFixture
         .RuleFor(x => x.Password, faker => faker.Random.String())
         .RuleFor(x => x.Role, faker => faker.Random.Word())
         .RuleFor(x => x.Position, faker => faker.Random.Word());
-    public CreateUserTests(CustomApiFactory apiFactory) : base(apiFactory)
+    public AddUserTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
 

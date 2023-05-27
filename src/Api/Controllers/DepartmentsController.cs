@@ -1,8 +1,8 @@
-﻿using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Requests;
 using Application.Common.Models;
-using Application.Departments.Commands.CreateDepartment;
 using Application.Departments.Commands.DeleteDepartment;
 using Application.Departments.Commands.UpdateDepartment;
+using Application.Departments.Commands.AddDepartment;
 using Application.Departments.Queries.GetAllDepartments;
 using Application.Departments.Queries.GetDepartmentById;
 using Application.Identity;
@@ -24,7 +24,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DepartmentDto>>> CreateDepartment([FromBody] CreateDepartmentCommand command)
+    public async Task<ActionResult<Result<DepartmentDto>>> AddDepartment([FromBody] AddDepartmentCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<DepartmentDto>.Succeed(result));

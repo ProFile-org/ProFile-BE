@@ -64,9 +64,9 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="command">Add folder details</param>
     /// <returns>A FolderDto of the added folder</returns>
-    [RequiresRole(IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]    
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -116,8 +116,9 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="command">Disable folder details</param>
     /// <returns>A FolderDto of the disabled folder</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPut("disable")]
-    [ProducesResponseType(StatusCodes.Status200OK)]    
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

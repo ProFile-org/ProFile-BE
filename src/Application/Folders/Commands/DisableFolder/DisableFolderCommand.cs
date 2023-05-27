@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -34,7 +35,7 @@ public class DisableFolderCommandHandler : IRequestHandler<DisableFolderCommand,
 
         if (!folder.IsAvailable)
         {
-            throw new InvalidOperationException("Folder has already been disabled.");
+            throw new ConflictException("Folder has already been disabled.");
         }
         
         if (folder.NumberOfDocuments > 0)

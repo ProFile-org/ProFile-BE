@@ -7,6 +7,6 @@ public record UpdateRoomCommand : IRequest<RoomDto>
 {
     public Guid RoomId { get; init; }
     public string Name { get; set; } = null!;
-    public string Description { get; init; } = null!;
+    public string? Description { get; init; }
     public int Capacity { get; init; }
 }
