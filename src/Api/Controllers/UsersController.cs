@@ -73,21 +73,21 @@ public class UsersController : ApiControllerBase
         return Ok(Result<UserDto>.Succeed(result));
     }
     
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int? page, int? size)
-    {
-        var query = new GetUsersByNameQuery
-        {
-            SearchTerm = searchTerm,
-            Page = page,
-            Size = size
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
-    }
+    // [RequiresRole(IdentityData.Roles.Admin)]
+    // [HttpGet]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int? page, int? size)
+    // {
+    //     var query = new GetUsersByNameQuery
+    //     {
+    //         SearchTerm = searchTerm,
+    //         Page = page,
+    //         Size = size
+    //     };
+    //     var result = await Mediator.Send(query);
+    //     return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    // }
 
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost("disable")]

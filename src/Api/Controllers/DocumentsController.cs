@@ -80,6 +80,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be updated</param>
     /// <param name="request">Update document details</param>
     /// <returns>A DocumentDto of the updated document</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPut("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

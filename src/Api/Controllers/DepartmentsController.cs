@@ -67,6 +67,7 @@ public class DepartmentsController : ApiControllerBase
     /// <param name="departmentId">Id of the department to be updated</param>
     /// <param name="request">Update department details</param>
     /// <returns>A DepartmentDto of the updated department</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPut("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -87,6 +88,7 @@ public class DepartmentsController : ApiControllerBase
     /// </summary>
     /// <param name="departmentId">Id of the department to be deleted</param>
     /// <returns>A DepartmentDto of the deleted department</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpDelete("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

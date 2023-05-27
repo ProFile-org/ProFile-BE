@@ -21,6 +21,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="folderId">Id of the folder to be retrieved</param>
     /// <returns>A FolderDto of the retrieved folder</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -40,6 +41,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all folders query parameters</param>
     /// <returns>A paginated list of FolderDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -64,7 +66,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="command">Add folder details</param>
     /// <returns>A FolderDto of the added folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,16 +82,21 @@ public class FoldersController : ApiControllerBase
     /// <summary>
     /// Remove a folder
     /// </summary>
-    /// <param name="command">Remove folder details</param>
+    /// <param name="folderId">Id of the folder to be removed</param>
     /// <returns>A FolderDto of the removed folder</returns>
-    [HttpPut("disable")]
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpDelete("{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromBody] RemoveFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
+        var command = new RemoveFolderCommand()
+        {
+            FolderId = folderId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }
@@ -99,6 +106,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="command">Enable folder details</param>
     /// <returns>A FolderDto of the enabled folder</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPut("enable")]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
