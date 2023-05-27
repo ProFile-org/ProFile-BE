@@ -2,10 +2,11 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using MediatR;
 
-namespace Application.Rooms.Queries.GetAllRoomPaginated;
+namespace Application.Lockers.Queries.GetAllLockersPaginated;
 
-public record GetAllRoomPaginatedQuery : IRequest<PaginatedList<RoomDto>>
+public record GetAllLockersPaginatedQuery : IRequest<PaginatedList<LockerDto>>
 {
+    public Guid? RoomId { get; init; }
     public int? Page { get; init; }
     public int? Size { get; init; }
     public string? SortBy { get; init; }

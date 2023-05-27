@@ -132,7 +132,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(int? page, int? size, string? sortBy, string? sortOrder)
     {
-        var query = new GetAllRoomPaginatedQuery()
+        var query = new GetAllRoomsPaginatedQuery()
         {
             Page = page,
             Size = size,

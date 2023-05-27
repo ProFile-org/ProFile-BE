@@ -1,4 +1,4 @@
-namespace Api.Controllers.Payload.Requests;
+namespace Api.Controllers.Payload.Requests.Lockers;
 
 public class UpdateLockerRequest
 {

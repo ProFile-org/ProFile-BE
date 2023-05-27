@@ -1,4 +1,5 @@
 ﻿using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Requests.Lockers;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
@@ -7,6 +8,7 @@ using Application.Lockers.Commands.DisableLocker;
 using Application.Lockers.Commands.EnableLocker;
 using Application.Lockers.Commands.RemoveLocker;
 using Application.Lockers.Commands.UpdateLocker;
+using Application.Lockers.Queries.GetAllLockersPaginated;
 using Application.Lockers.Queries.GetLockerById;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +35,29 @@ public class LockersController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<LockerDto>.Succeed(result));
+    }
+   
+    /// <summary>
+    /// Get all lockers paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all lockers query parameters</param>
+    /// <returns>A paginated list of LockerDto</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<LockerDto>>>> GetAllPaginated(
+        [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllLockersPaginatedQuery()
+        {
+            RoomId = queryParameters.RoomId,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<LockerDto>>.Succeed(result));
     }
     
     [RequiresRole(IdentityData.Roles.Staff)]
