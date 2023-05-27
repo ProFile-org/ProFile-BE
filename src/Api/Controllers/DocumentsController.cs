@@ -1,14 +1,13 @@
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
-using Application.Departments.Commands.CreateDepartment;
+using Application.Documents.Commands.DeleteDocument;
 using Application.Documents.Commands.ImportDocument;
 using Application.Documents.Commands.UpdateDocument;
 using Application.Documents.Queries.GetAllDocumentsPaginated;
 using Application.Documents.Queries.GetDocumentById;
 using Application.Documents.Queries.GetDocumentTypes;
 using Application.Identity;
-using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -92,6 +91,25 @@ public class DocumentsController : ApiControllerBase
             Title = request.Title,
             Description = request.Description,
             DocumentType = request.DocumentType
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Delete a document
+    /// </summary>
+    /// <param name="documentId">Id of the document to be deleted</param>
+    /// <returns>A DocumentDto of the deleted document</returns>
+    [HttpDelete("{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentDto>>> UpdateDocument([FromRoute] Guid documentId)
+    {
+        var query = new DeleteDocumentCommand()
+        {
+            DocumentId = documentId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
