@@ -1,10 +1,15 @@
+using Api.Controllers.Payload.Requests;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands.AddRoom;
 using Application.Rooms.Commands.DisableRoom;
+using Application.Rooms.Commands.EnableRoom;
 using Application.Rooms.Commands.RemoveRoom;
+using Application.Rooms.Commands.UpdateRoom;
+using Application.Rooms.Queries.GetAllRoomPaginated;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
+using Application.Rooms.Queries.GetRoomById;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,5 +63,89 @@ public class RoomsController : ApiControllerBase
     {
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Enable a room
+    /// </summary>
+    /// <param name="command">Enable room details</param>
+    /// <returns>A RoomDto of the enabled room</returns>
+    [HttpPut("enable")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<RoomDto>>> EnableRoom([FromBody] EnableRoomCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Update a room
+    /// </summary>
+    /// <param name="roomId">Id of the room to be updated</param>
+    /// <param name="request">Update room details</param>
+    /// <returns>A RoomDto of the updated room</returns>
+    [HttpPut("{roomId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
+    {
+        Console.WriteLine(request.Description);
+        var command = new UpdateRoomCommand()
+        {
+            RoomId = roomId,
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get a room by id
+    /// </summary>
+    /// <param name="roomId">Id of the room to be retrieved</param>
+    /// <returns>A RoomDto of the retrieved room</returns>
+    [HttpGet("{roomId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RoomDto>>> GetById([FromRoute] Guid roomId)
+    {
+        var query = new GetRoomByIdQuery()
+        {
+            RoomId = roomId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<RoomDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all rooms paginated
+    /// </summary>
+    /// <param name="page">The page index</param>
+    /// <param name="size">The size number</param>
+    /// <param name="sortBy">Criteria</param>
+    /// <param name="sortOrder">The order in which the rooms are sorted</param>
+    /// <returns>A paginated list of rooms</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(int? page, int? size, string? sortBy, string? sortOrder)
+    {
+        var query = new GetAllRoomsPaginatedQuery()
+        {
+            Page = page,
+            Size = size,
+            SortBy = sortBy,
+            SortOrder = sortOrder
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<RoomDto>>.Succeed(result));
     }
 }

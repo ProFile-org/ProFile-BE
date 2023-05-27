@@ -104,7 +104,6 @@ public class AuthController : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = newRefreshToken.ExpiryDateTime
         };
         var handler = new JwtSecurityTokenHandler();
         Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);
