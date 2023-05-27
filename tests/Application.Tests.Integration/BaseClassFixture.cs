@@ -1,11 +1,14 @@
 using Application.Departments.Commands.Add;
+using Application.Helpers;
 using Bogus;
 using Domain.Common;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NodaTime;
 using Xunit;
 
 namespace Application.Tests.Integration;
@@ -157,5 +160,42 @@ public class BaseClassFixture
         }
 
         return room;
+    }
+
+    protected static Department CreateDepartment()
+    {
+        return new Department()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.Department()
+        };
+    }
+
+    protected static User CreateUser(string role, string password)
+    {
+        return new User()
+        {
+            Id = Guid.NewGuid(),
+            Username = new Faker().Person.UserName,
+            Email = new Faker().Person.Email,
+            FirstName = new Faker().Person.FirstName,
+            LastName = new Faker().Person.LastName,
+            Role = role,
+            Position = new Faker().Random.Word(),
+            IsActivated = true,
+            IsActive = true,
+            Created = LocalDateTime.FromDateTime(DateTime.Now),
+            PasswordHash = SecurityUtil.Hash(password)
+        };
+    }
+
+    protected static Staff CreateStaff(User user, Room? room)
+    {
+        return new Staff()
+        {
+            Id = user.Id,
+            User = user,
+            Room = room,
+        };
     }
 }

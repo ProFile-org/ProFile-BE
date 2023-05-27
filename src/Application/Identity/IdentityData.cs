@@ -6,5 +6,6 @@ public static class IdentityData
     {
         public const string Admin = "Admin";
         public const string Staff = "Staff";
+        public const string Employee = "Employee";
     }
 }
