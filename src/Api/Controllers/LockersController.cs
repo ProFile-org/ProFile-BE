@@ -30,7 +30,7 @@ public class LockersController : ApiControllerBase
     {
         var query = new GetLockerByIdQuery()
         {
-            LockerId = lockerId
+            LockerId = lockerId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<LockerDto>.Succeed(result));
@@ -39,7 +39,7 @@ public class LockersController : ApiControllerBase
     /// <summary>
     /// Get all lockers paginated
     /// </summary>
-    /// <param name="queryParameters">Get all lockers query parameters</param>
+    /// <param name="queryParameters">Get all lockers paginated query parameters</param>
     /// <returns>A paginated list of LockerDto</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -66,38 +66,76 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> AddLocker([FromBody] AddLockerCommand command)
+    public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] AddLockerCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
     }
 
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("disable")]
+    /// <summary>
+    /// Remove a locker
+    /// </summary>
+    /// <param name="lockerId">Id of the locker to be removed</param>
+    /// <returns>A LockerDto of the removed locker</returns>
+    [HttpDelete("{lockerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> DisableLocker([FromBody] DisableLockerCommand command)
+    public async Task<ActionResult<Result<LockerDto>>> Remove([FromRoute] Guid lockerId)
     {
+        var command = new RemoveLockerCommand()
+        {
+            LockerId = lockerId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
     }
 
+    /// <summary>
+    /// Enable a locker
+    /// </summary>
+    /// <param name="lockerId">Id of the locker to be enabled</param>
+    /// <returns>A LockerDto of the enabled locker</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("enable")]
+    [HttpPut("enable/{lockerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> EnableLocker([FromBody] EnableLockerCommand command)
+    public async Task<ActionResult<Result<LockerDto>>> Enable([FromRoute] Guid lockerId)
     {
+        var command = new EnableLockerCommand()
+        {
+            LockerId = lockerId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Disable a locker
+    /// </summary>
+    /// <param name="lockerId">Id of the locker to be disabled</param>
+    /// <returns>A LockerDto of the disabled locker</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [HttpPut("disable/{lockerId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<LockerDto>>> Disable([FromRoute] Guid lockerId)
+    {
+        var command = new DisableLockerCommand()
+        {
+            LockerId = lockerId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<LockerDto>.Succeed(result));
+    }
+
     /// <summary>
     /// Update a locker
     /// </summary>
@@ -116,27 +154,7 @@ public class LockersController : ApiControllerBase
             LockerId = lockerId,
             Name = request.Name,
             Description = request.Description,
-            Capacity = request.Capacity
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<LockerDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Remove a locker
-    /// </summary>
-    /// <param name="lockerId">Id of the locker to be removed</param>
-    /// <returns>A LockerDto of the removed locker</returns>
-    [HttpDelete("{lockerId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Remove([FromRoute] Guid lockerId)
-    {
-        var command = new RemoveLockerCommand()
-        {
-            LockerId = lockerId
+            Capacity = request.Capacity,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));

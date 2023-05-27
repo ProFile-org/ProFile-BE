@@ -79,7 +79,7 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> AddStaff([FromBody] AddStaffCommand command)
+    public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] AddStaffCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
@@ -95,7 +95,8 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> RemoveStaffFromRoom([FromRoute] Guid staffId,
+    public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
+        [FromRoute] Guid staffId,
         [FromBody] RemoveStaffFromRoomRequest request)
     {
         var command = new RemoveStaffFromRoomCommand()

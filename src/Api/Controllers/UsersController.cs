@@ -27,7 +27,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<UserDto>>> GetUserById([FromRoute] Guid userId)
+    public async Task<ActionResult<Result<UserDto>>> GetById([FromRoute] Guid userId)
     {
         var query = new GetUserByIdQuery
         {
@@ -40,7 +40,7 @@ public class UsersController : ApiControllerBase
     /// <summary>
     /// Get all users paginated
     /// </summary>
-    /// <param name="queryParameters">Get all users  query parameters</param>
+    /// <param name="queryParameters">Get all users query parameters</param>
     /// <returns>A paginated list of UserDto</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -61,6 +61,11 @@ public class UsersController : ApiControllerBase
         return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
     }
     
+    /// <summary>
+    /// Add a user
+    /// </summary>
+    /// <param name="command">Add user details</param>
+    /// <returns>A UserDto of the added user</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]    
@@ -68,30 +73,14 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<UserDto>>> AddUser([FromBody] AddUserCommand command)
+    public async Task<ActionResult<Result<UserDto>>> Add([FromBody] AddUserCommand command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }
-    
-    // [RequiresRole(IdentityData.Roles.Admin)]
-    // [HttpGet]
-    // [ProducesResponseType(StatusCodes.Status200OK)]
-    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    // public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetUsersByName(string? searchTerm, int? page, int? size)
-    // {
-    //     var query = new GetUsersByNameQuery
-    //     {
-    //         SearchTerm = searchTerm,
-    //         Page = page,
-    //         Size = size
-    //     };
-    //     var result = await Mediator.Send(query);
-    //     return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
-    // }
-    
+
     /// <summary>
-    /// Disable a user
+    /// Enable a user
     /// </summary>
     /// <param name="userId">Id of the user to be enabled</param>
     /// <returns>A UserDto of the enabled user</returns>
@@ -100,7 +89,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<UserDto>>> EnableUser([FromRoute] Guid userId)
+    public async Task<ActionResult<Result<UserDto>>> Enable([FromRoute] Guid userId)
     {
         var command = new EnableUserCommand()
         {
@@ -110,14 +99,23 @@ public class UsersController : ApiControllerBase
         return Ok(Result<UserDto>.Succeed(result));
     }
 
+    /// <summary>
+    /// Disable a user
+    /// </summary>
+    /// <param name="userId">Id of the user to be disabled</param>
+    /// <returns>A UserDto of the disabled user</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpPost("disable")]
+    [HttpPut("disable/{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<UserDto>>> DisableUser([FromBody] DisableUserCommand command)
+    public async Task<ActionResult<Result<UserDto>>> Disable([FromRoute] Guid userId)
     {
+        var command = new DisableUserCommand()
+        {
+            UserId = userId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }

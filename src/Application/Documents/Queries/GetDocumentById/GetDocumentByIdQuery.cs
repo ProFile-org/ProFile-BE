@@ -8,7 +8,7 @@ namespace Application.Documents.Queries.GetDocumentById;
 
 public record GetDocumentByIdQuery : IRequest<DocumentDto>
 {
-    public Guid Id { get; init; } 
+    public Guid DocumentId { get; init; } 
 }
 
 public class GetDocumentByIdQueryHandler : IRequestHandler<GetDocumentByIdQuery, DocumentDto>
@@ -29,7 +29,7 @@ public class GetDocumentByIdQueryHandler : IRequestHandler<GetDocumentByIdQuery,
             .Include(x => x.Folder)
             .ThenInclude(y => y.Locker)
             .ThenInclude(z => z.Room)
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
 
         if (document is null)
         {

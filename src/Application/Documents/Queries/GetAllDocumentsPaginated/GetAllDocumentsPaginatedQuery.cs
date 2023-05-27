@@ -16,6 +16,7 @@ public record GetAllDocumentsPaginatedQuery : IRequest<PaginatedList<DocumentDto
     public Guid? RoomId { get; init; }
     public Guid? LockerId { get; init; }
     public Guid? FolderId { get; init; }
+    public string? SearchTerm { get; set; }
     public int? Page { get; init; }
     public int? Size { get; init; }
     public string? SortBy { get; init; }

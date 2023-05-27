@@ -10,8 +10,8 @@ namespace Application.Rooms.Queries.GetEmptyContainersPaginated;
 public record GetEmptyContainersPaginatedQuery : IRequest<PaginatedList<EmptyLockerDto>>
 {
     public Guid RoomId { get; init; }
-    public int Page { get; init; }
-    public int Size { get; init; }
+    public int? Page { get; init; }
+    public int? Size { get; init; }
 }
 
 public class GetEmptyContainersPaginatedQueryHandler : IRequestHandler<GetEmptyContainersPaginatedQuery, PaginatedList<EmptyLockerDto>>
@@ -31,7 +31,9 @@ public class GetEmptyContainersPaginatedQueryHandler : IRequestHandler<GetEmptyC
         {
             throw new KeyNotFoundException("Room does not exist.");
         }
-        
+
+        var pageNumber = request.Page ?? 1;
+        var sizeNumber = request.Size ?? 5;
         var lockers = _context.Lockers
             .Where(x => x.Room.Id == request.RoomId
                         && x.IsAvailable
@@ -42,7 +44,7 @@ public class GetEmptyContainersPaginatedQueryHandler : IRequestHandler<GetEmptyC
         
         lockers.ForEach(x => x.Folders = x.Folders.Where(y => y.Slot > 0));
 
-        var result = new PaginatedList<EmptyLockerDto>(lockers.ToList(), lockers.Count(), request.Page, request.Size);
+        var result = new PaginatedList<EmptyLockerDto>(lockers.ToList(), lockers.Count, pageNumber, sizeNumber);
         return result;
     }
 } 

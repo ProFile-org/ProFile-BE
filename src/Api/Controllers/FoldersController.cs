@@ -39,7 +39,7 @@ public class FoldersController : ApiControllerBase
     /// <summary>
     /// Get all folders paginated
     /// </summary>
-    /// <param name="queryParameters">Get all folders query parameters</param>
+    /// <param name="queryParameters">Get all folders paginated query parameters</param>
     /// <returns>A paginated list of FolderDto</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
@@ -104,17 +104,21 @@ public class FoldersController : ApiControllerBase
     /// <summary>
     /// Enable a folder
     /// </summary>
-    /// <param name="command">Enable folder details</param>
+    /// <param name="folderId">Id of the folder to be enabled</param>
     /// <returns>A FolderDto of the enabled folder</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("enable")]
-    [ProducesResponseType(StatusCodes.Status200OK)]    
+    [HttpPut("enable/{folderId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> EnableFolder([FromBody] EnableFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> EnableFolder([FromRoute] Guid folderId)
     {
+        var command = new EnableFolderCommand()
+        {
+            FolderId = folderId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }
@@ -122,17 +126,21 @@ public class FoldersController : ApiControllerBase
     /// <summary>
     /// Disable a folder
     /// </summary>
-    /// <param name="command">Disable folder details</param>
+    /// <param name="folderId">Id of the disabled folder</param>
     /// <returns>A FolderDto of the disabled folder</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("disable")]
+    [HttpPut("disable/{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromBody] DisableFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromRoute] Guid folderId)
     {
+        var command = new DisableFolderCommand()
+        {
+            FolderId = folderId
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }

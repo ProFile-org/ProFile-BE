@@ -1,4 +1,4 @@
-namespace Api.Controllers.Payload.Requests;
+namespace Api.Controllers.Payload.Requests.Auth;
 
 public class RefreshTokenRequest
 {

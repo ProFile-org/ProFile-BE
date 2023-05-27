@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Requests.Departments;
 using Application.Common.Models;
 using Application.Departments.Commands.DeleteDepartment;
 using Application.Departments.Commands.UpdateDepartment;
@@ -15,35 +16,6 @@ namespace Api.Controllers;
 public class DepartmentsController : ApiControllerBase
 {
     /// <summary>
-    /// Create a department
-    /// </summary>
-    /// <param name="command">command parameter to create a department</param>
-    /// <returns>Result[DepartmentDto]</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DepartmentDto>>> AddDepartment([FromBody] AddDepartmentCommand command)
-    {
-        var result = await Mediator.Send(command);
-        return Ok(Result<DepartmentDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all documents
-    /// </summary>
-    /// <returns>a Result of an IEnumerable of DepartmentDto</returns>
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAllDepartments()
-    {
-        var result = await Mediator.Send(new GetAllDepartmentsQuery());
-        return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
-    }
-    
-    /// <summary>
     /// Get back a department based on its id
     /// </summary>
     /// <param name="departmentId">id of the department to be retrieved</param>
@@ -51,7 +23,8 @@ public class DepartmentsController : ApiControllerBase
     [HttpGet("{departmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<DepartmentDto>>> GetDepartmentById([FromRoute] Guid departmentId)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DepartmentDto>>> GetById([FromRoute] Guid departmentId)
     {
         var query = new GetDepartmentByIdQuery()
         {
@@ -61,6 +34,35 @@ public class DepartmentsController : ApiControllerBase
         return Ok(Result<DepartmentDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Get all documents
+    /// </summary>
+    /// <returns>A list of DocumentDto</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
+    {
+        var result = await Mediator.Send(new GetAllDepartmentsQuery());
+        return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Add a department
+    /// </summary>
+    /// <param name="command">command parameter to add a department</param>
+    /// <returns>A DepartmentDto of the the added department</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] AddDepartmentCommand command)
+    {
+        var result = await Mediator.Send(command);
+        return Ok(Result<DepartmentDto>.Succeed(result));
+    }
+
     /// <summary>
     /// Update a department
     /// </summary>
@@ -72,7 +74,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DepartmentDto>>> UpdateDepartment([FromRoute] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
+    public async Task<ActionResult<Result<DepartmentDto>>> Update([FromRoute] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
     {
         var command = new UpdateDepartmentCommand()
         {
@@ -93,7 +95,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DepartmentDto>>> DeleteDepartment([FromRoute] Guid departmentId)
+    public async Task<ActionResult<Result<DepartmentDto>>> Delete([FromRoute] Guid departmentId)
     {
         var command = new DeleteDepartmentCommand()
         {
