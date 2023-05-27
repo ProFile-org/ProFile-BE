@@ -1,6 +1,6 @@
-namespace Api.Controllers.Payload.Requests.Lockers;
+namespace Api.Controllers.Payload.Requests.Folders;
 
-public class UpdateLockerRequest
+public class UpdateFolderRequest
 {
     public string Name { get; set; } = null!;
     public string Description { get; set; } = null!;

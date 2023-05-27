@@ -101,7 +101,10 @@ public class LockersController : ApiControllerBase
     {
         var command = new UpdateLockerCommand()
         {
-            LockerId = lockerId
+            LockerId = lockerId,
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));

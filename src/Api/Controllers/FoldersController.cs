@@ -5,6 +5,7 @@ using Application.Folders.Commands.AddFolder;
 using Application.Folders.Commands.DisableFolder;
 using Application.Folders.Commands.EnableFolder;
 using Application.Folders.Commands.RemoveFolder;
+using Application.Folders.Commands.UpdateFolder;
 using Application.Folders.Queries.GetAllFoldersPaginated;
 using Application.Folders.Queries.GetFolderById;
 using Application.Identity;
@@ -124,6 +125,30 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromBody] DisableFolderCommand command)
     {
+        var result = await Mediator.Send(command);
+        return Ok(Result<FolderDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Update a folder
+    /// </summary>
+    /// <param name="folderId">Id of the folder to be updated</param>
+    /// <param name="request">Update folder details</param>
+    /// <returns>A FolderDto of the updated folder</returns>
+    [HttpPut("{folderId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
+    {
+        var command = new UpdateFolderCommand()
+        {
+            FolderId = folderId,
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }
