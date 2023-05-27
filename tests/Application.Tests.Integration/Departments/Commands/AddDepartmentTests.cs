@@ -1,5 +1,4 @@
 using Application.Common.Exceptions;
-using Application.Departments.Commands.DeleteDepartment;
 using Domain.Entities;
 using FluentAssertions;
 using Xunit;

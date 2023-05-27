@@ -2,7 +2,7 @@
     using Application.Common.Extensions;
     using Application.Common.Mappings;
     using Application.Common.Models.Dtos.Physical;
-    using Application.Documents.Queries.GetAllDocumentsPaginated;
+    using Application.Documents.Queries.GetAllPaginated;
     using AutoMapper;
     using Bogus;
     using Domain.Entities.Physical;
@@ -31,7 +31,7 @@
             var room = CreateRoom(locker);
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery();
+            var query = new Query();
 
             // Act
             var result = await SendAsync(query);
@@ -54,7 +54,7 @@
 
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id
             };
@@ -92,7 +92,7 @@
             await AddAsync(room1);
             await AddAsync(room2);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room1.Id
             };
@@ -123,7 +123,7 @@
         public async Task ShouldThrowKeyNotFoundException_WhenOnlyRoomIdIsPresentButDoesNotExist()
         {
             // Arrange
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = Guid.NewGuid()
             };
@@ -155,7 +155,7 @@
 
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id,
                 LockerId = locker1.Id
@@ -187,7 +187,7 @@
             var room = CreateRoom();
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id,
                 LockerId = Guid.NewGuid()
@@ -216,7 +216,7 @@
             await AddAsync(room1);
             await AddAsync(room2);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room1.Id,
                 LockerId = locker.Id
@@ -248,7 +248,7 @@
             var room = CreateRoom(locker);
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id,
                 LockerId = locker.Id,
@@ -282,7 +282,7 @@
             
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id,
                 LockerId = locker.Id,
@@ -315,14 +315,14 @@
             await AddAsync(room1);
             await AddAsync(room2);
 
-            var query1 = new GetAllDocumentsPaginatedQuery()
+            var query1 = new Query()
             {
                 RoomId = room1.Id,
                 LockerId = locker2.Id,
                 FolderId = folder1.Id
             };
             
-            var query2 = new GetAllDocumentsPaginatedQuery()
+            var query2 = new Query()
             {
                 RoomId = room1.Id,
                 LockerId = locker2.Id,
@@ -357,7 +357,7 @@
 
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id
             };
@@ -395,7 +395,7 @@
 
             await AddAsync(room);
 
-            var query = new GetAllDocumentsPaginatedQuery()
+            var query = new Query()
             {
                 RoomId = room.Id,
                 SortBy = sortBy,

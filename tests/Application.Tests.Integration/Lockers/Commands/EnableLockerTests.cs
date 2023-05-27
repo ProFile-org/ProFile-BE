@@ -1,12 +1,13 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.AddLocker;
-using Application.Lockers.Commands.DisableLocker;
-using Application.Lockers.Commands.EnableLocker;
+using Application.Lockers.Commands.Add;
+using Application.Lockers.Commands.Disable;
+using Application.Lockers.Commands.Enable;
 using Bogus;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
+using Command = Application.Lockers.Commands.Disable.Command;
 
 namespace Application.Tests.Integration.Lockers.Commands;
 
@@ -33,7 +34,7 @@ public class EnableLockerTests : BaseClassFixture
 
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
         {
             Name = new Faker().Commerce.ProductName(),
             Description = new Faker().Lorem.Sentence(),
@@ -43,7 +44,7 @@ public class EnableLockerTests : BaseClassFixture
 
         var locker = await SendAsync(createLockerCommand);
 
-        var disableLockerCommand = new DisableLockerCommand()
+        var disableLockerCommand = new Command()
         {
             LockerId = locker.Id,
         };
@@ -52,7 +53,7 @@ public class EnableLockerTests : BaseClassFixture
         
         // Act
         
-        var enableLockerCommand = new EnableLockerCommand()
+        var enableLockerCommand = new Application.Lockers.Commands.Enable.Command()
         {
             LockerId = locker.Id,
         };
@@ -71,7 +72,7 @@ public class EnableLockerTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         // Arrange
-        var enableLockerCommand = new EnableLockerCommand()
+        var enableLockerCommand = new Application.Lockers.Commands.Enable.Command()
         {
             LockerId = Guid.NewGuid(),
         };
@@ -101,7 +102,7 @@ public class EnableLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
         {
             Name = new Faker().Commerce.ProductName(),
             Description = new Faker().Lorem.Sentence(),
@@ -110,7 +111,7 @@ public class EnableLockerTests : BaseClassFixture
         };
         
         var locker = await SendAsync(createLockerCommand);
-        var enableLockerCommand = new EnableLockerCommand()
+        var enableLockerCommand = new Application.Lockers.Commands.Enable.Command()
         {
             LockerId = locker.Id,
         };

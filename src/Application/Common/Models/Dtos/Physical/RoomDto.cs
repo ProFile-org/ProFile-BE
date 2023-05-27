@@ -1,5 +1,4 @@
 using Application.Common.Mappings;
-using Application.Users.Queries.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
 

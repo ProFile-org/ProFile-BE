@@ -1,15 +1,11 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Departments;
 using Application.Common.Models;
-using Application.Departments.Commands.DeleteDepartment;
-using Application.Departments.Commands.UpdateDepartment;
-using Application.Departments.Commands.AddDepartment;
-using Application.Departments.Queries.GetAllDepartments;
-using Application.Departments.Queries.GetDepartmentById;
 using Application.Identity;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DepartmentQueries = Application.Departments.Queries;
+using DepartmentCommands = Application.Departments.Commands;
 
 namespace Api.Controllers;
 
@@ -26,7 +22,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> GetById([FromRoute] Guid departmentId)
     {
-        var query = new GetDepartmentByIdQuery()
+        var query = new DepartmentQueries.GetById.Query()
         {
             DepartmentId = departmentId
         };
@@ -43,7 +39,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
     {
-        var result = await Mediator.Send(new GetAllDepartmentsQuery());
+        var result = await Mediator.Send(new DepartmentQueries.GetAll.Query());
         return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
     }
     
@@ -57,7 +53,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] AddDepartmentCommand command)
+    public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] DepartmentCommands.Add.Command command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<DepartmentDto>.Succeed(result));
@@ -76,7 +72,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> Update([FromRoute] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
     {
-        var command = new UpdateDepartmentCommand()
+        var command = new DepartmentCommands.Update.Command()
         {
             DepartmentId = departmentId,
             Name = request.Name
@@ -97,7 +93,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> Delete([FromRoute] Guid departmentId)
     {
-        var command = new DeleteDepartmentCommand()
+        var command = new DepartmentCommands.Delete.Command()
         {
             DepartmentId = departmentId,
         };

@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Auth;
 using Api.Controllers.Payload.Responses;
 using Application.Common.Interfaces;

@@ -1,29 +1,30 @@
 using Application.Common.Exceptions;
 using Application.Common.Models.Dtos.Physical;
-using Application.Folders.Commands.AddFolder;
-using Application.Lockers.Commands.AddLocker;
-using Application.Rooms.Commands.AddRoom;
+using Application.Folders.Commands.Add;
+using Application.Lockers.Commands.Add;
+using Application.Rooms.Commands.Add;
 using Bogus;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
+using Command = Application.Lockers.Commands.Add.Command;
 
 namespace Application.Tests.Integration.Folders.Commands;
 
 public class AddFolderTests : BaseClassFixture
 {
-    private readonly Faker<AddFolderCommand> _folderGenerator = new Faker<AddFolderCommand>()
+    private readonly Faker<Application.Folders.Commands.Add.Command> _folderGenerator = new Faker<Application.Folders.Commands.Add.Command>()
             .RuleFor(f => f.Name, faker => faker.Commerce.ProductName())
             .RuleFor(f => f.Description, faker => faker.Commerce.ProductDescription())
             .RuleFor(f => f.Capacity, faker => faker.Random.Int(1,9999));
     
-    private readonly Faker<AddRoomCommand> _roomGenerator = new Faker<AddRoomCommand>()
+    private readonly Faker<Application.Rooms.Commands.Add.Command> _roomGenerator = new Faker<Application.Rooms.Commands.Add.Command>()
         .RuleFor(r => r.Name, faker => faker.Commerce.ProductName())
         .RuleFor(r => r.Description, faker => faker.Commerce.ProductDescription())
         .RuleFor(r => r.Capacity, faker => faker.Random.Int(1,9999));
 
-    private readonly Faker<AddLockerCommand> _lockerGenerator = new Faker<AddLockerCommand>()
+    private readonly Faker<Command> _lockerGenerator = new Faker<Command>()
         .RuleFor(l => l.Name, faker => faker.Commerce.ProductName())
         .RuleFor(l => l.Description, faker => faker.Commerce.ProductDescription())
         .RuleFor(l => l.Capacity, faker => faker.Random.Int(1,9999));

@@ -1,16 +1,11 @@
 using Api.Controllers.Payload.Requests.Folders;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
-using Application.Folders.Commands.AddFolder;
-using Application.Folders.Commands.DisableFolder;
-using Application.Folders.Commands.EnableFolder;
-using Application.Folders.Commands.RemoveFolder;
-using Application.Folders.Commands.UpdateFolder;
-using Application.Folders.Queries.GetAllFoldersPaginated;
-using Application.Folders.Queries.GetFolderById;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FolderCommands = Application.Folders.Commands;
+using FolderQueries = Application.Folders.Queries;
 
 namespace Api.Controllers;
 
@@ -28,7 +23,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<FolderDto>>> GetById([FromRoute] Guid folderId)
     {
-        var query = new GetFolderByIdQuery()
+        var query = new FolderQueries.GetById.Query()
         {
             FolderId = folderId
         };
@@ -48,7 +43,7 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<FolderDto>>>> GetAllPaginated(
         [FromQuery] GetAllFoldersPaginatedQueryParameters queryParameters)
     {
-        var query = new GetAllFoldersPaginatedQuery()
+        var query = new FolderQueries.GetAllPaginated.Query()
         {
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
@@ -73,7 +68,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderCommand command)
+    public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] FolderCommands.Add.Command command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
@@ -93,7 +88,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
-        var command = new RemoveFolderCommand()
+        var command = new FolderCommands.Remove.Command()
         {
             FolderId = folderId,
         };
@@ -115,7 +110,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> EnableFolder([FromRoute] Guid folderId)
     {
-        var command = new EnableFolderCommand()
+        var command = new FolderCommands.Enable.Command()
         {
             FolderId = folderId,
         };
@@ -137,7 +132,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromRoute] Guid folderId)
     {
-        var command = new DisableFolderCommand()
+        var command = new FolderCommands.Disable.Command()
         {
             FolderId = folderId
         };
@@ -158,7 +153,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
     {
-        var command = new UpdateFolderCommand()
+        var command = new FolderCommands.Update.Command()
         {
             FolderId = folderId,
             Name = request.Name,

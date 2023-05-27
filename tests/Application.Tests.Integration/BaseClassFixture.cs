@@ -1,4 +1,4 @@
-using Application.Departments.Commands.AddDepartment;
+using Application.Departments.Commands.Add;
 using Bogus;
 using Domain.Common;
 using Domain.Entities;
@@ -15,7 +15,7 @@ namespace Application.Tests.Integration;
 [Collection(nameof(BaseCollectionFixture))]
 public class BaseClassFixture
 {
-    protected readonly Faker<AddDepartmentCommand> _departmentGenerator = new Faker<AddDepartmentCommand>()
+    protected readonly Faker<Command> _departmentGenerator = new Faker<Command>()
         .RuleFor(x => x.Name, faker => faker.Commerce.Department());
 
     protected static IServiceScopeFactory _scopeFactory = null!;

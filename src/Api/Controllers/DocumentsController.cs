@@ -1,15 +1,11 @@
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
-using Application.Documents.Commands.DeleteDocument;
-using Application.Documents.Commands.ImportDocument;
-using Application.Documents.Commands.UpdateDocument;
-using Application.Documents.Queries.GetAllDocumentsPaginated;
-using Application.Documents.Queries.GetDocumentById;
-using Application.Documents.Queries.GetDocumentTypes;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DocumentCommands = Application.Documents.Commands;
+using DocumentQueries = Application.Documents.Queries;
 
 namespace Api.Controllers;
 
@@ -26,9 +22,9 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DocumentDto>>> GetById(Guid documentId)
     {
-        var query = new GetDocumentByIdQuery()
+        var query = new DocumentQueries.GetById.Query()
         {
-            DocumentId = documentId
+            DocumentId = documentId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
@@ -48,7 +44,7 @@ public class DocumentsController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllPaginated(
         [FromQuery] GetAllDocumentsPaginatedQueryParameters queryParameters)
     {
-        var query = new GetAllDocumentsPaginatedQuery()
+        var query = new DocumentQueries.GetAllPaginated.Query()
         {
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
@@ -73,7 +69,7 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<IEnumerable<string>>>> GetAllDocumentTypes()
     {
-        var result = await Mediator.Send(new GetAllDocumentTypesQuery());
+        var result = await Mediator.Send(new DocumentQueries.GetDocumentTypes.Query());
         return Ok(Result<IEnumerable<string>>.Succeed(result));
     }
     
@@ -89,7 +85,7 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] ImportDocumentCommand command)
+    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] DocumentCommands.Import.Command command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
@@ -109,7 +105,7 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<DocumentDto>>> Update([FromRoute] Guid documentId, [FromBody] UpdateDocumentRequest request)
     {
-        var query = new UpdateDocumentCommand()
+        var query = new DocumentCommands.Update.Command()
         {
             DocumentId = documentId,
             Title = request.Title,
@@ -131,7 +127,7 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DocumentDto>>> Delete([FromRoute] Guid documentId)
     {
-        var query = new DeleteDocumentCommand()
+        var query = new DocumentCommands.Delete.Command()
         {
             DocumentId = documentId,
         };

@@ -1,10 +1,11 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.AddLocker;
-using Application.Lockers.Commands.DisableLocker;
+using Application.Lockers.Commands.Add;
+using Application.Lockers.Commands.Disable;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
+using Command = Application.Lockers.Commands.Disable.Command;
 
 namespace Application.Tests.Integration.Lockers.Commands;
 
@@ -31,7 +32,7 @@ public class DisableLockerTests : BaseClassFixture
 
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
         {
             Name = new Faker().Commerce.ProductName(),
             Description = new Faker().Lorem.Sentence(),
@@ -42,7 +43,7 @@ public class DisableLockerTests : BaseClassFixture
         var locker = await SendAsync(createLockerCommand);
         room.NumberOfLockers += 1;
 
-        var disableLockerCommand = new DisableLockerCommand()
+        var disableLockerCommand = new Command()
         {
             LockerId = locker.Id,
         };
@@ -66,7 +67,7 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         // Arrange
-        var disableLockerCommand = new DisableLockerCommand()
+        var disableLockerCommand = new Command()
         {
             LockerId = Guid.NewGuid(),
         };
@@ -96,7 +97,7 @@ public class DisableLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
+        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
         {
             Name = new Faker().Commerce.ProductName(),
             Description = new Faker().Lorem.Sentence(),
@@ -105,7 +106,7 @@ public class DisableLockerTests : BaseClassFixture
         };
         
         var locker = await SendAsync(createLockerCommand);
-        var disableLockerCommand = new DisableLockerCommand()
+        var disableLockerCommand = new Command()
         {
             LockerId = locker.Id,
         };

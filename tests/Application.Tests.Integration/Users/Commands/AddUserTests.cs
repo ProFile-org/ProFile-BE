@@ -1,4 +1,4 @@
-using Application.Users.Commands.AddUser;
+using Application.Users.Commands.Add;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
@@ -8,7 +8,7 @@ namespace Application.Tests.Integration.Users.Commands;
 
 public class AddUserTests : BaseClassFixture
 {
-    private readonly Faker<AddUserCommand> _userGenerator = new Faker<AddUserCommand>()
+    private readonly Faker<Command> _userGenerator = new Faker<Command>()
         .RuleFor(x => x.Username, faker => faker.Person.UserName)
         .RuleFor(x => x.Email, faker => faker.Person.Email)
         .RuleFor(x => x.FirstName, faker => faker.Person.FirstName)

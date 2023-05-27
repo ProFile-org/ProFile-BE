@@ -3,16 +3,10 @@ using Api.Controllers.Payload.Requests.Rooms;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
-using Application.Rooms.Commands.AddRoom;
-using Application.Rooms.Commands.DisableRoom;
-using Application.Rooms.Commands.EnableRoom;
-using Application.Rooms.Commands.RemoveRoom;
-using Application.Rooms.Commands.UpdateRoom;
-using Application.Rooms.Queries.GetAllRoomPaginated;
-using Application.Rooms.Queries.GetEmptyContainersPaginated;
-using Application.Rooms.Queries.GetRoomById;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RoomCommands = Application.Rooms.Commands;
+using RoomQueries = Application.Rooms.Queries;
 
 namespace Api.Controllers;
 
@@ -29,7 +23,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<RoomDto>>> GetById([FromRoute] Guid roomId)
     {
-        var query = new GetRoomByIdQuery()
+        var query = new RoomQueries.GetById.Query()
         {
             RoomId = roomId,
         };
@@ -48,7 +42,7 @@ public class RoomsController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(
         [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
     {
-        var query = new GetAllRoomsPaginatedQuery()
+        var query = new RoomQueries.GetAllPaginated.Query()
         {
             Page = queryParameters.Page,
             Size = queryParameters.Size,
@@ -69,18 +63,18 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PaginatedList<EmptyLockerDto>>> GetEmptyContainers(
+    public async Task<ActionResult<PaginatedList<RoomQueries.GetEmptyContainersPaginated.EmptyLockerDto>>> GetEmptyContainers(
         [FromRoute] Guid roomId,
         [FromQuery] GetEmptyContainersPaginatedQueryParameters queryParameters)
     {
-        var query = new GetEmptyContainersPaginatedQuery()
+        var query = new RoomQueries.GetEmptyContainersPaginated.Query()
         {
             RoomId = roomId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
+        return Ok(Result<PaginatedList<RoomQueries.GetEmptyContainersPaginated.EmptyLockerDto>>.Succeed(result));
     }
     
     /// <summary>
@@ -95,7 +89,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] AddRoomCommand command)
+    public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] RoomCommands.Add.Command command)
     {
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
@@ -114,7 +108,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> RemoveRoom([FromRoute] Guid roomId)
     {
-        var command = new RemoveRoomCommand()
+        var command = new RoomCommands.Remove.Command()
         {
             RoomId = roomId,
         };
@@ -134,7 +128,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> EnableRoom([FromRoute] Guid roomId)
     {
-        var command = new EnableRoomCommand()
+        var command = new RoomCommands.Enable.Command()
         {
             RoomId = roomId,
         };
@@ -155,7 +149,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromRoute] Guid roomId)
     {
-        var command = new DisableRoomCommand()
+        var command = new RoomCommands.Disable.Command()
         {
             RoomId = roomId,
         };
@@ -176,8 +170,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
     {
-        Console.WriteLine(request.Description);
-        var command = new UpdateRoomCommand()
+        var command = new RoomCommands.Update.Command()
         {
             RoomId = roomId,
             Name = request.Name,

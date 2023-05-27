@@ -1,4 +1,4 @@
-﻿using Application.Rooms.Commands.RemoveRoom;
+﻿using Application.Rooms.Commands.Remove;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -19,7 +19,7 @@ public class RemoveRoomTests : BaseClassFixture
         var room = CreateRoom();
         await Add(room);
 
-        var command = new RemoveRoomCommand()
+        var command = new Command()
         {
             RoomId = room.Id
         };
@@ -42,7 +42,7 @@ public class RemoveRoomTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
 
-        var command = new RemoveRoomCommand()
+        var command = new Command()
         {
             RoomId = room.Id
         };
@@ -65,7 +65,7 @@ public class RemoveRoomTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange
-        var command = new RemoveRoomCommand()
+        var command = new Command()
         {
             RoomId = Guid.NewGuid()
         };

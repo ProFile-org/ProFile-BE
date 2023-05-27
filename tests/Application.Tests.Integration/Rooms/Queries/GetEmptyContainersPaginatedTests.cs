@@ -1,4 +1,3 @@
-using Application.Lockers.Commands.AddLocker;
 using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Bogus;
 using Domain.Entities.Physical;
@@ -21,7 +20,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
     {
         // Arrange
         var room = await SetupTestEntities();
-        var query = new GetEmptyContainersPaginatedQuery()
+        var query = new Query()
         {
             Page = 1,
             Size = 2,
@@ -52,7 +51,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
     public async Task ShouldThrowNotFound_WhenRoomDoesNotExist()
     {
         // Arrange
-        var query = new GetEmptyContainersPaginatedQuery()
+        var query = new Query()
         {
             Page = 1,
             Size = 2,

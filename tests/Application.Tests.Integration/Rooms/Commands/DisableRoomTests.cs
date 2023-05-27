@@ -1,7 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Helpers;
-using Application.Lockers.Commands.AddLocker;
-using Application.Rooms.Commands.DisableRoom;
+using Application.Rooms.Commands.Disable;
 using Bogus;
 using Domain.Entities;
 using Domain.Entities.Physical;
@@ -26,7 +25,7 @@ public class DisableRoomTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
        
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new Command()
         {
             RoomId = room.Id
         };
@@ -52,7 +51,7 @@ public class DisableRoomTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new Command()
         {
              RoomId = Guid.NewGuid()
         };
@@ -76,7 +75,7 @@ public class DisableRoomTests : BaseClassFixture
 
         await AddAsync(room);
             
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new Command()
         {
             RoomId = room.Id
         };
@@ -103,7 +102,7 @@ public class DisableRoomTests : BaseClassFixture
         room.IsAvailable = false;
         await AddAsync(room);
 
-        var command = new DisableRoomCommand()
+        var command = new Command()
         {
             RoomId = room.Id
         };

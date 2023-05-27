@@ -1,5 +1,5 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.AddLocker;
+using Application.Lockers.Commands.Add;
 using Bogus;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
@@ -33,7 +33,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room);
         
-        var addLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new Command()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -77,7 +77,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var addLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new Command()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -126,7 +126,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room2);
 
-        var addLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new Command()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -134,7 +134,7 @@ public class AddLockerTests : BaseClassFixture
             RoomId = room1.Id,
         };
         
-        var addLockerCommand2 = new AddLockerCommand()
+        var addLockerCommand2 = new Command()
         {
             Name = addLockerCommand.Name,
             Description = new Faker().Lorem.Sentence(),
@@ -181,7 +181,7 @@ public class AddLockerTests : BaseClassFixture
         
         await AddAsync(room);
 
-        var addLockerCommand = new AddLockerCommand()
+        var addLockerCommand = new Command()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
@@ -189,7 +189,7 @@ public class AddLockerTests : BaseClassFixture
             RoomId = room.Id,
         };
         
-        var addLockerCommand2 = new AddLockerCommand()
+        var addLockerCommand2 = new Command()
         {
             Name = new Faker().Name.JobTitle(),
             Description = new Faker().Lorem.Sentence(),
