@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
@@ -119,17 +120,6 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-        
-        var expiryDateUnix =
-            long.Parse(validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
-
-        var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-            .AddSeconds(expiryDateUnix);
-
-        if (expiryDateTimeUtc > DateTime.UtcNow)
-        {
-            throw new AuthenticationException("This token has not expired yet.");
-        }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
         var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
@@ -159,10 +149,19 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        _context.RefreshTokens.Remove(storedRefreshToken);
+        var jweToken = CreateJweToken(user);
+
+        storedRefreshToken.JwtId = jweToken.Id;
+        storedRefreshToken.ExpiryDateTime =
+            LocalDateTime.FromDateTime(DateTime.UtcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays));
+        _context.RefreshTokens.Update(storedRefreshToken);
         await _context.SaveChangesAsync();
 
-        return await GenerateAuthenticationResultForUserAsync(user);
+        return new AuthenticationResult()
+        {
+            Token = jweToken,
+            RefreshToken = _mapper.Map<RefreshTokenDto>(storedRefreshToken)
+        };
     }
 
     private ClaimsPrincipal? GetPrincipalFromToken(string token)
@@ -187,13 +186,8 @@ public class IdentityService : IIdentityService
 
             return principal;
         }
-        catch (SecurityTokenExpiredException ex)
+        catch
         {
-            return null;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.StackTrace);
             return null;
         }
     }
@@ -207,10 +201,15 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("Username or password is invalid.");
         }
         
+        var existedRefreshTokens = _context.RefreshTokens.Where(x => x.User.Email!.Equals(user.Email));
+
+        _context.RemoveRange(existedRefreshTokens);
+        await _context.SaveChangesAsync();
+        
         return (await GenerateAuthenticationResultForUserAsync(user), _mapper.Map<UserDto>(user));
     }
 
-    public async Task<bool> LogoutAsync(string token, string refreshToken)
+    public async Task LogoutAsync(string token, string refreshToken)
     {
         var validatedToken = GetPrincipalFromToken(token);
 
@@ -223,7 +222,7 @@ public class IdentityService : IIdentityService
         var storedRefreshToken =
             await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
-        if (storedRefreshToken is null) return true;
+        if (storedRefreshToken is null) return;
         
         if (!storedRefreshToken!.JwtId.Equals(jti))
         {
@@ -232,11 +231,31 @@ public class IdentityService : IIdentityService
 
         _context.RefreshTokens.Remove(storedRefreshToken);
         await _context.SaveChangesAsync();
-
-        return true;
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)
+    {
+        var token = CreateJweToken(user);
+        var utcNow = DateTime.UtcNow;
+
+        var refreshToken = new RefreshToken()
+        {
+            JwtId = token.Id,
+            User = user,
+            CreationDateTime = LocalDateTime.FromDateTime(utcNow),
+            ExpiryDateTime = LocalDateTime.FromDateTime(utcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays))
+        };
+
+        await _context.RefreshTokens.AddAsync(refreshToken);
+        await _context.SaveChangesAsync();
+        return new()
+        {
+            Token = token,
+            RefreshToken = _mapper.Map<RefreshTokenDto>(refreshToken)
+        };
+    }
+
+    private SecurityToken CreateJweToken(User user)
     {
         var utcNow = DateTime.UtcNow;
         var authClaims = new List<Claim>
@@ -263,20 +282,6 @@ public class IdentityService : IIdentityService
 
         var token = handler.CreateToken(tokenDescriptor);
 
-        var refreshToken = new RefreshToken()
-        {
-            JwtId = token.Id,
-            User = user,
-            CreationDateTime = LocalDateTime.FromDateTime(utcNow),
-            ExpiryDateTime = LocalDateTime.FromDateTime(utcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays))
-        };
-
-        await _context.RefreshTokens.AddAsync(refreshToken);
-        await _context.SaveChangesAsync();
-        return new()
-        {
-            Token = token,
-            RefreshToken = _mapper.Map<RefreshTokenDto>(refreshToken)
-        };
+        return token;
     }
 }

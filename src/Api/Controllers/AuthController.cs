@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
         var result = await _identityService.LoginAsync(loginModel.Email, loginModel.Password);
         
         SetRefreshToken(result.AuthResult.RefreshToken);
-        SetJweToken(result.AuthResult.Token);
+        SetJweToken(result.AuthResult.Token, result.AuthResult.RefreshToken);
 
         var loginResult = new LoginResult()
         {
@@ -48,24 +48,20 @@ public class AuthController : ControllerBase
         return Ok(Result<LoginResult>.Succeed(loginResult));
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
-
-        var loggedOut = await _identityService.LogoutAsync(jweToken!, refreshToken!);
-
-        if (!loggedOut) return Ok();
         
         RemoveJweToken();
         RemoveRefreshToken();
+        
+        await _identityService.LogoutAsync(jweToken!, refreshToken!);
 
         return Ok();
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Refresh()
     {
@@ -75,34 +71,23 @@ public class AuthController : ControllerBase
         var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
         
         SetRefreshToken(authResult.RefreshToken);
-        SetJweToken(authResult.Token);
+        SetJweToken(authResult.Token, authResult.RefreshToken);
         
         return Ok();
     }
     
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Validate()
+    public IActionResult Validate()
     {
-        var refreshToken = Request.Cookies[nameof(RefreshToken)];
-        var jweToken = Request.Cookies["JweToken"];
-        
-        var validated = await _identityService.Validate(jweToken!, refreshToken!);
-
-        if (validated)
-        {
-            return Ok();
-        }
-
-        return Unauthorized();
+        return Ok();
     }
-    
-    private void SetJweToken(SecurityToken jweToken)
+
+    private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            
         };
         var handler = new JwtSecurityTokenHandler();
         Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);
