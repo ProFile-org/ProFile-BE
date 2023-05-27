@@ -3,6 +3,7 @@ using Application.Common.Models;
 using Application.Identity;
 using Application.Staffs.Commands.CreateStaff;
 using Application.Staffs.Commands.RemoveStaffFromRoom;
+using Application.Staffs.Queries;
 using Application.Users.Queries.Physical;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,26 @@ namespace Api.Controllers;
 
 public class StaffsController : ApiControllerBase
 {
+    /// <summary>
+    /// Get a staff by id
+    /// </summary>
+    /// <param name="staffId">Id of the staff to be retrieved</param>
+    /// <returns>A StaffDto of the retrieved staff</returns>
+    [HttpGet("{staffId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<StaffDto>>> GetById([FromRoute] Guid staffId)
+    {
+        var query = new GetStaffByIdQuery()
+        {
+            StaffId = staffId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<StaffDto>.Succeed(result));
+    }
+    
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -21,7 +42,7 @@ public class StaffsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Remove a staff from room
     /// </summary>
@@ -32,7 +53,8 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> RemoveStaffFromRoom([FromRoute] Guid staffId, [FromBody] RemoveStaffFromRoomRequest request)
+    public async Task<ActionResult<Result<StaffDto>>> RemoveStaffFromRoom([FromRoute] Guid staffId,
+        [FromBody] RemoveStaffFromRoomRequest request)
     {
         var command = new RemoveStaffFromRoomCommand()
         {
