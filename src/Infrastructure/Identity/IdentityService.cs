@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -148,19 +149,9 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        var jweToken = CreateJweToken(user);
+        var result = await GenerateAuthenticationResultForUserAsync(user);
 
-        storedRefreshToken.JwtId = jweToken.Id;
-        storedRefreshToken.ExpiryDateTime =
-            LocalDateTime.FromDateTime(DateTime.UtcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays));
-        _context.RefreshTokens.Update(storedRefreshToken);
-        await _context.SaveChangesAsync();
-
-        return new AuthenticationResult()
-        {
-            Token = jweToken,
-            RefreshToken = _mapper.Map<RefreshTokenDto>(storedRefreshToken)
-        };
+        return result;
     }
 
     private ClaimsPrincipal? GetPrincipalFromToken(string token)
@@ -185,13 +176,8 @@ public class IdentityService : IIdentityService
 
             return principal;
         }
-        catch (SecurityTokenExpiredException ex)
+        catch
         {
-            return null;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.StackTrace);
             return null;
         }
     }

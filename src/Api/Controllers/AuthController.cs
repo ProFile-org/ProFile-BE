@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Responses;
 using Application.Common.Interfaces;
@@ -70,12 +71,21 @@ public class AuthController : ControllerBase
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
-        
-        var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
-        
-        SetRefreshToken(authResult.RefreshToken);
-        SetJweToken(authResult.Token, authResult.RefreshToken);
-        
+
+        try
+        {
+            var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
+            
+            SetRefreshToken(authResult.RefreshToken);
+            SetJweToken(authResult.Token, authResult.RefreshToken);
+        }
+        catch (AuthenticationException)
+        {
+            RemoveJweToken();
+            RemoveRefreshToken();
+            throw;
+        }
+
         return Ok();
     }
     
