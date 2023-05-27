@@ -14,7 +14,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {        
-        builder.ConfigureServices((builderContext, services) =>
+        builder.ConfigureServices((_, services) =>
         {
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType ==
@@ -28,7 +28,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
             var databaseSettings = GetConfiguration().GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql("Server=localhost;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured;", optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql(databaseSettings!.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
     }

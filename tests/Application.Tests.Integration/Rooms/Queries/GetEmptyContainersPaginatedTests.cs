@@ -4,7 +4,6 @@ using Domain.Entities.Physical;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic;
 using Xunit;
 
 namespace Application.Tests.Integration.Rooms.Queries;

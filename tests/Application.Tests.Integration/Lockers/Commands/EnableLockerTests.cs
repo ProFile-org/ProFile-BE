@@ -1,10 +1,6 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.Add;
-using Application.Lockers.Commands.Disable;
-using Application.Lockers.Commands.Enable;
 using Bogus;
 using Domain.Entities.Physical;
-using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
 using Command = Application.Lockers.Commands.Disable.Command;

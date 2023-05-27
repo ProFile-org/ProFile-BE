@@ -1,9 +1,7 @@
 using Application.Departments.Commands.Add;
 using Bogus;
 using Domain.Common;
-using Domain.Entities;
 using Domain.Entities.Physical;
-using FluentAssertions;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

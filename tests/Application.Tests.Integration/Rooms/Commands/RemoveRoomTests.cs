@@ -1,5 +1,4 @@
 ﻿using Application.Rooms.Commands.Remove;
-using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;

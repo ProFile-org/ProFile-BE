@@ -4,8 +4,6 @@
     using Application.Common.Models.Dtos.Physical;
     using Application.Documents.Queries.GetAllPaginated;
     using AutoMapper;
-    using Bogus;
-    using Domain.Entities.Physical;
     using FluentAssertions;
     using Xunit;
 

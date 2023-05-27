@@ -1,6 +1,4 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.Add;
-using Application.Lockers.Commands.Disable;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;

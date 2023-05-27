@@ -4,8 +4,6 @@ using Bogus;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Application.Tests.Integration.Lockers.Commands;
