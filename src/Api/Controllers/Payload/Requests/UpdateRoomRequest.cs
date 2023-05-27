@@ -2,7 +2,7 @@ namespace Api.Controllers.Payload.Requests;
 
 public class UpdateRoomRequest
 {
-    public string Name { get; init; }
-    public string Description { get; init; }
-    public int Capacity { get; init; }
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public int Capacity { get; set; }
 }

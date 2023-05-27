@@ -1,7 +1,9 @@
+using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Models;
 using Application.Identity;
 using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DisableUser;
+using Application.Users.Commands.UpdateUser;
 using Application.Users.Queries;
 using Application.Users.Queries.GetUsersByName;
 using Infrastructure.Identity.Authorization;
@@ -48,6 +50,33 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<UserDto>>> DisableUser([FromBody] DisableUserCommand command)
     {
+        var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Update a user
+    /// </summary>
+    /// <param name="userId">Id of the user to be updated</param>
+    /// <param name="request">Update user details</param>
+    /// <returns>A UserDto of the updated user</returns>
+    [HttpPut("{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<UserDto>>> Update([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
+    {
+        var command = new UpdateUserCommand()
+        {
+            UserId = userId,
+            Username = request.Username,
+            Email = request.Email,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Role = request.Role,
+            Position = request.Position,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }
