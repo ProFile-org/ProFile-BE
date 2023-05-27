@@ -1,10 +1,12 @@
 using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DisableUser;
 using Application.Users.Commands.UpdateUser;
 using Application.Users.Queries;
+using Application.Users.Queries.GetAllUsersPaginated;
 using Application.Users.Queries.GetUserById;
 using Application.Users.Queries.GetUsersByName;
 using Infrastructure.Identity.Authorization;
@@ -32,6 +34,30 @@ public class UsersController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<UserDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all users paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all users  query parameters</param>
+    /// <returns>A paginated list of UserDto</returns>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllPaginated(
+        [FromQuery] GetAllUsersPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllUsersPaginatedQuery()
+        {
+            DepartmentId = queryParameters.DepartmentId,
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
     }
     
     [HttpPost]
