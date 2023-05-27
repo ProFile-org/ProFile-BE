@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
@@ -185,13 +186,8 @@ public class IdentityService : IIdentityService
 
             return principal;
         }
-        catch (SecurityTokenExpiredException ex)
+        catch
         {
-            return null;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.StackTrace);
             return null;
         }
     }
@@ -213,7 +209,7 @@ public class IdentityService : IIdentityService
         return (await GenerateAuthenticationResultForUserAsync(user), _mapper.Map<UserDto>(user));
     }
 
-    public async Task<bool> LogoutAsync(string token, string refreshToken)
+    public async Task LogoutAsync(string token, string refreshToken)
     {
         var validatedToken = GetPrincipalFromToken(token);
 
@@ -226,7 +222,7 @@ public class IdentityService : IIdentityService
         var storedRefreshToken =
             await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
-        if (storedRefreshToken is null) return true;
+        if (storedRefreshToken is null) return;
         
         if (!storedRefreshToken!.JwtId.Equals(jti))
         {
@@ -235,8 +231,6 @@ public class IdentityService : IIdentityService
 
         _context.RefreshTokens.Remove(storedRefreshToken);
         await _context.SaveChangesAsync();
-
-        return true;
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)
