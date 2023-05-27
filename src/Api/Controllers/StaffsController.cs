@@ -71,13 +71,23 @@ public class StaffsController : ApiControllerBase
         return Ok(Result<PaginatedList<StaffDto>>.Succeed(result));
     }
     
+    /// <summary>
+    /// Add a staff
+    /// </summary>
+    /// <param name="request">Add staff details</param>
+    /// <returns>A StaffDto of the added staff</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] StaffCommands.Add.Command command)
+    public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] AddStaffRequest request)
     {
+        var command = new StaffCommands.Add.Command()
+        {
+            RoomId = request.RoomId,
+            UserId = request.UserId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
     }

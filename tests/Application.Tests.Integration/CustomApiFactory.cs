@@ -14,7 +14,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {        
-        builder.ConfigureServices((_, services) =>
+        builder.ConfigureServices((builderContext, services) =>
         {
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType ==

@@ -80,7 +80,7 @@ public class RoomsController : ApiControllerBase
     /// <summary>
     /// Add a room
     /// </summary>
-    /// <param name="command">Add room details</param>
+    /// <param name="request">Add room details</param>
     /// <returns>A RoomDto of the added room</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
@@ -89,8 +89,14 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] RoomCommands.Add.Command command)
+    public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] AddRoomRequest request)
     {
+        var command = new RoomCommands.Add.Command()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
     }

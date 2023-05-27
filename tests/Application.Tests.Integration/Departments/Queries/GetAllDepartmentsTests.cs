@@ -52,7 +52,6 @@ public class GetAllDepartmentsTests : BaseClassFixture
         var result = await SendAsync(query);
 
         // Assert
-        result.Count().Should().Be(1);
-        result.First().Name.Should().Be(IdentityData.Roles.Admin);
+        result.Count().Should().Be(0);
     }
 }

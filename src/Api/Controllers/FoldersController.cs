@@ -59,7 +59,7 @@ public class FoldersController : ApiControllerBase
     /// <summary>
     /// Add a folder
     /// </summary>
-    /// <param name="command">Add folder details</param>
+    /// <param name="request">Add folder details</param>
     /// <returns>A FolderDto of the added folder</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
@@ -68,8 +68,15 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] FolderCommands.Add.Command command)
+    public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderRequest request)
     {
+        var command = new FolderCommands.Add.Command()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity,
+            LockerId = request.LockerId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }

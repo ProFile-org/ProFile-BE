@@ -64,7 +64,7 @@ public class UsersController : ApiControllerBase
     /// <summary>
     /// Add a user
     /// </summary>
-    /// <param name="command">Add user details</param>
+    /// <param name="request">Add user details</param>
     /// <returns>A UserDto of the added user</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
@@ -73,8 +73,19 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<UserDto>>> Add([FromBody] UserCommands.Add.Command command)
+    public async Task<ActionResult<Result<UserDto>>> Add([FromBody] AddUserRequest request)
     {
+        var command = new UserCommands.Add.Command()
+        {
+            Username = request.Username,
+            Email = request.Email,
+            Password = request.Password,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Role = request.Role,
+            Position = request.Position,
+            DepartmentId = request.DepartmentId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }

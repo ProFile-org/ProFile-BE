@@ -76,7 +76,7 @@ public class DocumentsController : ApiControllerBase
     /// <summary>
     /// Import a document
     /// </summary>
-    /// <param name="command">Import document details</param>
+    /// <param name="request">Import document details</param>
     /// <returns>A DocumentDto of the imported document</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPost]
@@ -85,8 +85,16 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] DocumentCommands.Import.Command command)
+    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] ImportDocumentRequest request)
     {
+        var command = new DocumentCommands.Import.Command()
+        {
+            Title = request.Title,
+            Description = request.Description,
+            DocumentType = request.DocumentType,
+            FolderId = request.FolderId,
+            ImporterId = request.ImporterId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
     }

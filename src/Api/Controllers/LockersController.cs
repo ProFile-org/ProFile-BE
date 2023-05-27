@@ -53,15 +53,27 @@ public class LockersController : ApiControllerBase
         return Ok(Result<PaginatedList<LockerDto>>.Succeed(result));
     }
     
-    [RequiresRole(IdentityData.Roles.Staff)]
+    /// <summary>
+    /// Add a locker
+    /// </summary>
+    /// <param name="request">Add locker details</param>
+    /// <returns>A LockerDto of the added locker</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] LockerCommands.Add.Command command)
+    public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] AddLockerRequest request)
     {
+        var command = new LockerCommands.Add.Command()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Capacity = request.Capacity,
+            RoomId = request.RoomId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
     }

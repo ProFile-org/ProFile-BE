@@ -46,15 +46,19 @@ public class DepartmentsController : ApiControllerBase
     /// <summary>
     /// Add a department
     /// </summary>
-    /// <param name="command">command parameter to add a department</param>
+    /// <param name="request">Add department details</param>
     /// <returns>A DepartmentDto of the the added department</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] DepartmentCommands.Add.Command command)
+    public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] AddDepartmentRequest request)
     {
+        var command = new DepartmentCommands.Add.Command()
+        {
+            Name = request.Name,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<DepartmentDto>.Succeed(result));
     }

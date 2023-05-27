@@ -27,7 +27,7 @@ public class CommandHandler : IRequestHandler<Command, DepartmentDto>
 
         if (department is null)
         {
-            throw new KeyNotFoundException("Department does not exist");
+            throw new KeyNotFoundException("Department does not exist.");
         }
 
         var result = _context.Departments.Remove(department);
