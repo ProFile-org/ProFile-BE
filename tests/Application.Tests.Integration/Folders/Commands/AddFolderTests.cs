@@ -99,7 +99,7 @@ public class AddFolderTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("Folder's name already exists.");
+            .WithMessage("Folder name already exists.");
         
         // Cleanup
         Remove(folder);
