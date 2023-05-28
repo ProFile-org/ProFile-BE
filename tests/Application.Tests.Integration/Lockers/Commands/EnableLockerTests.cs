@@ -1,7 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Lockers.Commands;
-using Bogus;
-using Domain.Entities.Physical;
+using Domain.Entities;
 using FluentAssertions;
 using Xunit;
 
@@ -18,9 +17,10 @@ public class EnableLockerTests : BaseClassFixture
     public async Task ShouldEnableLocker_WhenLockerExistsAndIsNotAvailable()
     {
         // Arrange
+        var department = CreateDepartment();
         var locker = CreateLocker();
         locker.IsAvailable = false;
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
         // Act
@@ -36,6 +36,7 @@ public class EnableLockerTests : BaseClassFixture
         
         // Cleanup
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
     
     [Fact]
@@ -60,8 +61,9 @@ public class EnableLockerTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenLockerIsAlreadyEnabled()
     {
         // Arrange 
+        var department = CreateDepartment();
         var locker = CreateLocker();
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
         
         var enableLockerCommand = new EnableLocker.Command()
@@ -79,5 +81,6 @@ public class EnableLockerTests : BaseClassFixture
         
         // Cleanup
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

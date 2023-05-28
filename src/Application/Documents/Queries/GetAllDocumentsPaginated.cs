@@ -43,7 +43,7 @@ public class GetAllDocumentsPaginated
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
         public Guid? FolderId { get; init; }
-        public string? SearchTerm { get; set; }
+        public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }

@@ -1,6 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Lockers.Commands;
-using Bogus;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
@@ -17,8 +17,9 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldDisableLocker_WhenLockerExistsAndIsAvailable()
     {
         // Arrange
+        var department = CreateDepartment();
         var locker = CreateLocker();
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
         var disableLockerCommand = new DisableLocker.Command()
@@ -37,8 +38,8 @@ public class DisableLockerTests : BaseClassFixture
         result.NumberOfFolders.Should().Be(locker.NumberOfFolders);
         
         // Cleanup
-        var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(roomEntity);
+        Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
     
     [Fact]
@@ -63,8 +64,9 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenLockerIsAlreadyDisabled()
     {
         // Arrange 
+        var department = CreateDepartment();
         var locker = CreateLocker();
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
         
         var disableLockerCommand = new DisableLocker.Command()
@@ -80,7 +82,7 @@ public class DisableLockerTests : BaseClassFixture
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Locker has already been disabled.");
         
         // Cleanup
-        var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(roomEntity);
+        Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

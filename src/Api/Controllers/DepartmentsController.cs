@@ -1,5 +1,6 @@
 using Api.Controllers.Payload.Requests.Departments;
 using Application.Common.Models;
+using Application.Common.Models.Dtos;
 using Application.Departments.Commands;
 using Application.Departments.Queries;
 using Application.Identity;

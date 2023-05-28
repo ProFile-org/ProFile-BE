@@ -22,11 +22,6 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
             .HasMaxLength(256)
             .IsRequired(false);
 
-        builder.HasOne(x => x.Department)
-            .WithOne(x => x.Room)
-            .HasForeignKey<Department>(x => x.RoomId)
-            .IsRequired(false);
-
         builder.Property(x => x.Capacity)
             .IsRequired();
         

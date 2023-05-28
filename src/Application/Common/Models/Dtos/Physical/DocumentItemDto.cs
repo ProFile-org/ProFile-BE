@@ -4,7 +4,6 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
 
-[Obsolete]
 public class DocumentItemDto : IMapFrom<Document>
 {
     public Guid Id { get; set; }

@@ -55,7 +55,6 @@ public class RemoveRoom
                 throw new InvalidOperationException("Room cannot be removed because it contains documents.");
             }
 
-            room.IsAvailable = false;
             var result = _context.Rooms.Remove(room);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<RoomDto>(result.Entity);

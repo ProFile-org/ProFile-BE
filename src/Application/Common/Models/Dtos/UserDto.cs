@@ -1,4 +1,5 @@
 using Application.Common.Mappings;
+using Application.Common.Models.Dtos;
 using AutoMapper;
 using Domain.Entities;
 

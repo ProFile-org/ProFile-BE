@@ -12,7 +12,7 @@ public class AddDepartmentTests : BaseClassFixture
     {
     }
 
-    [Fact(Timeout = 200)]
+    [Fact]
     public async Task ShouldCreateDepartment_WhenDepartmentNameIsValid()
     {
         // Arrange

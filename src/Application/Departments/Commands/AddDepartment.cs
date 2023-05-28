@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Models.Dtos;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;

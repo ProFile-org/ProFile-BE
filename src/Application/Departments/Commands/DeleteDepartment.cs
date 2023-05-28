@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Application.Common.Models.Dtos;
 using Application.Users.Queries;
 using AutoMapper;
 using MediatR;

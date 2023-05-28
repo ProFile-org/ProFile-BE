@@ -96,6 +96,7 @@ public class RoomsController : ApiControllerBase
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
+            DepartmentId = request.DepartmentId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));

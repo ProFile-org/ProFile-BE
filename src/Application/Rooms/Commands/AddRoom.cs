@@ -44,7 +44,7 @@ public class AddRoom
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
-        public Guid DepartmentId { get; set; }
+        public Guid DepartmentId { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, RoomDto>

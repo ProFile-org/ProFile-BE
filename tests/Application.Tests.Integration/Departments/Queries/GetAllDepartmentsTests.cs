@@ -1,4 +1,5 @@
 using Application.Common.Mappings;
+using Application.Common.Models.Dtos;
 using Application.Departments.Queries;
 using Application.Users.Queries;
 using AutoMapper;
@@ -22,7 +23,6 @@ public class GetAllDepartmentsTests : BaseClassFixture
     public async Task ShouldReturnDepartments_WhenDepartmentsExist()
     {
         // Arrange
-        
         var department = new Department()
         {
             Id = Guid.NewGuid(),

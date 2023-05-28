@@ -139,7 +139,7 @@ public class BaseClassFixture
         return locker;
     }
 
-    protected Room CreateRoom(params Locker[] lockers)
+    protected Room CreateRoom(Department department, params Locker[] lockers)
     {
         var room = new Room()
         {
@@ -147,7 +147,9 @@ public class BaseClassFixture
             Name = new Faker().Commerce.ProductName(),
             Capacity = 3,
             NumberOfLockers = lockers.Length,
-            IsAvailable = true
+            IsAvailable = true,
+            Department = department,
+            DepartmentId = department.Id,
         };
 
         foreach (var locker in lockers)
@@ -163,7 +165,7 @@ public class BaseClassFixture
         return new Department()
         {
             Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.Department()
+            Name = new Faker().Random.Word()
         };
     }
 

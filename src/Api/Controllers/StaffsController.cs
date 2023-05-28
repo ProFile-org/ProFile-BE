@@ -62,6 +62,7 @@ public class StaffsController : ApiControllerBase
     {
         var query = new GetAllStaffsPaginated.Query()
         {
+            SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
@@ -96,20 +97,17 @@ public class StaffsController : ApiControllerBase
     /// Remove a staff from room
     /// </summary>
     /// <param name="staffId">Id of the staff to be removed from room</param>
-    /// <param name="request">Remove details</param>
     /// <returns>A StaffDto of the removed staff</returns>
     [HttpPut("{staffId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
-        [FromRoute] Guid staffId,
-        [FromBody] RemoveStaffFromRoomRequest request)
+        [FromRoute] Guid staffId)
     {
         var command = new RemoveStaffFromRoom.Command()
         {
             StaffId = staffId,
-            RoomId = request.RoomId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));

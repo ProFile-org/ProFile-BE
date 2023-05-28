@@ -1,6 +1,4 @@
 using Application.Documents.Queries;
-using Bogus;
-using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
 
@@ -16,12 +14,7 @@ public class GetAllDocumentTypesTests : BaseClassFixture
     public async Task ShouldReturnDocumentTypes_WhenDocumentTypesExist()
     {
         // Arrange
-        var document = new Document()
-        {
-            Id = Guid.NewGuid(),
-            Title = new Faker().Name.JobTitle(),
-            DocumentType = new Faker().Commerce.ProductName(),
-        };
+        var document = CreateNDocuments(1).First();
         await AddAsync(document);
         var query = new GetAllDocumentTypes.Query();
 

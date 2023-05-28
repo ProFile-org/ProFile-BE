@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Folders.Commands;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
@@ -17,8 +18,9 @@ public class AddFolderTests : BaseClassFixture
     public async Task ShouldAddFolder_WhenAddDetailsAreValid()
     {
         // Arrange
+        var department = CreateDepartment();
         var locker = CreateLocker();
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
         
         var command =  new AddFolder.Command() 
@@ -45,16 +47,18 @@ public class AddFolderTests : BaseClassFixture
         Remove(folderEntity);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldAddFolder_WhenFoldersHasSameNameButInDifferentLockers()
     {
         // Arrange
+        var department = CreateDepartment();
         var folder1 = CreateFolder();
         var locker1 = CreateLocker(folder1);
         var locker2 = CreateLocker();
-        var room = CreateRoom(locker1, locker2);
+        var room = CreateRoom(department, locker1, locker2);
         await AddAsync(room);
         
         var command = new AddFolder.Command()
@@ -76,15 +80,17 @@ public class AddFolderTests : BaseClassFixture
         Remove(locker1);
         Remove(locker2);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowConflictException_WhenFolderAlreadyExistsInTheSameLocker()
     {
         // Arrange
+        var department = CreateDepartment();
         var folder = CreateFolder();
         var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
         var command = new AddFolder.Command() 
@@ -105,17 +111,19 @@ public class AddFolderTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
     {
         // Arrange
+        var department = CreateDepartment();
         var folder1 = CreateFolder();
         var folder2 = CreateFolder();
         var folder3 = CreateFolder();
         var locker = CreateLocker(folder1, folder2, folder3);
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
         var command = new AddFolder.Command()
@@ -139,6 +147,7 @@ public class AddFolderTests : BaseClassFixture
         Remove(folder3);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]

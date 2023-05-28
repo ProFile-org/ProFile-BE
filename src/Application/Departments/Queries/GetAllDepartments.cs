@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using Application.Common.Interfaces;
-using Application.Users.Queries;
+using Application.Common.Models.Dtos;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
