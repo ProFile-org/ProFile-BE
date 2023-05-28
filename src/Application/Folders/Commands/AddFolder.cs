@@ -73,7 +73,7 @@ public class AddFolder
 
             if (folder is not null)
             {
-                throw new ConflictException("Folder's name already exists.");
+                throw new ConflictException("Folder name already exists.");
             }
 
             var entity = new Folder
