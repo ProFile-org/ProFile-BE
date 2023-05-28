@@ -25,12 +25,14 @@ public class AddDepartmentCommandHandler : IRequestHandler<Command, DepartmentDt
 
     public async Task<DepartmentDto> Handle(Command request, CancellationToken cancellationToken)
     {
-        var department = await _context.Departments.FirstOrDefaultAsync(x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()), cancellationToken);
+        var department = await _context.Departments.FirstOrDefaultAsync(x 
+            => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()), cancellationToken);
 
         if (department is not null)
         {
             throw new ConflictException("Department name already exists.");
         }
+        
         var entity = new Department
         {
             Name = request.Name

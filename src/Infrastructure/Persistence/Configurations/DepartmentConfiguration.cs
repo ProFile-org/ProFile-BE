@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
@@ -16,5 +17,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasAlternateKey(x => x.Name);
         builder.Property(x => x.Name)
             .HasMaxLength(64);
+
+        builder.HasOne(x => x.Room)
+            .WithOne(x => x.Department)
+            .HasForeignKey<Room>(x => x.DepartmentId)
+            .IsRequired(false);
     }
 }

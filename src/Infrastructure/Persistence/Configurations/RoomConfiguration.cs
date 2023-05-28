@@ -1,3 +1,4 @@
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,6 +20,11 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         builder.Property(x => x.Description)
             .HasMaxLength(256)
+            .IsRequired(false);
+
+        builder.HasOne(x => x.Department)
+            .WithOne(x => x.Room)
+            .HasForeignKey<Department>(x => x.RoomId)
             .IsRequired(false);
 
         builder.Property(x => x.Capacity)

@@ -6,6 +6,6 @@ namespace Application.Common.Models.Dtos.Physical;
 
 public class StaffDto : IMapFrom<Staff>
 {
-    public UserDto User { get; set; }
-    public RoomDto Room { get; set; }
+    public UserDto User { get; set; } = null!;
+    public RoomDto? Room { get; set; }
 }

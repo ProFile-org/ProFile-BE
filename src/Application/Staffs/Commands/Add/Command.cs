@@ -10,7 +10,7 @@ namespace Application.Staffs.Commands.Add;
 public record Command : IRequest<StaffDto>
 {
     public Guid UserId { get; init; }
-    public Guid RoomId { get; init; }
+    public Guid? RoomId { get; init; }
 }
 
 public class CommandHandler : IRequestHandler<Command, StaffDto>
@@ -33,10 +33,6 @@ public class CommandHandler : IRequestHandler<Command, StaffDto>
         }
 
         var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
-        if (room is null)
-        {
-            throw new KeyNotFoundException("Room does not exist.");
-        }
 
         var staff = new Staff
         {
