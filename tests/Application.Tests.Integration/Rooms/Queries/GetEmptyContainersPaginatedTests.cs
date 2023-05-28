@@ -1,4 +1,4 @@
-using Application.Rooms.Queries.GetEmptyContainersPaginated;
+using Application.Rooms.Queries;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -19,7 +19,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
     {
         // Arrange
         var room = await SetupTestEntities();
-        var query = new Query()
+        var query = new GetEmptyContainersPaginated.Query()
         {
             Page = 1,
             Size = 2,
@@ -50,7 +50,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
     public async Task ShouldThrowNotFound_WhenRoomDoesNotExist()
     {
         // Arrange
-        var query = new Query()
+        var query = new GetEmptyContainersPaginated.Query()
         {
             Page = 1,
             Size = 2,
@@ -125,7 +125,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
             NumberOfDocuments = 1
         };
 
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = ScopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await context.Rooms.AddAsync(room);
@@ -142,7 +142,7 @@ public class GetEmptyContainersPaginatedTests : BaseClassFixture
 
     private async Task CleanupTestEntities(Room room)
     {
-        using var scope = _scopeFactory.CreateScope();
+        using var scope = ScopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         context.RemoveRange(room.Lockers.SelectMany(l => l.Folders));

@@ -3,10 +3,10 @@ using Api.Controllers.Payload.Requests.Rooms;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
+using Application.Rooms.Commands;
+using Application.Rooms.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RoomCommands = Application.Rooms.Commands;
-using RoomQueries = Application.Rooms.Queries;
 
 namespace Api.Controllers;
 
@@ -23,7 +23,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<RoomDto>>> GetById([FromRoute] Guid roomId)
     {
-        var query = new RoomQueries.GetById.Query()
+        var query = new GetRoomById.Query()
         {
             RoomId = roomId,
         };
@@ -42,7 +42,7 @@ public class RoomsController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(
         [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
     {
-        var query = new RoomQueries.GetAllPaginated.Query()
+        var query = new GetAllRoomsPaginated.Query()
         {
             Page = queryParameters.Page,
             Size = queryParameters.Size,
@@ -63,18 +63,18 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PaginatedList<RoomQueries.GetEmptyContainersPaginated.EmptyLockerDto>>> GetEmptyContainers(
+    public async Task<ActionResult<PaginatedList<EmptyLockerDto>>> GetEmptyContainers(
         [FromRoute] Guid roomId,
         [FromQuery] GetEmptyContainersPaginatedQueryParameters queryParameters)
     {
-        var query = new RoomQueries.GetEmptyContainersPaginated.Query()
+        var query = new GetEmptyContainersPaginated.Query()
         {
             RoomId = roomId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<RoomQueries.GetEmptyContainersPaginated.EmptyLockerDto>>.Succeed(result));
+        return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
     }
     
     /// <summary>
@@ -91,7 +91,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] AddRoomRequest request)
     {
-        var command = new RoomCommands.Add.Command()
+        var command = new AddRoom.Command()
         {
             Name = request.Name,
             Description = request.Description,
@@ -114,7 +114,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> RemoveRoom([FromRoute] Guid roomId)
     {
-        var command = new RoomCommands.Remove.Command()
+        var command = new RemoveRoom.Command()
         {
             RoomId = roomId,
         };
@@ -134,7 +134,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> EnableRoom([FromRoute] Guid roomId)
     {
-        var command = new RoomCommands.Enable.Command()
+        var command = new EnableRoom.Command()
         {
             RoomId = roomId,
         };
@@ -155,7 +155,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromRoute] Guid roomId)
     {
-        var command = new RoomCommands.Disable.Command()
+        var command = new DisableRoom.Command()
         {
             RoomId = roomId,
         };
@@ -176,7 +176,7 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
     {
-        var command = new RoomCommands.Update.Command()
+        var command = new UpdateRoom.Command()
         {
             RoomId = roomId,
             Name = request.Name,

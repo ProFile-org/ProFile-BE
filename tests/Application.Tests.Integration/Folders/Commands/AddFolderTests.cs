@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
-using Application.Common.Models.Dtos.Physical;
-using Bogus;
+using Application.Folders.Commands;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
 using Xunit;
-using Application.Folders.Commands.Add;
 
 namespace Application.Tests.Integration.Folders.Commands;
 
@@ -23,7 +21,7 @@ public class AddFolderTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
         
-        var command =  new Command() 
+        var command =  new AddFolder.Command() 
         {
             LockerId = locker.Id,
             Capacity = 1,
@@ -59,7 +57,7 @@ public class AddFolderTests : BaseClassFixture
         var room = CreateRoom(locker1, locker2);
         await AddAsync(room);
         
-        var command = new Command()
+        var command = new AddFolder.Command()
         {
             LockerId = locker2.Id,
             Name = folder1.Name,
@@ -89,7 +87,7 @@ public class AddFolderTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
 
-        var command = new Command() 
+        var command = new AddFolder.Command() 
         {
             Name = folder.Name,
             LockerId = locker.Id,
@@ -120,7 +118,7 @@ public class AddFolderTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
 
-        var command = new Command()
+        var command = new AddFolder.Command()
         {
             Name = "something",
             Capacity = 3,
@@ -147,7 +145,7 @@ public class AddFolderTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerIdNotExists()
     {
         // Arrange
-        var command =  new Command()
+        var command =  new AddFolder.Command()
         {
             LockerId = Guid.NewGuid(),
             Name = "something",

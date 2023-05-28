@@ -1,18 +1,10 @@
 using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
-using Application.Users.Commands.Add;
-using Application.Users.Commands.Disable;
-using Application.Users.Commands.Update;
+using Application.Users.Commands;
 using Application.Users.Queries;
-using Application.Users.Queries.GetAllPaginated;
-using Application.Users.Queries.GetById;
 using Infrastructure.Identity.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserCommands = Application.Users.Commands;
-using UserQueries = Application.Users.Queries;
 
 namespace Api.Controllers;
 
@@ -29,7 +21,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<UserDto>>> GetById([FromRoute] Guid userId)
     {
-        var query = new UserQueries.GetById.Query
+        var query = new GetUserById.Query
         {
             UserId = userId,
         };
@@ -48,7 +40,7 @@ public class UsersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllPaginated(
         [FromQuery] GetAllUsersPaginatedQueryParameters queryParameters)
     {
-        var query = new UserQueries.GetAllPaginated.Query()
+        var query = new GetAllUsersPaginated.Query()
         {
             DepartmentId = queryParameters.DepartmentId,
             SearchTerm = queryParameters.SearchTerm,
@@ -75,7 +67,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Add([FromBody] AddUserRequest request)
     {
-        var command = new UserCommands.Add.Command()
+        var command = new AddUser.Command()
         {
             Username = request.Username,
             Email = request.Email,
@@ -102,7 +94,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<UserDto>>> Enable([FromRoute] Guid userId)
     {
-        var command = new UserCommands.Enable.Command()
+        var command = new EnableUser.Command()
         {
             UserId = userId
         };
@@ -123,7 +115,7 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Disable([FromRoute] Guid userId)
     {
-        var command = new UserCommands.Disable.Command()
+        var command = new DisableUser.Command()
         {
             UserId = userId,
         };
@@ -144,11 +136,9 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Update([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
     {
-        var command = new UserCommands.Update.Command()
+        var command = new UpdateUser.Command()
         {
             UserId = userId,
-            Username = request.Username,
-            Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Role = request.Role,

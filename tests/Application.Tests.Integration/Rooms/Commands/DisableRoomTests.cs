@@ -1,5 +1,5 @@
 ﻿using Application.Common.Exceptions;
-using Application.Rooms.Commands.Disable;
+using Application.Rooms.Commands;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
@@ -21,7 +21,7 @@ public class DisableRoomTests : BaseClassFixture
         var room = CreateRoom(locker);
         await AddAsync(room);
        
-        var disableRoomCommand = new Command()
+        var disableRoomCommand = new DisableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -47,7 +47,7 @@ public class DisableRoomTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange
-        var disableRoomCommand = new Command()
+        var disableRoomCommand = new DisableRoom.Command()
         {
              RoomId = Guid.NewGuid()
         };
@@ -71,7 +71,7 @@ public class DisableRoomTests : BaseClassFixture
 
         await AddAsync(room);
             
-        var disableRoomCommand = new Command()
+        var disableRoomCommand = new DisableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -98,7 +98,7 @@ public class DisableRoomTests : BaseClassFixture
         room.IsAvailable = false;
         await AddAsync(room);
 
-        var command = new Command()
+        var command = new DisableRoom.Command()
         {
             RoomId = room.Id
         };

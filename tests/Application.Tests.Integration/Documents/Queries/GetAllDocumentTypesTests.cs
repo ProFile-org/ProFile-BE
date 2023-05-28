@@ -1,4 +1,4 @@
-using Application.Documents.Queries.GetDocumentTypes;
+using Application.Documents.Queries;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -23,7 +23,7 @@ public class GetAllDocumentTypesTests : BaseClassFixture
             DocumentType = new Faker().Commerce.ProductName(),
         };
         await AddAsync(document);
-        var query = new Query();
+        var query = new GetAllDocumentTypes.Query();
 
         // Act
         var result = await SendAsync(query);
@@ -39,7 +39,7 @@ public class GetAllDocumentTypesTests : BaseClassFixture
     public async Task ShouldReturnEmptyList_WhenNoDocumentTypesExist()
     {
         // Arrange
-        var query = new Query();
+        var query = new GetAllDocumentTypes.Query();
 
         // Act
         var result = await SendAsync(query);

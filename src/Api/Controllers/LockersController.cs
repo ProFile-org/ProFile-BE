@@ -2,10 +2,10 @@
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
+using Application.Lockers.Commands;
+using Application.Lockers.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using LockerCommands = Application.Lockers.Commands;
-using LockerQueries = Application.Lockers.Queries;
 
 namespace Api.Controllers;
 
@@ -22,7 +22,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<LockerDto>>> GetById([FromRoute] Guid lockerId)
     {
-        var query = new LockerQueries.GetById.Query()
+        var query = new GetLockerById.Query()
         {
             LockerId = lockerId,
         };
@@ -41,7 +41,7 @@ public class LockersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<LockerDto>>>> GetAllPaginated(
         [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
     {
-        var query = new LockerQueries.GetAllPaginated.Query()
+        var query = new GetAllLockersPaginated.Query()
         {
             RoomId = queryParameters.RoomId,
             Page = queryParameters.Page,
@@ -67,7 +67,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] AddLockerRequest request)
     {
-        var command = new LockerCommands.Add.Command()
+        var command = new AddLocker.Command()
         {
             Name = request.Name,
             Description = request.Description,
@@ -90,7 +90,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Remove([FromRoute] Guid lockerId)
     {
-        var command = new LockerCommands.Remove.Command()
+        var command = new RemoveLocker.Command()
         {
             LockerId = lockerId,
         };
@@ -112,7 +112,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Enable([FromRoute] Guid lockerId)
     {
-        var command = new LockerCommands.Enable.Command()
+        var command = new EnableLocker.Command()
         {
             LockerId = lockerId,
         };
@@ -134,7 +134,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Disable([FromRoute] Guid lockerId)
     {
-        var command = new LockerCommands.Disable.Command()
+        var command = new DisableLocker.Command()
         {
             LockerId = lockerId,
         };
@@ -155,7 +155,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Update([FromRoute] Guid lockerId, [FromBody] UpdateLockerRequest request)
     {
-        var command = new LockerCommands.Update.Command()
+        var command = new UpdateLocker.Command()
         {
             LockerId = lockerId,
             Name = request.Name,

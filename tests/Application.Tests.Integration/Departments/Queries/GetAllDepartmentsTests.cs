@@ -1,6 +1,5 @@
 using Application.Common.Mappings;
-using Application.Departments.Queries.GetAll;
-using Application.Identity;
+using Application.Departments.Queries;
 using Application.Users.Queries;
 using AutoMapper;
 using Bogus;
@@ -30,7 +29,7 @@ public class GetAllDepartmentsTests : BaseClassFixture
             Name = new Faker().Commerce.Department()
         };
         await AddAsync(department);
-        var query = new Query();
+        var query = new GetAllDepartments.Query();
 
         // Act
         var result = await SendAsync(query);
@@ -46,7 +45,7 @@ public class GetAllDepartmentsTests : BaseClassFixture
     public async Task ShouldReturnEmptyList_WhenNoDepartmentsExist()
     {
         // Arrange
-        var query = new Query();
+        var query = new GetAllDepartments.Query();
 
         // Act
         var result = await SendAsync(query);

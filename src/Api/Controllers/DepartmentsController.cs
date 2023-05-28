@@ -1,11 +1,11 @@
 using Api.Controllers.Payload.Requests.Departments;
 using Application.Common.Models;
+using Application.Departments.Commands;
+using Application.Departments.Queries;
 using Application.Identity;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using DepartmentQueries = Application.Departments.Queries;
-using DepartmentCommands = Application.Departments.Commands;
 
 namespace Api.Controllers;
 
@@ -22,7 +22,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> GetById([FromRoute] Guid departmentId)
     {
-        var query = new DepartmentQueries.GetById.Query()
+        var query = new GetDepartmentById.Query()
         {
             DepartmentId = departmentId
         };
@@ -39,7 +39,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
     {
-        var result = await Mediator.Send(new DepartmentQueries.GetAll.Query());
+        var result = await Mediator.Send(new GetAllDepartments.Query());
         return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
     }
     
@@ -55,7 +55,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<DepartmentDto>>> Add([FromBody] AddDepartmentRequest request)
     {
-        var command = new DepartmentCommands.Add.Command()
+        var command = new AddDepartment.Command()
         {
             Name = request.Name,
         };
@@ -76,7 +76,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> Update([FromRoute] Guid departmentId, [FromBody] UpdateDepartmentRequest request)
     {
-        var command = new DepartmentCommands.Update.Command()
+        var command = new UpdateDepartment.Command()
         {
             DepartmentId = departmentId,
             Name = request.Name
@@ -97,7 +97,7 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DepartmentDto>>> Delete([FromRoute] Guid departmentId)
     {
-        var command = new DepartmentCommands.Delete.Command()
+        var command = new DeleteDepartment.Command()
         {
             DepartmentId = departmentId,
         };

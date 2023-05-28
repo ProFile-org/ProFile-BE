@@ -1,9 +1,9 @@
 ﻿using Application.Common.Exceptions;
+using Application.Lockers.Commands;
 using Bogus;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
-using Command = Application.Lockers.Commands.Disable.Command;
 
 namespace Application.Tests.Integration.Lockers.Commands;
 
@@ -11,37 +11,17 @@ public class DisableLockerTests : BaseClassFixture
 {
     public DisableLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
-        
     }
 
     [Fact]
     public async Task ShouldDisableLocker_WhenLockerExistsAndIsAvailable()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-
+        var locker = CreateLocker();
+        var room = CreateRoom(locker);
         await AddAsync(room);
 
-        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
-        {
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 2,
-            RoomId = room.Id,
-        };
-
-        var locker = await SendAsync(createLockerCommand);
-        room.NumberOfLockers += 1;
-
-        var disableLockerCommand = new Command()
+        var disableLockerCommand = new DisableLocker.Command()
         {
             LockerId = locker.Id,
         };
@@ -65,7 +45,7 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         // Arrange
-        var disableLockerCommand = new Command()
+        var disableLockerCommand = new DisableLocker.Command()
         {
             LockerId = Guid.NewGuid(),
         };
@@ -83,28 +63,11 @@ public class DisableLockerTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenLockerIsAlreadyDisabled()
     {
         // Arrange 
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-        
+        var locker = CreateLocker();
+        var room = CreateRoom(locker);
         await AddAsync(room);
-
-        var createLockerCommand = new Application.Lockers.Commands.Add.Command()
-        {
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 2,
-            RoomId = room.Id,
-        };
         
-        var locker = await SendAsync(createLockerCommand);
-        var disableLockerCommand = new Command()
+        var disableLockerCommand = new DisableLocker.Command()
         {
             LockerId = locker.Id,
         };
