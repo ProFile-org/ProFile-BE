@@ -75,7 +75,7 @@ public class EnableRoomTests : BaseClassFixture
         room.IsAvailable = true;
         await AddAsync(room);
 
-        var command = new DisableRoom.Command()
+        var command = new EnableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -85,7 +85,7 @@ public class EnableRoomTests : BaseClassFixture
 
         // Assert
         await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("Room have already been disabled.");
+            .WithMessage("Room have already been enabled.");
 
         // Cleanup
         Remove(room);
