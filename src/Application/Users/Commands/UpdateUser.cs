@@ -10,7 +10,6 @@ public class UpdateUser
         public Guid UserId { get; init; }
         public string? FirstName { get; init; }
         public string? LastName { get; init; }
-        public string Role { get; init; } = null!;
         public string? Position { get; init; }
     }
 }
