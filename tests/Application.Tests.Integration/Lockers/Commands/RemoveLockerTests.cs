@@ -32,7 +32,7 @@ public class RemoveLockerTests : BaseClassFixture
 
         // Assert
         result.Id.Should().Be(locker.Id);
-        var removedLocker = await FindAsync<Room>(room.Id);
+        var removedLocker = await FindAsync<Locker>(locker.Id);
         removedLocker.Should().BeNull();
         
         // Cleanup
@@ -53,7 +53,7 @@ public class RemoveLockerTests : BaseClassFixture
 
         var command = new RemoveLocker.Command()
         {
-            LockerId = locker.Id
+            LockerId = locker.Id,
         };
         
         // Act
@@ -77,7 +77,7 @@ public class RemoveLockerTests : BaseClassFixture
         // Arrange
         var command = new RemoveLocker.Command()
         {
-            LockerId = Guid.NewGuid()
+            LockerId = Guid.NewGuid(),
         };
         
         // Act
