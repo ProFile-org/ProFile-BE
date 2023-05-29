@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,15 @@ namespace Application.Rooms.Commands;
 
 public class EnableRoom
 {
+    public class Validator : AbstractValidator<RemoveRoom.Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+            RuleFor(x => x.RoomId)
+                .NotEmpty().WithMessage("RoomId is required.");
+        }   
+    }
     public record Command : IRequest<RoomDto>
     {
         public Guid RoomId { get; init; }
