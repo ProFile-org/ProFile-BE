@@ -24,12 +24,12 @@ public class EnableRoom
         public Guid RoomId { get; init; }
     }
 
-    public class EnableRoomCommandHandler : IRequestHandler<Command, RoomDto>
+    public class CommandHandler : IRequestHandler<Command, RoomDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public EnableRoomCommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
