@@ -47,7 +47,7 @@ public class EnableRoom
 
             if (room.IsAvailable)
             {
-                throw new ConflictException("Room have already been enabled.");
+                throw new ConflictException("Room has already been enabled.");
             }
 
             room.IsAvailable = true;

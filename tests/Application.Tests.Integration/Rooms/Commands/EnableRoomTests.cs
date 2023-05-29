@@ -85,7 +85,7 @@ public class EnableRoomTests : BaseClassFixture
 
         // Assert
         await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("Room have already been enabled.");
+            .WithMessage("Room has already been enabled.");
 
         // Cleanup
         Remove(room);
