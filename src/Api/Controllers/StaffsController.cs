@@ -1,12 +1,9 @@
 using Api.Controllers.Payload.Requests.Staffs;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
-using Application.Staffs.Commands.RemoveStaffFromRoom;
-using Application.Staffs.Queries.GetAllStaffsPaginated;
-using Application.Staffs.Queries.GetStaffById;
-using Application.Staffs.Queries.GetStaffByRoom;
-using Application.Staffs.Commands.AddStaff;
-using Application.Users.Queries.Physical;
+using Application.Staffs.Commands;
+using Application.Staffs.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +22,7 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StaffDto>>> GetById([FromRoute] Guid staffId)
     {
-        var query = new GetStaffByIdQuery()
+        var query = new GetStaffById.Query()
         {
             StaffId = staffId
         };
@@ -44,7 +41,7 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StaffDto>>> GetByRoom([FromRoute] Guid roomId)
     {
-        var query = new GetStaffByRoomQuery()
+        var query = new GetStaffByRoom.Query()
         {
             RoomId = roomId
         };
@@ -63,8 +60,9 @@ public class StaffsController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<StaffDto>>>> GetAllPaginated(
         [FromQuery] GetAllStaffsPaginatedQueryParameters queryParameters)
     {
-        var query = new GetAllStaffsPaginatedQuery()
+        var query = new GetAllStaffsPaginated.Query()
         {
+            SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
@@ -74,13 +72,23 @@ public class StaffsController : ApiControllerBase
         return Ok(Result<PaginatedList<StaffDto>>.Succeed(result));
     }
     
+    /// <summary>
+    /// Add a staff
+    /// </summary>
+    /// <param name="request">Add staff details</param>
+    /// <returns>A StaffDto of the added staff</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> AddStaff([FromBody] AddStaffCommand command)
+    public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] AddStaffRequest request)
     {
+        var command = new AddStaff.Command()
+        {
+            RoomId = request.RoomId,
+            UserId = request.UserId,
+        };
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
     }
@@ -89,19 +97,17 @@ public class StaffsController : ApiControllerBase
     /// Remove a staff from room
     /// </summary>
     /// <param name="staffId">Id of the staff to be removed from room</param>
-    /// <param name="request">Remove details</param>
     /// <returns>A StaffDto of the removed staff</returns>
     [HttpPut("{staffId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> RemoveStaffFromRoom([FromRoute] Guid staffId,
-        [FromBody] RemoveStaffFromRoomRequest request)
+    public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
+        [FromRoute] Guid staffId)
     {
-        var command = new RemoveStaffFromRoomCommand()
+        var command = new RemoveStaffFromRoom.Command()
         {
             StaffId = staffId,
-            RoomId = request.RoomId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));

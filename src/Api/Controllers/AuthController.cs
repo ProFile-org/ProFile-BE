@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
-using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Requests.Auth;
 using Api.Controllers.Payload.Responses;
 using Application.Common.Interfaces;
 using Application.Common.Models;
@@ -23,6 +23,11 @@ public class AuthController : ControllerBase
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Login
+    /// </summary>
+    /// <param name="loginModel">Login credentials</param>
+    /// <returns>A LoginResult indicating the result of logging in</returns>
     [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -48,23 +53,11 @@ public class AuthController : ControllerBase
         
         return Ok(Result<LoginResult>.Succeed(loginResult));
     }
-
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Logout()
-    {
-        var refreshToken = Request.Cookies[nameof(RefreshToken)];
-        var jweToken = Request.Cookies["JweToken"];
-        
-        RemoveJweToken();
-        RemoveRefreshToken();
-        
-        await _identityService.LogoutAsync(jweToken!, refreshToken!);
-
-        return Ok();
-    }
-
+    
+    /// <summary>
+    /// Refresh session and token
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of refreshing token</returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,6 +83,10 @@ public class AuthController : ControllerBase
         return Ok();
     }
     
+    /// <summary>
+    /// Validate current user
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of validating the user</returns>
     [Authorize]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -99,11 +96,32 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    /// <summary>
+    /// Logout of the system
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of logging out of the system</returns>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies[nameof(RefreshToken)];
+        var jweToken = Request.Cookies["JweToken"];
+        
+        RemoveJweToken();
+        RemoveRefreshToken();
+        
+        await _identityService.LogoutAsync(jweToken!, refreshToken!);
+
+        return Ok();
+    }
+
     private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
+            Expires = newRefreshToken.ExpiryDateTime
         };
         var handler = new JwtSecurityTokenHandler();
         Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);

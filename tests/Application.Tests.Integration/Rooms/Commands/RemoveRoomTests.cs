@@ -1,5 +1,5 @@
-﻿using Application.Rooms.Commands.RemoveRoom;
-using Bogus;
+﻿using Application.Rooms.Commands;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
@@ -16,33 +16,38 @@ public class RemoveRoomTests : BaseClassFixture
     public async Task ShouldRemoveRoom_WhenRoomHasNoDocuments()
     {
         // Arrange
-        var room = CreateRoom();
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         await Add(room);
 
-        var command = new RemoveRoomCommand()
+        var command = new RemoveRoom.Command()
         {
             RoomId = room.Id
         };
+        
         // Act
-        var result = await SendAsync(command);
+        await SendAsync(command);
 
         // Assert
         var deletedRoom = await FindAsync<Room>(room.Id);
-        result.IsAvailable.Should().BeFalse();
         deletedRoom.Should().BeNull();
+        
+        // Cleanup
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowInvalidOperationException_WhenRoomHaveDocuments()
     {
         // Arrange
+        var department = CreateDepartment();
         var documents = CreateNDocuments(1);
         var folder = CreateFolder(documents);
         var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
-        var command = new RemoveRoomCommand()
+        var command = new RemoveRoom.Command()
         {
             RoomId = room.Id
         };
@@ -59,13 +64,14 @@ public class RemoveRoomTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange
-        var command = new RemoveRoomCommand()
+        var command = new RemoveRoom.Command()
         {
             RoomId = Guid.NewGuid()
         };

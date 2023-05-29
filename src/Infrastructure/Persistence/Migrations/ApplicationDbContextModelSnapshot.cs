@@ -189,6 +189,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -208,6 +211,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
+                    b.HasIndex("DepartmentId")
+                        .IsUnique();
+
                     b.ToTable("Rooms");
                 });
 
@@ -218,7 +224,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("UserId");
 
-                    b.Property<Guid>("RoomId")
+                    b.Property<Guid?>("RoomId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -281,6 +287,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
 
@@ -392,6 +399,17 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
+                {
+                    b.HasOne("Domain.Entities.Department", "Department")
+                        .WithOne("Room")
+                        .HasForeignKey("Domain.Entities.Physical.Room", "DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Staff", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
@@ -402,9 +420,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasOne("Domain.Entities.Physical.Room", "Room")
                         .WithOne("Staff")
-                        .HasForeignKey("Domain.Entities.Physical.Staff", "RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Domain.Entities.Physical.Staff", "RoomId");
 
                     b.Navigation("Room");
 
@@ -429,6 +445,11 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Department", b =>
+                {
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Folder", b =>

@@ -1,5 +1,5 @@
 using Application.Common.Exceptions;
-using Application.Departments.Commands.DeleteDepartment;
+using Application.Departments.Commands;
 using Domain.Entities;
 using FluentAssertions;
 using Xunit;
@@ -12,11 +12,14 @@ public class AddDepartmentTests : BaseClassFixture
     {
     }
 
-    [Fact(Timeout = 200)]
+    [Fact]
     public async Task ShouldCreateDepartment_WhenDepartmentNameIsValid()
     {
         // Arrange
-        var createDepartmentCommand = _departmentGenerator.Generate();
+        var createDepartmentCommand = new AddDepartment.Command()
+        {
+            Name = "something",
+        };
         
         // Act
         var department = await SendAsync(createDepartmentCommand);
@@ -33,11 +36,16 @@ public class AddDepartmentTests : BaseClassFixture
     public async Task ShouldReturnConflict_WhenDepartmentNameHasExisted()
     {
         // Arrange
-        var createDepartmentCommand = _departmentGenerator.Generate();
-        var department = await SendAsync(createDepartmentCommand);
+        var department = CreateDepartment();
+        await AddAsync(department);
+        
+        var command = new AddDepartment.Command()
+        {
+            Name = department.Name,
+        };
         
         // Act
-        var action = async () => await SendAsync(createDepartmentCommand);
+        var action = async () => await SendAsync(command);
         
         // Assert
         await action.Should().ThrowAsync<ConflictException>().WithMessage("Department name already exists.");

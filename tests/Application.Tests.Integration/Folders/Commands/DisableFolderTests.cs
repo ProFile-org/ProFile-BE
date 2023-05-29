@@ -1,5 +1,5 @@
 using Application.Common.Exceptions;
-using Application.Folders.Commands.DisableFolder;
+using Application.Folders.Commands;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
@@ -46,7 +46,7 @@ public class DisableFolderTests : BaseClassFixture
         };
 
         await AddAsync(folder);
-        var disableFolderCommand = new DisableFolderCommand()
+        var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
         };
@@ -67,7 +67,7 @@ public class DisableFolderTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenFolderDoesNotExist()
     {
         // Arrange
-        var disableFolderCommand = new DisableFolderCommand()
+        var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = Guid.NewGuid()
         };
@@ -113,7 +113,7 @@ public class DisableFolderTests : BaseClassFixture
             Locker = locker
         };
         await AddAsync(folder);
-        var disableFolderCommand = new DisableFolderCommand()
+        var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
         };
@@ -173,7 +173,7 @@ public class DisableFolderTests : BaseClassFixture
         };
 
         await AddAsync(document);
-        var disableFolderCommand = new DisableFolderCommand()
+        var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
         };

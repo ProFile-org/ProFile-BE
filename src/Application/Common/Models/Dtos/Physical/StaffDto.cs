@@ -1,11 +1,11 @@
 using Application.Common.Mappings;
-using Application.Common.Models.Dtos.Physical;
+using Application.Users.Queries;
 using Domain.Entities.Physical;
 
-namespace Application.Users.Queries.Physical;
+namespace Application.Common.Models.Dtos.Physical;
 
 public class StaffDto : IMapFrom<Staff>
 {
-    public UserDto User { get; set; }
-    public RoomDto Room { get; set; }
+    public UserDto User { get; set; } = null!;
+    public RoomDto? Room { get; set; }
 }

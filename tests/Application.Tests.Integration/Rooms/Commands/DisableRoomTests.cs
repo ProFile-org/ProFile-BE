@@ -1,12 +1,8 @@
 ﻿using Application.Common.Exceptions;
-using Application.Helpers;
-using Application.Lockers.Commands.AddLocker;
-using Application.Rooms.Commands.DisableRoom;
-using Bogus;
+using Application.Rooms.Commands;
 using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
-using NodaTime;
 using Xunit;
 
 namespace Application.Tests.Integration.Rooms.Commands;
@@ -21,12 +17,13 @@ public class DisableRoomTests : BaseClassFixture
     public async Task ShouldDisableRoom_WhenRoomHaveNoDocument()
     {
         // Arrange 
+        var department = CreateDepartment();
         var folder = CreateFolder();
         var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
        
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new DisableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -46,13 +43,14 @@ public class DisableRoomTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new DisableRoom.Command()
         {
              RoomId = Guid.NewGuid()
         };
@@ -69,14 +67,15 @@ public class DisableRoomTests : BaseClassFixture
     public async Task ShouldThrowInvalidOperationException_WhenRoomIsNotEmptyOfDocuments()
     {
         // Arrange
+        var department = CreateDepartment();
         var documents = CreateNDocuments(1);
         var folder = CreateFolder(documents);
         var locker = CreateLocker(folder);
-        var room = CreateRoom(locker);
+        var room = CreateRoom(department, locker);
 
         await AddAsync(room);
             
-        var disableRoomCommand = new DisableRoomCommand()
+        var disableRoomCommand = new DisableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -93,17 +92,19 @@ public class DisableRoomTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowInvalidOperationException_WhenRoomIsNotAvailable()
     {
         // Arrange
-        var room = CreateRoom();
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         room.IsAvailable = false;
         await AddAsync(room);
 
-        var command = new DisableRoomCommand()
+        var command = new DisableRoom.Command()
         {
             RoomId = room.Id
         };
@@ -117,5 +118,6 @@ public class DisableRoomTests : BaseClassFixture
 
         // Cleanup
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

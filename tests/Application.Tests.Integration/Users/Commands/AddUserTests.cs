@@ -1,4 +1,4 @@
-using Application.Users.Commands.AddUser;
+using Application.Users.Commands;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
@@ -8,14 +8,6 @@ namespace Application.Tests.Integration.Users.Commands;
 
 public class AddUserTests : BaseClassFixture
 {
-    private readonly Faker<AddUserCommand> _userGenerator = new Faker<AddUserCommand>()
-        .RuleFor(x => x.Username, faker => faker.Person.UserName)
-        .RuleFor(x => x.Email, faker => faker.Person.Email)
-        .RuleFor(x => x.FirstName, faker => faker.Person.FirstName)
-        .RuleFor(x => x.LastName, faker => faker.Person.LastName)
-        .RuleFor(x => x.Password, faker => faker.Random.String())
-        .RuleFor(x => x.Role, faker => faker.Random.Word())
-        .RuleFor(x => x.Position, faker => faker.Random.Word());
     public AddUserTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
@@ -24,29 +16,32 @@ public class AddUserTests : BaseClassFixture
     public async Task ShouldCreateUser_WhenCreateDetailsAreValid()
     {
         // Arrange
-        var department = new Department()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.Department()
-        };
+        var department = CreateDepartment();
         await AddAsync(department);
-        var createUserCommand = _userGenerator.Generate();
-        createUserCommand = createUserCommand with
+        
+        var command = new AddUser.Command()
         {
-            DepartmentId = department.Id
+            Username = new Faker().Person.UserName,
+            Email = new Faker().Person.Email,
+            FirstName = new Faker().Person.FirstName,
+            LastName = new Faker().Person.LastName,
+            Password = new Faker().Random.Word(),
+            Role = new Faker().Random.Word(),
+            DepartmentId = department.Id,
+            Position = new Faker().Random.Word(),
         };
         
         // Act
-        var user = await SendAsync(createUserCommand);
+        var user = await SendAsync(command);
         
         // Assert
-        user.Username.Should().Be(createUserCommand.Username);
-        user.FirstName.Should().Be(createUserCommand.FirstName);
-        user.LastName.Should().Be(createUserCommand.LastName);
+        user.Username.Should().Be(command.Username);
+        user.FirstName.Should().Be(command.FirstName);
+        user.LastName.Should().Be(command.LastName);
         user.Department.Should().BeEquivalentTo(new { department.Id, department.Name });
-        user.Email.Should().Be(createUserCommand.Email);
-        user.Role.Should().Be(createUserCommand.Role);
-        user.Position.Should().Be(createUserCommand.Position);
+        user.Email.Should().Be(command.Email);
+        user.Role.Should().Be(command.Role);
+        user.Position.Should().Be(command.Position);
         user.IsActive.Should().Be(true);
         user.IsActivated.Should().Be(false);
         

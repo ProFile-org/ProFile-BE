@@ -1,10 +1,6 @@
 ﻿using Application.Common.Exceptions;
-using Application.Lockers.Commands.AddLocker;
-using Application.Lockers.Commands.DisableLocker;
-using Application.Lockers.Commands.EnableLocker;
-using Bogus;
-using Domain.Entities.Physical;
-using Domain.Exceptions;
+using Application.Lockers.Commands;
+using Domain.Entities;
 using FluentAssertions;
 using Xunit;
 
@@ -21,63 +17,39 @@ public class EnableLockerTests : BaseClassFixture
     public async Task ShouldEnableLocker_WhenLockerExistsAndIsNotAvailable()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-
+        var department = CreateDepartment();
+        var locker = CreateLocker();
+        locker.IsAvailable = false;
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
 
-        var createLockerCommand = new AddLockerCommand()
-        {
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 2,
-            RoomId = room.Id,
-        };
-
-        var locker = await SendAsync(createLockerCommand);
-
-        var disableLockerCommand = new DisableLockerCommand()
-        {
-            LockerId = locker.Id,
-        };
-        
-        await SendAsync(disableLockerCommand);
-        
         // Act
-        
-        var enableLockerCommand = new EnableLockerCommand()
+        var command = new EnableLocker.Command()
         {
             LockerId = locker.Id,
         };
         
-        var result = await SendAsync(enableLockerCommand);
+        var result = await SendAsync(command);
 
         // Assert
         result.IsAvailable.Should().BeTrue();
         
         // Cleanup
-        var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(roomEntity);
+        Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
     
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenLockerDoesNotExist()
     {
         // Arrange
-        var enableLockerCommand = new EnableLockerCommand()
+        var command = new EnableLocker.Command()
         {
             LockerId = Guid.NewGuid(),
         };
         
         // Act
-        var action = async () => await SendAsync(enableLockerCommand);
+        var action = async () => await SendAsync(command);
         
         // Assert
         await action.Should()
@@ -89,28 +61,12 @@ public class EnableLockerTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenLockerIsAlreadyEnabled()
     {
         // Arrange 
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-        
+        var department = CreateDepartment();
+        var locker = CreateLocker();
+        var room = CreateRoom(department, locker);
         await AddAsync(room);
-
-        var createLockerCommand = new AddLockerCommand()
-        {
-            Name = new Faker().Commerce.ProductName(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 2,
-            RoomId = room.Id,
-        };
         
-        var locker = await SendAsync(createLockerCommand);
-        var enableLockerCommand = new EnableLockerCommand()
+        var enableLockerCommand = new EnableLocker.Command()
         {
             LockerId = locker.Id,
         };
@@ -124,7 +80,7 @@ public class EnableLockerTests : BaseClassFixture
             .WithMessage("Locker has already been enabled.");
         
         // Cleanup
-        var roomEntity = await FindAsync<Room>(room.Id);
-        Remove(roomEntity);
+        Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

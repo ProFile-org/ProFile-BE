@@ -21,13 +21,9 @@ try
     
     var app = builder.Build();
     
-    app.UseInfrastructure();
+    app.UseInfrastructure(builder.Configuration);
 
-    app.MigrateDatabase<ApplicationDbContext>((context, _) =>
-        {
-            ApplicationDbContextSeed.Seed(context, builder.Configuration, Log.Logger).Wait();
-        })
-        .Run();
+    app.Run();
 }
 catch (Exception ex)
 {

@@ -2,8 +2,6 @@ using System.Runtime.Serialization;
 using Application.Common.Mappings;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Physical;
-using Application.Documents.Queries.GetAllDocumentsPaginated;
-using Application.Rooms.Queries.GetEmptyContainersPaginated;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
