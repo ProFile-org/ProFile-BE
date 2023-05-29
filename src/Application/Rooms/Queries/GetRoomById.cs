@@ -9,27 +9,17 @@ namespace Application.Rooms.Queries;
 
 public class GetRoomById
 {
-    public class Validator : AbstractValidator<Query>
-    {
-        public Validator()
-        {
-            RuleLevelCascadeMode = CascadeMode.Stop;
-
-            RuleFor(x => x.RoomId)
-                .NotEmpty().WithMessage("RoomId is required.");
-        }   
-    }
     public record Query : IRequest<RoomDto>
     {
         public Guid RoomId { get; init; }
     }
     
-    public class GetRoomByIdHandler : IRequestHandler<Query, RoomDto>
+    public class QueryHandler : IRequestHandler<Query, RoomDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public GetRoomByIdHandler(IApplicationDbContext context, IMapper mapper)
+        public QueryHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
