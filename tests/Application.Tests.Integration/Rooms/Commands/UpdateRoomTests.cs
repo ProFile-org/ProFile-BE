@@ -84,7 +84,7 @@ public class UpdateRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("New capacity cannot be less than current number of lockers");
+            .WithMessage("New capacity cannot be less than current number of lockers.");
         
         // Cleanup
         Remove(locker1);
@@ -101,6 +101,7 @@ public class UpdateRoomTests : BaseClassFixture
         var department2 = CreateDepartment();
         var existedNameRoom = CreateRoom(department1);
         var room = CreateRoom(department2);
+        await AddAsync(existedNameRoom);
         await AddAsync(room);
 
         var command = new UpdateRoom.Command()
