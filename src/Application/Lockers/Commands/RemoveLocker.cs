@@ -26,12 +26,12 @@ public class RemoveLocker
         public Guid LockerId { get; init; }
     }
     
-    public class RemoveLockerCommandHandler : IRequestHandler<Command, LockerDto>
+    public class CommandHandler : IRequestHandler<Command, LockerDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
     
-        public RemoveLockerCommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
