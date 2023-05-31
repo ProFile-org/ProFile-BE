@@ -34,6 +34,7 @@ public class UsersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all users query parameters</param>
     /// <returns>A paginated list of UserDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
