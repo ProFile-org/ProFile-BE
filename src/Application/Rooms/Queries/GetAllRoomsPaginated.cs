@@ -41,13 +41,13 @@ public class GetAllRoomsPaginated
             }
 
             var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page ?? 1;
-            var sizeNumber = request.Size ?? 5;
+            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
+            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
             var result = await rooms
                 .ProjectTo<RoomDto>(_mapper.ConfigurationProvider)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber, sizeNumber);
+                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
 
             return result;
         }
