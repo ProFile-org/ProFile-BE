@@ -47,6 +47,7 @@ public class FoldersController : ApiControllerBase
         {
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
+            SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,

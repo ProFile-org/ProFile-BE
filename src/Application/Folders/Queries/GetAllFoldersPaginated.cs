@@ -29,6 +29,7 @@ public class GetAllFoldersPaginated
     {
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
+        public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -81,6 +82,12 @@ public class GetAllFoldersPaginated
                 }
 
                 folders = folders.Where(x => x.Locker.Room.Id == request.RoomId);
+            }
+            
+            if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
+            {
+                folders = folders.Where(x =>
+                    x.Name.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
             }
 
             var sortBy = request.SortBy;
