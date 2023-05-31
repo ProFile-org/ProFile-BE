@@ -1,8 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using Infrastructure.Shared;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -12,57 +15,40 @@ namespace Infrastructure.Identity.Authentication;
 
 public class JweAuthenticationHandler : AuthenticationHandler<JweAuthenticationOptions>
 {
-    private readonly JweSettings _jweSettings;
-    
-    private readonly RSA _encryptionKey;
-    private readonly ECDsa _signingKey;
     
     public JweAuthenticationHandler(
         IOptionsMonitor<JweAuthenticationOptions> options, 
         ILoggerFactory logger, UrlEncoder encoder, 
-        ISystemClock clock, IOptions<JweSettings> jweSettings, 
-        RSA encryptionKey, ECDsa signingKey) : base(options, logger, encoder, clock)
+        ISystemClock clock) : base(options, logger, encoder, clock)
     {
-        _encryptionKey = encryptionKey;
-        _signingKey = signingKey;
-        _jweSettings = jweSettings.Value;
     }
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         //check header first
-        if (!Request.Headers.ContainsKey(Options.TokenHeaderName))
+        if (!Request.Cookies.ContainsKey(JweAuthenticationOptions.TokenCookieName))
         {
-            return AuthenticateResult.Fail($"Missing header: {Options.TokenHeaderName}");
+            return AuthenticateResult.Fail($"Missing cookie: {JweAuthenticationOptions.TokenCookieName}");
         }
 
         //get the header and validate
-        string token = Request.Headers[Options.TokenHeaderName]!;
-        token = token.Substring(token.IndexOf(" ", StringComparison.Ordinal) + 1);
+        var token = Request.Cookies[JweAuthenticationOptions.TokenCookieName]!;
 
-        var privateEncryptionKey = new RsaSecurityKey(_encryptionKey) {KeyId = _jweSettings.EncryptionKeyId};
-        var publicSigningKey = new ECDsaSecurityKey(ECDsa.Create(_signingKey.ExportParameters(false))) {KeyId = _jweSettings.SigningKeyId};
+        var handler = new JwtSecurityTokenHandler();
 
-        var handler = new JsonWebTokenHandler();
-        var result = handler.ValidateToken(token,
-            new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateLifetime = true,
-                // public key for signing
-                IssuerSigningKey = publicSigningKey,
-        
-                // private key for encryption
-                TokenDecryptionKey = privateEncryptionKey
-            });
-
-        if (!result.IsValid)
+        try
         {
-            return AuthenticateResult.Fail("Invalid token.");
+            var claimsPrincipal = handler.ValidateToken(token,
+                Options.TokenValidationParameters, out var validatedToken);
+
+            Context.User = claimsPrincipal;
+            
+            return validatedToken is null
+                ? AuthenticateResult.Fail("Invalid token.")
+                : AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, Scheme.Name));
         }
-
-        var claimsPrincipal = new ClaimsPrincipal(result.ClaimsIdentity);
-
-        return AuthenticateResult.Success(new AuthenticationTicket(claimsPrincipal, this.Scheme.Name));
+        catch (Exception ex)
+        {
+            return AuthenticateResult.Fail(ex);
+        }
     }
 }

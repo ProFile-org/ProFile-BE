@@ -1,4 +1,10 @@
+using Application.Helpers;
+using Application.Identity;
+using Domain.Entities;
+using Infrastructure.Shared;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using NodaTime;
 using Serilog;
 
 namespace Infrastructure.Persistence;
@@ -7,10 +13,11 @@ public class ApplicationDbContextSeed
 {
     public static async Task Seed(ApplicationDbContext context, IConfiguration configuration, ILogger logger)
     {
+        if (!configuration.GetValue<bool>("Seed")) return;
+
         try
         {
-            // Note: For later uses when I actually have a working hash function
-            // await TrySeedAsync(context, configuration);
+            await TrySeedAsync(context);
         }
         catch (Exception ex)
         {
@@ -19,19 +26,44 @@ public class ApplicationDbContextSeed
         }
     }
 
-    private async Task TrySeedAsync(ApplicationDbContext context, IConfiguration configuration)
+    private static async Task TrySeedAsync(ApplicationDbContext context)
     {
-        // Note: uncomment this
-    //     // Default roles
-    //     var administratorRole = "Administrator";
-    //
-    //     // Default users
-    //     var administrator = new User { Username = "admin", Email = "administrator@localhost", PasswordHash = };
-    //
-    //     if (context.Users.All(u => u.Username != administrator.Username))
-    //     {
-    //         administrator.Role = administratorRole;
-    //         await context.Users.AddAsync(administrator);
-    //     }
+        var department = new Department()
+        {
+            Name = "Admin"
+        };
+        
+        // Default users
+        var admin = new User
+        {
+            Username = "admin", 
+            Email = "admin@profile.dev", 
+            PasswordHash = SecurityUtil.Hash("admin"),
+            IsActive = true,
+            IsActivated = true,
+            Created = LocalDateTime.FromDateTime(DateTime.UtcNow),
+            Role = IdentityData.Roles.Admin,
+        };
+        
+        if (context.Departments.All(u => u.Name != department.Name))
+        {
+            await context.Departments.AddAsync(department);
+            if (context.Users.All(u => u.Username != admin.Username))
+            {
+                admin.Department = department;
+                await context.Users.AddAsync(admin);
+            }
+        }
+        else
+        {
+            var departmentEntity = context.Departments.Single(x => x.Name.Equals(department.Name));
+            if (context.Users.All(u => u.Username != admin.Username))
+            {
+                admin.Department = departmentEntity;
+                await context.Users.AddAsync(admin);
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 }

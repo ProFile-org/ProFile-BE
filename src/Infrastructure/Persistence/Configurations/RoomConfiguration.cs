@@ -1,3 +1,4 @@
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

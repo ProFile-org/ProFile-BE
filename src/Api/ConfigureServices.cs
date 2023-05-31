@@ -1,6 +1,8 @@
+using System.Reflection;
 using Api.Middlewares;
 using Api.Policies;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.OpenApi.Models;
 
 namespace Api;
 
@@ -14,19 +16,35 @@ public static class ConfigureServices
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
+        services.AddHttpContextAccessor();
+        
         services.AddCors(options =>
         {
             options.AddPolicy("AllowAllOrigins", builder =>
             {
-                builder.AllowAnyOrigin();
+                builder.WithOrigins("http://localhost:3000");
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();
+                builder.AllowCredentials();
             });
         });
+
+        services.AddHttpContextAccessor();
         
         // For swagger
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "ProFile API",
+                Description = "An ASP.NET Core Web API for managing documents",
+            });
+            
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+        });
         
         return services;
     }

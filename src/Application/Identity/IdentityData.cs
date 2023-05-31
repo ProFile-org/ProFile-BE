@@ -1,15 +1,11 @@
 namespace Application.Identity;
 
-public class IdentityData
+public static class IdentityData
 {
-    public class Claims
-    {
-        public const string Role = "role";
-    }
-
-    public class Roles
+    public static class Roles
     {
         public const string Admin = "Admin";
         public const string Staff = "Staff";
+        public const string Employee = "Employee";
     }
 }
