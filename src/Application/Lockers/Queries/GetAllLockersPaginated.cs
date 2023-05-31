@@ -14,6 +14,7 @@ public class GetAllLockersPaginated
     public record Query : IRequest<PaginatedList<LockerDto>>
     {
         public Guid? RoomId { get; init; }
+        public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -38,6 +39,12 @@ public class GetAllLockersPaginated
             if (request.RoomId is not null)
             {
                 lockers = lockers.Where(x => x.Room.Id == request.RoomId);
+            }
+            
+            if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
+            {
+                lockers = lockers.Where(x =>
+                    x.Name.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
             }
             
             var sortBy = request.SortBy;
