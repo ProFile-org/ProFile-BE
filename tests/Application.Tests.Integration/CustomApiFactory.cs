@@ -28,7 +28,7 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
             var databaseSettings = GetConfiguration().GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(databaseSettings!.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql("Server=localhost;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured;", optionsBuilder => optionsBuilder.UseNodaTime());
             });
         });
     }

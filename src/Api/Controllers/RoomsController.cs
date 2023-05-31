@@ -41,10 +41,11 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(
-        [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
+        [FromQuery] GetAllRoomsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllRoomsPaginated.Query()
         {
+            SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,

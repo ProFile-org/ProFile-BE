@@ -13,6 +13,7 @@ public class GetAllRoomsPaginated
 {
     public record Query : IRequest<PaginatedList<RoomDto>>
     {
+        public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -34,6 +35,12 @@ public class GetAllRoomsPaginated
         {
             var rooms = _context.Rooms.AsQueryable();
 
+            if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
+            {
+                rooms = rooms.Where(x =>
+                    x.Name.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
+            }
+            
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<RoomDto>())
             {
