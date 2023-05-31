@@ -61,7 +61,7 @@ public class UpdateLockerTests : BaseClassFixture
         
         // Assert
         await result.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Locker does not exist");
+            .WithMessage("Locker does not exist.");
     }
     
     [Fact]
