@@ -36,6 +36,7 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all rooms paginated details</param>
     /// <returns>A paginated list of rooms</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
