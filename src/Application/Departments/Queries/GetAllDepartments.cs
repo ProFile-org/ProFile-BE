@@ -25,7 +25,7 @@ public class GetAllDepartments
         public async Task<IEnumerable<DepartmentDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var departments = await _context.Departments
-                .Where(x => !x.Name.Equals("Admin"))
+                // .Where(x => !x.Name.Equals("Admin"))
                 .ToListAsync(cancellationToken);
             var result = new ReadOnlyCollection<DepartmentDto>(_mapper.Map<List<DepartmentDto>>(departments));
             return result;
