@@ -46,13 +46,13 @@ public class GetAllLockersPaginated
                 sortBy = nameof(LockerDto.Id);
             }
             var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page ?? 1;
-            var sizeNumber = request.Size ?? 5;
+            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
+            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
             var result = await lockers
                 .ProjectTo<LockerDto>(_mapper.ConfigurationProvider)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber, sizeNumber);
+                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
 
             return result;
         }
