@@ -53,14 +53,14 @@ public class UpdateLocker
             var locker = await _context.Lockers.FirstOrDefaultAsync(
                 x => x.Id.Equals(request.LockerId), cancellationToken);
 
-            var duplicateLocker = await _context.Lockers.FirstOrDefaultAsync(
-                x => x.Name.Equals(request.Name), cancellationToken);
-            
             if (locker is null)
             {
                 throw new KeyNotFoundException("Locker does not exist.");
             }
 
+            var duplicateLocker = await _context.Lockers.FirstOrDefaultAsync(
+                x => x.Name.Equals(request.Name), cancellationToken);
+            
             if (duplicateLocker is not null && !duplicateLocker.Equals(locker))
             {
                 throw new ConflictException("New locker name already exists.");
