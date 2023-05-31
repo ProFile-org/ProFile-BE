@@ -88,6 +88,11 @@ public class UpdateLockerTests : BaseClassFixture
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("New locker name already exists.");
+        
+        // Cleanup
+        Remove(locker);
+        Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
     
     [Fact]
