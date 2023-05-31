@@ -36,7 +36,7 @@ public class RemoveLockerTests : BaseClassFixture
         removedLocker.Should().BeNull();
         
         // Cleanup
-        Remove(room);
+        Remove(await FindAsync<Room>(room.Id));
         Remove(await FindAsync<Department>(department.Id));
     }
 
