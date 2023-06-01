@@ -18,9 +18,7 @@ public class UpdateRoom
             RuleLevelCascadeMode = CascadeMode.Stop;
 
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Name can not be empty.");
-
-            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Name can not be empty.")
                 .MaximumLength(64).WithMessage("Name can not exceed 64 characters.");
 
             RuleFor(x => x.Capacity)
