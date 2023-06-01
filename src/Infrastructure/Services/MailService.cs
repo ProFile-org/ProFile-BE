@@ -17,7 +17,7 @@ public class MailService : IMailService
         _mailSettings = mailSettingsOptions.Value;
     }
 
-    public bool SendResetPasswordHtmlMail(string userEmail)
+    public bool SendResetPasswordHtmlMail(string userEmail, string password)
     {
         var data = new HTMLMailData()
         {
@@ -35,6 +35,7 @@ public class MailService : IMailService
             {
                 UserEmail = userEmail,
                 PassResetLink = "random_shit",
+                UserPassword = password,
             },
         };
         

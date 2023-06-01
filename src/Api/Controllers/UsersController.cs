@@ -71,7 +71,6 @@ public class UsersController : ApiControllerBase
         {
             Username = request.Username,
             Email = request.Email,
-            Password = request.Password,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Role = request.Role,

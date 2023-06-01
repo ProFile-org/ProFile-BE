@@ -34,4 +34,6 @@ public class TemplateVariables
     public string UserEmail { get; set; }
     [JsonPropertyName("pass_reset_link")]
     public string PassResetLink { get; set; }
+    [JsonPropertyName("user_password")]
+    public string UserPassword { get; set; }
 }

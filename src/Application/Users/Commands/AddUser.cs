@@ -30,9 +30,6 @@ public class AddUser
                 .EmailAddress().WithMessage("Require valid email.")
                 .MaximumLength(320).WithMessage("Email length too long.");
 
-            RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password is required.");
-
             RuleFor(x => x.Role)
                 .NotEmpty().WithMessage("Role is required.")
                 .MaximumLength(64).WithMessage("Role cannot exceed 64 characters.")
@@ -58,7 +55,6 @@ public class AddUser
     {
         public string Username { get; init; } = null!;
         public string Email { get; init; } = null!;
-        public string Password { get; init; } = null!;
         public string? FirstName { get; init; }
         public string? LastName { get; init; }
         public Guid DepartmentId { get; init; }
@@ -95,10 +91,11 @@ public class AddUser
                 throw new KeyNotFoundException("Department does not exist.");
             }
 
+            var password = StringUtil.RandomString(8);
             var entity = new User
             {
                 Username = request.Username,
-                PasswordHash = SecurityUtil.Hash(request.Password),
+                PasswordHash = SecurityUtil.Hash(password),
                 Email = request.Email,
                 FirstName = request.FirstName?.Trim(),
                 LastName = request.LastName?.Trim(),
@@ -109,7 +106,7 @@ public class AddUser
                 IsActivated = false,
                 Created = LocalDateTime.FromDateTime(DateTime.UtcNow)
             };
-            entity.AddDomainEvent(new UserCreatedEvent(entity));
+            entity.AddDomainEvent(new UserCreatedEvent(entity.Email, password));
             var result = await _context.Users.AddAsync(entity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
