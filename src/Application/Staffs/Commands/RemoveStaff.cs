@@ -1,6 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,16 @@ namespace Application.Staffs.Commands;
 
 public class RemoveStaff
 {
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+
+            RuleFor(x => x.StaffId)
+                .NotEmpty().WithMessage("StaffId is required.");
+        }
+    }
     public record Command : IRequest<StaffDto>
     {
         public Guid StaffId { get; init; }
@@ -27,6 +38,8 @@ public class RemoveStaff
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var staff = await _context.Staffs
+                .Include(x => x.User)
+                .Include(x => x.Room)
                 .FirstOrDefaultAsync(x => x.User.Id.Equals(request.StaffId), cancellationToken: cancellationToken);
 
             if (staff is null)
