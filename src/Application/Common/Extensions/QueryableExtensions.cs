@@ -20,4 +20,9 @@ public static class QueryableExtensions
 
         return items.Provider.CreateQuery<TEntity>(result);
     }
+
+    public static IQueryable<TEntity> Paginate<TEntity>(this IQueryable<TEntity> items, int page, int size)
+    {
+        return items.Skip((page - 1) * page).Take(size);
+    }
 }

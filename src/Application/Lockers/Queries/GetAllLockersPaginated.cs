@@ -6,6 +6,7 @@ using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Lockers.Queries;
 
@@ -34,7 +35,10 @@ public class GetAllLockersPaginated
 
         public async Task<PaginatedList<LockerDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var lockers = _context.Lockers.AsQueryable();
+            var lockers = _context.Lockers
+                .Include(x => x.Room)
+                .ThenInclude(y => y.Department)
+                .AsQueryable();
 
             if (request.RoomId is not null)
             {
@@ -56,12 +60,14 @@ public class GetAllLockersPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
-            var result = await lockers
-                .ProjectTo<LockerDto>(_mapper.ConfigurationProvider)
+            var list  = await lockers
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
+                .ToListAsync(cancellationToken);
+            
+            var result = _mapper.Map<List<LockerDto>>(list);
 
-            return result;
+            return new PaginatedList<LockerDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

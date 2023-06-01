@@ -6,6 +6,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +50,11 @@ public class GetAllFoldersPaginated
 
         public async Task<PaginatedList<FolderDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var folders = _context.Folders.AsQueryable();
+            var folders = _context.Folders
+                .Include(x => x.Locker)
+                .ThenInclude(y => y.Room)
+                .ThenInclude(z => z.Department)
+                .AsQueryable();
             var roomExists = request.RoomId is not null;
             var lockerExists = request.LockerId is not null;
 
@@ -99,12 +104,14 @@ public class GetAllFoldersPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
-            var result = await folders
-                .ProjectTo<FolderDto>(_mapper.ConfigurationProvider)
+            var list  = await folders
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
+                .ToListAsync(cancellationToken);
+            
+            var result = _mapper.Map<List<FolderDto>>(list);
 
-            return result;
+            return new PaginatedList<FolderDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
