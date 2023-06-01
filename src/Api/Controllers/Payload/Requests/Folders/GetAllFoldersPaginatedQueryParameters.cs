@@ -14,6 +14,10 @@ public class GetAllFoldersPaginatedQueryParameters
     /// </summary>
     public Guid? LockerId { get; set; }
     /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; init; }
+    /// <summary>
     /// Page number
     /// </summary>
     public int? Page { get; set; }
