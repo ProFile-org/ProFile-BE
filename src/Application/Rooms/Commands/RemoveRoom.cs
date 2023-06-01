@@ -25,12 +25,12 @@ public class RemoveRoom
         public Guid RoomId { get; init; }    
     }
 
-    public class RemoveRoomCommandHandler : IRequestHandler<Command, RoomDto>
+    public class CommandHandler : IRequestHandler<Command, RoomDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public RemoveRoomCommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
