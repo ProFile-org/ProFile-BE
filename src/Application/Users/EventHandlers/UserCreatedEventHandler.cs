@@ -1,3 +1,4 @@
+using Application.Common.Interfaces;
 using Domain.Events;
 using MediatR;
 
@@ -5,8 +6,15 @@ namespace Application.Users.EventHandlers;
 
 public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 {
-    public Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
+    private readonly IMailService _mailService;
+
+    public UserCreatedEventHandler(IMailService mailService)
     {
-        throw new NotImplementedException();
+        _mailService = mailService;
+    }
+
+    public async Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
+    {
+        _mailService.SendResetPasswordHtmlMail(notification.User.Email);
     }
 }
