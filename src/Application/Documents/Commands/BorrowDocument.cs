@@ -2,9 +2,12 @@ using Application.Common.Models.Dtos.Physical;
 using MediatR;
 using Application.Common.Interfaces;
 using Application.Common.Exceptions;
-using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Physical;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+
 namespace Application.Documents.Commands;
 
 public class BorrowDocument
@@ -15,6 +18,8 @@ public class BorrowDocument
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
 
+            RuleFor(x => x.Reason)
+                .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
         }
     }
     
@@ -44,7 +49,7 @@ public class BorrowDocument
                 throw new KeyNotFoundException("User does not exist.");
             }
             
-            var document = await _context.Documents.FirstOrDefaultAsync(x => x.Id == request.BorrowerId, cancellationToken);
+            var document = await _context.Documents.FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {
                 throw new KeyNotFoundException("Document does not exist.");
@@ -54,6 +59,20 @@ public class BorrowDocument
             {
                 throw new ConflictException("Due date cannot be in the past.");
             }
+
+            var entity = new Borrow()
+            {
+                Borrower = user,
+                Document = document,
+                BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
+                DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
+                Reason = request.Reason,
+            };
+
+            var result = await _context.Borrows.AddAsync(entity, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return _mapper.Map<BorrowDto>(result.Entity);
         }
     }
 }
