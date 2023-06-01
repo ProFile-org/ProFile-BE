@@ -87,7 +87,7 @@ public class GetAllFoldersPaginated
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 folders = folders.Where(x =>
-                    x.Name.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
+                    x.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
             var sortBy = request.SortBy;
