@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Folders.Commands;
 using Domain.Entities;
 using Domain.Entities.Physical;
@@ -34,10 +35,11 @@ public class RemoveFolderTests : BaseClassFixture
         result.Id.Should().Be(folder.Id);
         var removedFolder = await FindAsync<Folder>(folder.Id);
         removedFolder.Should().BeNull();
+        var lockerOfRemovedFolder = await FindAsync<Locker>(locker.Id);
+        locker.NumberOfFolders.Should().Be(lockerOfRemovedFolder!.NumberOfFolders + 1);
         
         // Cleanup
-        //Remove(folder);
-        Remove(await FindAsync<Locker>(locker.Id));
+        Remove(lockerOfRemovedFolder);
         Remove(await FindAsync<Room>(room.Id));
         Remove(await FindAsync<Department>(department.Id));
     }
@@ -62,9 +64,9 @@ public class RemoveFolderTests : BaseClassFixture
         var action = async () => await SendAsync(command);
         
         // Assert
-        await action.Should().ThrowAsync<InvalidOperationException>()
+        await action.Should().ThrowAsync<ConflictException>()
             .WithMessage("Folder cannot be removed because it contains documents.");
-        
+
         // Cleanup
         Remove(documents.First());
         Remove(folder);
