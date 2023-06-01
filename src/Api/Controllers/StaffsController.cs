@@ -102,6 +102,7 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
         [FromRoute] Guid staffId)
     {
