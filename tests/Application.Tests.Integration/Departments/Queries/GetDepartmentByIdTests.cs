@@ -16,6 +16,8 @@ public class GetDepartmentByIdTests : BaseClassFixture
         // Arrange
         var department = CreateDepartment();
 
+        await AddAsync(department);
+
         var query = new GetDepartmentById.Query()
         {
             DepartmentId = department.Id,
