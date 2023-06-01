@@ -44,6 +44,17 @@ public class RemoveStaffTests : BaseClassFixture
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenStaffDoesNotExist()
     {
-        
+        // Arrange
+        var command = new RemoveStaff.Command()
+        {
+            StaffId = Guid.NewGuid()
+        };
+
+        // Act 
+        var action = async () => await SendAsync(command);
+
+        // Assert
+        await action.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage("Staff does not exist.");
     }
 }

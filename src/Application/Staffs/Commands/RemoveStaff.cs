@@ -9,16 +9,6 @@ namespace Application.Staffs.Commands;
 
 public class RemoveStaff
 {
-    public class Validator : AbstractValidator<Command>
-    {
-        public Validator()
-        {
-            RuleLevelCascadeMode = CascadeMode.Stop;
-
-            RuleFor(x => x.StaffId)
-                .NotEmpty().WithMessage("StaffId is required.");
-        }
-    }
     public record Command : IRequest<StaffDto>
     {
         public Guid StaffId { get; init; }
