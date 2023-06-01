@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,25 @@ namespace Application.Rooms.Commands;
 
 public class UpdateRoom
 {
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+
+            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Name can not be empty.");
+
+            RuleFor(x => x.Name)
+                .MaximumLength(64).WithMessage("Name can not exceed 64 characters.");
+
+            RuleFor(x => x.Capacity)
+                .NotEmpty().WithMessage("Capacity can not be empty");
+
+            RuleFor(x => x.Description)
+                .MaximumLength(256).WithMessage("Description can not exceed 256 characters.");
+        }
+    }
     public record Command : IRequest<RoomDto>
     {
         public Guid RoomId { get; init; }
@@ -46,7 +66,7 @@ public class UpdateRoom
 
             if (nameExisted)
             {
-                throw new ConflictException("New name has already exists.");
+                throw new ConflictException("Name has already exists.");
             }
 
             if (request.Capacity < room.NumberOfLockers)

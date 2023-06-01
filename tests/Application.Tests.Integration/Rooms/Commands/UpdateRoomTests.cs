@@ -117,7 +117,7 @@ public class UpdateRoomTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("New name has already exists.");
+            .WithMessage("Name has already exists.");
         
         // Cleanup
         Remove(existedNameRoom);
