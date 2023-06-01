@@ -82,6 +82,8 @@ public class AddRoom
                 NumberOfLockers = 0,
                 Capacity = request.Capacity,
                 Department = department,
+                DepartmentId = request.DepartmentId,
+                IsAvailable = true,
             };
             var result = await _context.Rooms.AddAsync(entity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
