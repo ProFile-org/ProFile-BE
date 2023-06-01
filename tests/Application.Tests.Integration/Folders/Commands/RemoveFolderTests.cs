@@ -1,5 +1,4 @@
 using Application.Folders.Commands;
-using Application.Lockers.Commands;
 using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -37,9 +36,9 @@ public class RemoveFolderTests : BaseClassFixture
         removedFolder.Should().BeNull();
         
         // Cleanup
-        Remove(folder);
-        Remove(locker);
-        Remove(room);
+        //Remove(folder);
+        Remove(await FindAsync<Locker>(locker.Id));
+        Remove(await FindAsync<Room>(room.Id));
         Remove(await FindAsync<Department>(department.Id));
     }
 
