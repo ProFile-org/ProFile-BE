@@ -54,6 +54,6 @@ public class GetUserByIdTests : BaseClassFixture
         
         // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("User does not exist");
+            .WithMessage("User does not exist.");
     }
 }

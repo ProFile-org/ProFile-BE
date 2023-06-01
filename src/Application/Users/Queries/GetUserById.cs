@@ -30,7 +30,7 @@ public class GetUserById
 
             if (user is null)
             {
-                throw new KeyNotFoundException("User does not exist");
+                throw new KeyNotFoundException("User does not exist.");
             }
 
             return _mapper.Map<UserDto>(user);
