@@ -24,7 +24,7 @@ public class UpdateRoom
                 .MaximumLength(64).WithMessage("Name can not exceed 64 characters.");
 
             RuleFor(x => x.Capacity)
-                .NotEmpty().WithMessage("Capacity can not be empty");
+                .NotEmpty().WithMessage("Capacity can not be empty.");
 
             RuleFor(x => x.Description)
                 .MaximumLength(256).WithMessage("Description can not exceed 256 characters.");
