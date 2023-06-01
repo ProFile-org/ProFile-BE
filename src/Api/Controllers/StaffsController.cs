@@ -112,4 +112,22 @@ public class StaffsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
     }
+
+    /// <summary>
+    /// Remove a staff
+    /// </summary>
+    /// <param name="staffId">Id of the staff to be removed</param>
+    /// <returns>A StaffDto of the removed staff</returns>
+    [HttpDelete("{staffId:guid}")]
+    public async Task<ActionResult<Result<StaffDto>>> Remove(
+        [FromRoute] Guid staffId)
+    {
+        var command = new RemoveStaff.Command()
+        {
+            StaffId = staffId
+        };
+
+        var result = await Mediator.Send(command);
+        return Ok(Result<StaffDto>.Succeed(result));
+    }
 }
