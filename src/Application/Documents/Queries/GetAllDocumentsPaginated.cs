@@ -115,7 +115,7 @@ public class GetAllDocumentsPaginated
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 documents = documents.Where(x =>
-                    x.Title.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
+                    x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
             var sortBy = request.SortBy ?? nameof(DocumentDto.Id);
