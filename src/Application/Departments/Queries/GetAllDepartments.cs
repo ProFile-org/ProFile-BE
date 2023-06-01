@@ -24,7 +24,8 @@ public class GetAllDepartments
 
         public async Task<IEnumerable<DepartmentDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var departments = await _context.Departments.ToListAsync(cancellationToken);
+            var departments = await _context.Departments
+                .ToListAsync(cancellationToken);
             var result = new ReadOnlyCollection<DepartmentDto>(_mapper.Map<List<DepartmentDto>>(departments));
             return result;
         }
