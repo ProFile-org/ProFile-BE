@@ -1,6 +1,7 @@
 using Application.Common.Interfaces;
 using Application.Users.Queries;
 using AutoMapper;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,22 @@ namespace Application.Users.Commands;
 
 public class UpdateUser
 {
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+
+            RuleFor(x => x.FirstName)
+                .MaximumLength(50).WithMessage("FirstName can not exceed 50 characters.");
+
+            RuleFor(x => x.LastName)
+                .MaximumLength(50).WithMessage("LastName can not exceed 50 characters.");
+
+            RuleFor(x => x.Position)
+                .MaximumLength(64).WithMessage("Position can not exceed 64 characters.");
+        }
+    }
     public record Command : IRequest<UserDto>
     {
         public Guid UserId { get; init; }
