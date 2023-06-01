@@ -38,7 +38,7 @@ public class GetAllRoomsPaginated
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 rooms = rooms.Where(x =>
-                    x.Name.Contains(request.SearchTerm, StringComparison.InvariantCultureIgnoreCase));
+                    x.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
             
             var sortBy = request.SortBy;
@@ -46,7 +46,6 @@ public class GetAllRoomsPaginated
             {
                 sortBy = nameof(RoomDto.Id);
             }
-
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
