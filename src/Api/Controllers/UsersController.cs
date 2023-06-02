@@ -72,7 +72,6 @@ public class UsersController : ApiControllerBase
         {
             Username = request.Username,
             Email = request.Email,
-            Password = request.Password,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Role = request.Role,
@@ -142,7 +141,6 @@ public class UsersController : ApiControllerBase
             UserId = userId,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Role = request.Role,
             Position = request.Position,
         };
         var result = await Mediator.Send(command);

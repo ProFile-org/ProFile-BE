@@ -12,6 +12,10 @@ public class GetAllLockersPaginatedQueryParameters
     /// </summary>
     public Guid? RoomId { get; set; }
     /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; set; }
+    /// <summary>
     /// Page number
     /// </summary>
     public int? Page { get; set; }
