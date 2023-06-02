@@ -1,13 +1,10 @@
-using System.Data;
 using System.Security.Cryptography;
-using System.Text;
 using Application.Common.Interfaces;
 using Infrastructure.Identity;
 using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
+using Infrastructure.Services;
 using Infrastructure.Shared;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +19,7 @@ public static class ConfigureServices
         services.AddApplicationDbContext(configuration);
         services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);
 
@@ -91,5 +89,23 @@ public static class ConfigureServices
                 });
         
         return services;    
+    }
+
+    private static IServiceCollection AddMailService(this IServiceCollection services, IConfiguration configuration)
+    {
+        var mailSettings = configuration.GetSection(nameof(MailSettings)).Get<MailSettings>();
+        
+        services.Configure<MailSettings>(options =>
+        {
+            options.ClientUrl = mailSettings!.ClientUrl;
+            options.Token = mailSettings!.Token;
+            options.SenderEmail = mailSettings!.SenderEmail;
+            options.SenderName = mailSettings!.SenderName;
+            options.TemplateUuid = mailSettings!.TemplateUuid;
+        });
+        
+        services.AddTransient<IMailService, MailService>();
+        
+        return services;
     }
 }
