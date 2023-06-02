@@ -1,6 +1,8 @@
 using System.Reflection;
 using Api.Middlewares;
 using Api.Policies;
+using Api.Services;
+using Application.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi.Models;
 
@@ -53,6 +55,7 @@ public static class ConfigureServices
     {
         // In order for ExceptionMiddleware to work
         services.AddScoped<ExceptionMiddleware>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
     }

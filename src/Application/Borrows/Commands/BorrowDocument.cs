@@ -76,6 +76,7 @@ public class BorrowDocument
                 BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
                 DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
                 Reason = request.Reason,
+                IsApproved = false,
             };
 
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);
