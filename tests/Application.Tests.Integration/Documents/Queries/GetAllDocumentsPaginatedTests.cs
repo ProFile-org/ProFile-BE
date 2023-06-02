@@ -193,7 +193,7 @@ public class GetAllDocumentsPaginatedTests : BaseClassFixture
 
         // Act
         var action = async () => await SendAsync(query);
-        
+ 
         // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>("Locker does not exist.");
         
