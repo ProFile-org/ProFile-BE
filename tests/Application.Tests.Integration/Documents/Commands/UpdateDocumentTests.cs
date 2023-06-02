@@ -64,6 +64,8 @@ public class UpdateDocumentTests : BaseClassFixture
     {
         // Arrange
         var document = CreateNDocuments(1).First();
+        
+        await AddAsync(document);
         var query = new UpdateDocument.Command()
         {
             DocumentId = Guid.NewGuid(),
