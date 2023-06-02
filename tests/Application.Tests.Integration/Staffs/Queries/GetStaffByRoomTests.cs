@@ -27,7 +27,7 @@ public class GetStaffByRoomTests : BaseClassFixture
         // Arrange
         var department = CreateDepartment();
         var room = CreateRoom(department);
-        var user = CreateUser(IdentityData.Roles.Admin, "123123");
+        var user = CreateUser(IdentityData.Roles.Staff, "123123");
         var staff = CreateStaff(user, room);
         await AddAsync(staff);
 
