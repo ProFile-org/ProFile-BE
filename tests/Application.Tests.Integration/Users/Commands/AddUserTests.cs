@@ -25,7 +25,6 @@ public class AddUserTests : BaseClassFixture
             Email = new Faker().Person.Email,
             FirstName = new Faker().Person.FirstName,
             LastName = new Faker().Person.LastName,
-            Password = new Faker().Random.Word(),
             Role = new Faker().Random.Word(),
             DepartmentId = department.Id,
             Position = new Faker().Random.Word(),

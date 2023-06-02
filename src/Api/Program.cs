@@ -2,7 +2,6 @@ using Api;
 using Api.Extensions;
 using Application;
 using Infrastructure;
-using Infrastructure.Persistence;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
