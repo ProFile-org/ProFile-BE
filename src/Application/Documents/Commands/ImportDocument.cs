@@ -56,6 +56,11 @@ public class ImportDocument
                 throw new KeyNotFoundException("Folder does not exist.");
             }
 
+            if (folder.Capacity == folder.NumberOfDocuments)
+            {
+                throw new ConflictException("This folder cannot accept more documents.");
+            }
+
             var entity = new Document()
             {
                 Title = request.Title.Trim(),
