@@ -23,7 +23,7 @@ public class GetAllFoldersPaginated
 
             RuleFor(x => x.RoomId)
                 .Must((query, roomId) => roomId is not null || query.LockerId is null);
-        }    
+        }
     }
     
     public record Query : IRequest<PaginatedList<FolderDto>>

@@ -1,18 +1,16 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
-using Application.Common.Mappings;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Documents.Queries;
+namespace Application.Borrows.Queries;
 
-public class GetAllDocumentsPaginated
+public class GetAllBorrowRequestsPaginated
 {
     public class Validator : AbstractValidator<Query>
     {
@@ -21,24 +19,14 @@ public class GetAllDocumentsPaginated
             RuleLevelCascadeMode = CascadeMode.Stop;
 
             RuleFor(x => x.RoomId)
-                .Must((query, roomId) =>
-                {
-                    if (roomId is null)
-                    {
-                        return query.LockerId is null && query.FolderId is null;
-                    }
-
-                    if (query.LockerId is null)
-                    {
-                        return query.FolderId is null;
-                    }
-
-                    return true;
-                }).WithMessage("Container orientation is not consistent");
+                .Must((query, roomId) => roomId is null
+                    ? query.LockerId is null && query.FolderId is null
+                    : query.LockerId is not null || query.FolderId is null)
+                .WithMessage("Container orientation is not consistent");
         }
     }
-
-    public record Query : IRequest<PaginatedList<DocumentDto>>
+    
+    public record Query : IRequest<PaginatedList<BorrowDto>>
     {
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
@@ -49,8 +37,8 @@ public class GetAllDocumentsPaginated
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
     }
-
-    public class QueryHandler : IRequestHandler<Query, PaginatedList<DocumentDto>>
+    
+    public class QueryHandler : IRequestHandler<Query, PaginatedList<BorrowDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -61,20 +49,22 @@ public class GetAllDocumentsPaginated
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<DocumentDto>> Handle(Query request,
+        public async Task<PaginatedList<BorrowDto>> Handle(Query request,
             CancellationToken cancellationToken)
         {
-            var documents = _context.Documents.AsQueryable();
+            var borrows = _context.Borrows.AsQueryable();
             var roomExists = request.RoomId is not null;
             var lockerExists = request.LockerId is not null;
             var folderExists = request.FolderId is not null;
 
-            documents = documents
-                .Include(x => x.Department)
-                .Include(x => x.Folder)
-                .ThenInclude(y => y.Locker)
-                .ThenInclude(z => z.Room)
-                .ThenInclude(t => t.Department);
+            borrows = borrows
+                .Include(x => x.Document)
+                .ThenInclude(y => y.Department)
+                .Include(x => x.Document)
+                .ThenInclude(y => y.Folder)
+                .ThenInclude(z => z!.Locker)
+                .ThenInclude(t => t.Room)
+                .ThenInclude(s => s.Department);
 
             if (folderExists)
             {
@@ -94,8 +84,8 @@ public class GetAllDocumentsPaginated
                     throw new ConflictException("Either locker or room does not match folder.");
                 }
 
-                documents = documents
-                    .Where(x => x.Folder!.Id == request.FolderId);
+                borrows = borrows
+                    .Where(x => x.Document.Folder!.Id == request.FolderId);
             }
             else if (lockerExists)
             {
@@ -113,7 +103,7 @@ public class GetAllDocumentsPaginated
                     throw new ConflictException("Room does not match locker.");
                 }
 
-                documents = documents.Where(x => x.Folder!.Locker.Id == request.LockerId);
+                borrows = borrows.Where(x => x.Document.Folder!.Locker.Id == request.LockerId);
             }
             else if (roomExists)
             {
@@ -125,26 +115,26 @@ public class GetAllDocumentsPaginated
                     throw new KeyNotFoundException("Room does not exist.");
                 }
 
-                documents = documents.Where(x => x.Folder!.Locker.Room.Id == request.RoomId);
+                borrows = borrows.Where(x => x.Document.Folder!.Locker.Room.Id == request.RoomId);
             }
 
             var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<DocumentDto>())
+            if (sortBy is null || !sortBy.MatchesPropertyName<BorrowDto>())
             {
-                sortBy = nameof(DocumentDto.Id);
+                sortBy = nameof(BorrowDto.Id);
             }
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
-            var list  = await documents
+            var list  = await borrows
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
                 .ToListAsync(cancellationToken);
             
-            var result = _mapper.Map<List<DocumentDto>>(list);
+            var result = _mapper.Map<List<BorrowDto>>(list);
 
-            return new PaginatedList<DocumentDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<BorrowDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

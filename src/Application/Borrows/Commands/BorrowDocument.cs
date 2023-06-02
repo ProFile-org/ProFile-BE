@@ -1,14 +1,14 @@
-using Application.Common.Models.Dtos.Physical;
-using MediatR;
-using Application.Common.Interfaces;
 using Application.Common.Exceptions;
+using Application.Common.Interfaces;
+using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
 using FluentValidation;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
-namespace Application.Documents.Commands;
+namespace Application.Borrows.Commands;
 
 public class BorrowDocument
 {
@@ -25,9 +25,9 @@ public class BorrowDocument
     
     public record Command : IRequest<BorrowDto>
     {
-        public Guid DocumentId { get; set; }
-        public Guid BorrowerId { get; set; }
-        public DateTime BorrowTo { get; set; }
+        public Guid DocumentId { get; init; }
+        public Guid BorrowerId { get; init; }
+        public DateTime BorrowTo { get; init; }
         public string Reason { get; init; } = null!;
     }
     
@@ -43,23 +43,32 @@ public class BorrowDocument
         }
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.BorrowerId, cancellationToken);
+            var user = await _context.Users
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == request.BorrowerId, cancellationToken);
             if (user is null)
             {
                 throw new KeyNotFoundException("User does not exist.");
             }
             
-            var document = await _context.Documents.FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
+            var document = await _context.Documents
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {
                 throw new KeyNotFoundException("Document does not exist.");
+            }
+
+            if (document.Department!.Id != user.Department!.Id)
+            {
+                throw new ConflictException("User is not allowed to borrow this document.");
             }
             
             if (DateTime.Now > request.BorrowTo)
             {
                 throw new ConflictException("Due date cannot be in the past.");
             }
-
+            
             var entity = new Borrow()
             {
                 Borrower = user,

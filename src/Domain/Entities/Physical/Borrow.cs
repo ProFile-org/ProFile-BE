@@ -10,4 +10,5 @@ public class Borrow : BaseEntity
     public LocalDateTime BorrowTime { get; set; }
     public LocalDateTime DueTime { get; set; }
     public string Reason { get; set; } = null!;
+    public bool IsApproved { get; set; }
 }
