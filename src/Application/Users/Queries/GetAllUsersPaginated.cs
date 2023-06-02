@@ -47,24 +47,26 @@ public class GetAllUsersPaginated
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 users = users.Where(x =>
-                    x.FirstName!.ToLower().Contains(request.SearchTerm.ToLower()));
+                    x.FirstName!.ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
             
             var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<LockerDto>())
+            if (sortBy is null || !sortBy.MatchesPropertyName<UserDto>())
             {
-                sortBy = nameof(LockerDto.Id);
+                sortBy = nameof(UserDto.Id);
             }
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
-            var result = await users
-                .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            var list  = await users
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
+                .ToListAsync(cancellationToken);
+            
+            var result = _mapper.Map<List<UserDto>>(list);
 
-            return result;
+            return new PaginatedList<UserDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
