@@ -14,10 +14,6 @@ public class AddUserRequest
     /// </summary>
     public string Email { get; init; } = null!;
     /// <summary>
-    /// Password of the user to be added
-    /// </summary>
-    public string Password { get; init; } = null!;
-    /// <summary>
     /// First name of the user to be added
     /// </summary>
     public string? FirstName { get; init; }
