@@ -44,6 +44,7 @@ public class LockersController : ApiControllerBase
         var query = new GetAllLockersPaginated.Query()
         {
             RoomId = queryParameters.RoomId,
+            SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,

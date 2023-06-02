@@ -193,7 +193,7 @@ public class GetAllDocumentsPaginatedTests : BaseClassFixture
 
         // Act
         var action = async () => await SendAsync(query);
-        
+ 
         // Assert
         await action.Should().ThrowAsync<KeyNotFoundException>("Locker does not exist.");
         
@@ -378,7 +378,8 @@ public class GetAllDocumentsPaginatedTests : BaseClassFixture
         // Assert
         result.Items.First().Should()
             .BeEquivalentTo(
-                _mapper.Map<DocumentDto>(documents[0].Id.CompareTo(documents[1].Id) <= 0 ? documents[0] : documents[1]),
+                _mapper.Map<DocumentDto[]>(documents)
+                    .OrderBy(x => x.Id).First(),
                 x => x.IgnoringCyclicReferences());
         
         // Cleanup

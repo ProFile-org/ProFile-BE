@@ -14,10 +14,6 @@ public class UpdateUserRequest
     /// </summary>
     public string? LastName { get; set; }
     /// <summary>
-    /// New role of the user to be updated
-    /// </summary>
-    public string Role { get; set; } = null!;
-    /// <summary>
     /// New position of the user to be updated
     /// </summary>
     public string? Position { get; set; }
