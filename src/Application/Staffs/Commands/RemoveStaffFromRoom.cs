@@ -43,9 +43,8 @@ public class RemoveStaffFromRoom
             }
 
             staff.Room.Staff = null;
-            staff.Room = null;
-
             _context.Rooms.Update(staff.Room!);
+            staff.Room = null;
             var result = _context.Staffs.Update(staff);
             await _context.SaveChangesAsync(cancellationToken);
 
