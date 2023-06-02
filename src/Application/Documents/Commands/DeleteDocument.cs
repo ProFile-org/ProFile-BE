@@ -37,9 +37,12 @@ public class DeleteDocument
 
             var folder = document.Folder;
             var result = _context.Documents.Remove(document);
-            
-            folder!.NumberOfDocuments -= 1;
-            _context.Folders.Update(folder);
+
+            if (folder is not null)
+            {
+                folder.NumberOfDocuments -= 1;
+                _context.Folders.Update(folder);
+            }
             
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(result.Entity);
