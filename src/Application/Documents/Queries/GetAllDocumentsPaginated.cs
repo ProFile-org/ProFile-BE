@@ -69,7 +69,12 @@ public class GetAllDocumentsPaginated
             var lockerExists = request.LockerId is not null;
             var folderExists = request.FolderId is not null;
 
-            documents = documents.Include(x => x.Department);
+            documents = documents
+                .Include(x => x.Department)
+                .Include(x => x.Folder)
+                .ThenInclude(y => y.Locker)
+                .ThenInclude(z => z.Room)
+                .ThenInclude(t => t.Department);
 
             if (folderExists)
             {
@@ -123,16 +128,23 @@ public class GetAllDocumentsPaginated
                 documents = documents.Where(x => x.Folder!.Locker.Room.Id == request.RoomId);
             }
 
-            var sortBy = request.SortBy ?? nameof(DocumentDto.Id);
+            var sortBy = request.SortBy;
+            if (sortBy is null || !sortBy.MatchesPropertyName<LockerDto>())
+            {
+                sortBy = nameof(LockerDto.Id);
+            }
             var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page ?? 1;
-            var sizeNumber = request.Size ?? 5;
-            var result = await documents
-                .ProjectTo<DocumentDto>(_mapper.ConfigurationProvider)
+            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
+            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
+            
+            var list  = await documents
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber, sizeNumber);
+                .ToListAsync(cancellationToken);
+            
+            var result = _mapper.Map<List<DocumentDto>>(list);
 
-            return result;
+            return new PaginatedList<DocumentDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
