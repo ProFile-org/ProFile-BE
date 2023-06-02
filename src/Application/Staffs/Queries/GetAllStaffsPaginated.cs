@@ -48,19 +48,21 @@ public class GetAllStaffsPaginated
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<StaffDto>())
             {
-                sortBy = nameof(StaffDto.User.Id);
+                sortBy = nameof(StaffDto.Id);
             }
             
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-
-            var result = await staffs
-                .ProjectTo<StaffDto>(_mapper.ConfigurationProvider)
+            
+            var list = await staffs
+                .Paginate(pageNumber.Value,sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
-                .PaginatedListAsync(pageNumber.Value, sizeNumber.Value);
+                .ToListAsync(cancellationToken);
 
-            return result;
+            var result = _mapper.Map<List<StaffDto>>(list);
+            
+            return new PaginatedList<StaffDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
