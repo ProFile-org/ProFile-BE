@@ -34,7 +34,11 @@ public class GetAllStaffsPaginated
 
         public async Task<PaginatedList<StaffDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var staffs = _context.Staffs.Include(x => x.User).AsQueryable();
+            var staffs = _context.Staffs
+                .Include(x => x.Room)
+                .Include(x => x.User)
+                .ThenInclude(x => x.Department)
+                .AsQueryable();
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
