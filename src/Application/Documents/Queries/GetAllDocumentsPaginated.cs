@@ -21,20 +21,9 @@ public class GetAllDocumentsPaginated
             RuleLevelCascadeMode = CascadeMode.Stop;
 
             RuleFor(x => x.RoomId)
-                .Must((query, roomId) =>
-                {
-                    if (roomId is null)
-                    {
-                        return query.LockerId is null && query.FolderId is null;
-                    }
-
-                    if (query.LockerId is null)
-                    {
-                        return query.FolderId is null;
-                    }
-
-                    return true;
-                }).WithMessage("Container orientation is not consistent");
+                .Must((query, roomId) => roomId is null
+                    ? query.LockerId is null && query.FolderId is null
+                    : query.LockerId is not null || query.FolderId is null).WithMessage("Container orientation is not consistent");
         }
     }
 
@@ -126,6 +115,12 @@ public class GetAllDocumentsPaginated
                 }
 
                 documents = documents.Where(x => x.Folder!.Locker.Room.Id == request.RoomId);
+            }
+            
+            if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
+            {
+                documents = documents.Where(x =>
+                    x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
             var sortBy = request.SortBy;
