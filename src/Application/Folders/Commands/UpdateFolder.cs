@@ -61,6 +61,7 @@ public class UpdateFolder
             var nameExisted = await _context.Folders.AnyAsync( x => 
                     x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
                     && x.Id != folder.Id
+                    && x.Locker.Id == folder.Locker.Id
                     , cancellationToken);
 
             if (nameExisted)
