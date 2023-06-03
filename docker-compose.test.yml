@@ -9,7 +9,7 @@ services:
       - '8888:80'
     environment:
       - ASPNETCORE_ENVIRONMENT=Testing
-      - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured;
+      - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mytestdb;User ID=profiletester;Password=supasupasecured;Include Error Detail=true
     depends_on:
       database:
         condition: service_started

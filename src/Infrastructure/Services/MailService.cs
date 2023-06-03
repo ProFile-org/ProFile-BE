@@ -51,7 +51,6 @@ public class MailService : IMailService
         request.AddHeader("Content-Type", "application/json");
         request.AddParameter("application/json", json, ParameterType.RequestBody);
         var response = client.Execute(request);
-
         return response.IsSuccessStatusCode;
     }
 }

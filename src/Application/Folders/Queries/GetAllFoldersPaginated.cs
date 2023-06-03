@@ -23,7 +23,7 @@ public class GetAllFoldersPaginated
 
             RuleFor(x => x.RoomId)
                 .Must((query, roomId) => roomId is not null || query.LockerId is null);
-        }    
+        }
     }
     
     public record Query : IRequest<PaginatedList<FolderDto>>
@@ -105,8 +105,8 @@ public class GetAllFoldersPaginated
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
             var list  = await folders
-                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
             var result = _mapper.Map<List<FolderDto>>(list);

@@ -185,7 +185,9 @@ public class IdentityService : IIdentityService
 
     public async Task<(AuthenticationResult, UserDto)> LoginAsync(string email, string password)
     {
-        var user = _context.Users.FirstOrDefault(x => x.Email!.Equals(email));
+        var user = _context.Users
+            .Include(x => x.Department)
+            .FirstOrDefault(x => x.Email!.Equals(email));
 
         if (user is null || !user.PasswordHash.Equals(SecurityUtil.Hash(password)))
         {

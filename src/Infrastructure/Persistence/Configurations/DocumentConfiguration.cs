@@ -38,5 +38,8 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .WithMany()
             .HasForeignKey("ImporterId")
             .IsRequired(false);
+
+        builder.Property(x => x.Status)
+            .IsRequired();
     }
 }

@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -19,13 +20,13 @@ public class AddStaff
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-    
+
         public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
-    
+
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
@@ -36,16 +37,40 @@ public class AddStaff
 
             var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
-            var staff = new Staff
+            if (room is null)
             {
-                Id = user.Id,
-                User = user,
-                Room = room
-            };
+                throw new KeyNotFoundException("Room does not exist.");
+            }
 
-            var result = await _context.Staffs.AddAsync(staff, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<StaffDto>(result.Entity);
+            var existedStaff = await _context.Staffs
+                .Include(x => x.Room)
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == user.Id, cancellationToken);
+            if (existedStaff is not null)
+            {
+                if (existedStaff.Room is not null)
+                {
+                    throw new ConflictException("This user is already a staff.");
+                }
+
+                existedStaff.Room = room;
+                var result = _context.Staffs.Update(existedStaff);
+                await _context.SaveChangesAsync(cancellationToken);
+                return _mapper.Map<StaffDto>(result.Entity);
+            }
+            else
+            {
+                var staff = new Staff
+                {
+                    Id = user.Id,
+                    User = user,
+                    Room = room
+                };
+
+                var result = await _context.Staffs.AddAsync(staff, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+                return _mapper.Map<StaffDto>(result.Entity);
+            }
         }
     }
 }

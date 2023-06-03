@@ -1,6 +1,7 @@
 ﻿using Application.Common.Exceptions;
 using Application.Lockers.Commands;
 using Bogus;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
@@ -18,15 +19,8 @@ public class AddLockerTests : BaseClassFixture
     public async Task ShouldReturnLocker_WhenCreateDetailsAreValid()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         
         await AddAsync(room);
         
@@ -56,21 +50,15 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldThrowConflictException_WhenLockerAlreadyExistsInTheSameRoom()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         
         await AddAsync(room);
 
@@ -93,33 +81,20 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
     public async Task ShouldReturnLocker_WhenLockersHasSameNameButInDifferentRooms()
     {
         // Arrange
-        var room1 = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department1 = CreateDepartment();
+        var room1 = CreateRoom(department1);
         
         await AddAsync(room1);
         
-        var room2 = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department2 = CreateDepartment();
+        var room2 = CreateRoom(department2);
         
         await AddAsync(room2);
 
@@ -160,22 +135,17 @@ public class AddLockerTests : BaseClassFixture
         var room2Entity = await FindAsync<Room>(room2.Id);
         Remove(room1Entity);
         Remove(room2Entity);
+        Remove(await FindAsync<Department>(department1.Id));
+        Remove(await FindAsync<Department>(department2.Id));
     }
 
     [Fact]
     public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-        
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
+        room.Capacity = 1;
         await AddAsync(room);
 
         var addLockerCommand = new AddLocker.Command()
@@ -205,5 +175,6 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

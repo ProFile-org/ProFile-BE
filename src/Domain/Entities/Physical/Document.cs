@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Statuses;
 
 namespace Domain.Entities.Physical;
 
@@ -10,4 +11,5 @@ public class Document : BaseEntity
     public Department? Department { get; set; }
     public User? Importer { get; set; }
     public Folder? Folder { get; set; }
+    public DocumentStatus Status { get; set; }
 }

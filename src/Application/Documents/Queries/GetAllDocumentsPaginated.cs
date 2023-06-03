@@ -124,17 +124,17 @@ public class GetAllDocumentsPaginated
             }
 
             var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<LockerDto>())
+            if (sortBy is null || !sortBy.MatchesPropertyName<DocumentDto>())
             {
-                sortBy = nameof(LockerDto.Id);
+                sortBy = nameof(DocumentDto.Id);
             }
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
             var list  = await documents
-                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
             var result = _mapper.Map<List<DocumentDto>>(list);

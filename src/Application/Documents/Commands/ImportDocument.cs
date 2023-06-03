@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,7 +69,8 @@ public class ImportDocument
                 DocumentType = request.DocumentType.Trim(),
                 Importer = importer,
                 Department = importer.Department,
-                Folder = folder
+                Folder = folder,
+                Status = DocumentStatus.Issued,
             };
 
             var result = await _context.Documents.AddAsync(entity, cancellationToken);
