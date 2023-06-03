@@ -23,8 +23,9 @@ public class BorrowDocument
                 .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
 
             RuleFor(x => x.BorrowFrom)
-                .GreaterThan(DateTime.Now).WithMessage("Borrow date cannot be in the past.");
-            
+                .GreaterThan(DateTime.Now).WithMessage("Borrow date cannot be in the past.")
+                .Must((command, borrowTime) => borrowTime < command.BorrowTo).WithMessage("Due date cannot be before borrow date.");
+
             RuleFor(x => x.BorrowTo)
                 .GreaterThan(DateTime.Now).WithMessage("Due date cannot be in the past.");
         }
@@ -97,8 +98,7 @@ public class BorrowDocument
                 .Include(x => x.Borrower)
                 .FirstOrDefaultAsync(x =>
                     x.Document.Id == request.DocumentId
-                    && ((x.DueTime > localDateTimeNow
-                         && x.BorrowTime < localDateTimeNow)
+                    && ((x.DueTime > localDateTimeNow)
                         || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
             
             if (existedBorrow is not null)
