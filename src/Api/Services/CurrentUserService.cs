@@ -38,13 +38,15 @@ public class CurrentUserService : ICurrentUserService
     public string? GetDepartment()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub));
+            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var user = _context.Users.FirstOrDefault(x => x.Username.Equals(userName));
+        var user = _context.Users
+            .Include(x => x.Department)
+            .FirstOrDefault(x => x.Username.Equals(userName));
 
         if (user is null)
         {
@@ -63,7 +65,9 @@ public class CurrentUserService : ICurrentUserService
             throw new UnauthorizedAccessException();
         }
 
-        var user = _context.Users.FirstOrDefault(x => x.Username.Equals(userName));
+        var user = _context.Users
+            .Include(x => x.Department)
+            .FirstOrDefault(x => x.Username.Equals(userName));
 
         if (user is null)
         {

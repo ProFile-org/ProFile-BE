@@ -43,6 +43,28 @@ public class BorrowsController : ApiControllerBase
         return Ok(Result<BorrowDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Get a borrow request by id
+    /// </summary>
+    /// <returns>A BorrowDto of the retrieved borrow</returns>
+    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [HttpGet("{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<BorrowDto>>> GetById([FromRoute] Guid borrowId)
+    {
+        var user = _currentUserService.GetCurrentUser();
+        var command = new GetBorrowRequestById.Query()
+        {
+            BorrowId = borrowId,
+            User = user,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+    
     [RequiresRole(IdentityData.Roles.Staff)]
     [HttpGet("staffs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -257,6 +279,27 @@ public class BorrowsController : ApiControllerBase
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,
             Reason = request.Reason,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Cancel borrow request
+    /// </summary>
+    /// <param name="borrowId">Id of the borrow request to be cancelled</param>
+    /// <returns>A BorrowDto of the cancelled borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPost("cancel/{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<BorrowDto>>> Cancel([FromRoute] Guid borrowId)
+    {
+        var command = new CancelBorrowRequest.Command()
+        {
+            BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
