@@ -50,7 +50,7 @@ public class UpdateLocker
 
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var locker = await _context.Lockers.FirstOrDefaultAsync(
+            var locker = await _context.Lockers.Include(x => x.Room).FirstOrDefaultAsync(
                 x => x.Id.Equals(request.LockerId), cancellationToken);
 
             if (locker is null)
@@ -59,7 +59,9 @@ public class UpdateLocker
             }
 
             var duplicateLocker = await _context.Lockers.FirstOrDefaultAsync(
-                x => x.Name.Equals(request.Name), cancellationToken);
+                x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
+                     && x.Id != locker.Id
+                     && x.Room.Id == locker.Room.Id, cancellationToken);
             
             if (duplicateLocker is not null && !duplicateLocker.Equals(locker))
             {
