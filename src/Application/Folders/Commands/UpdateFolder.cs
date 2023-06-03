@@ -51,6 +51,7 @@ public class UpdateFolder
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var folder = await _context.Folders
+                .Include(x => x.Locker)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.FolderId), cancellationToken);
 
             if (folder is null)
@@ -61,6 +62,7 @@ public class UpdateFolder
             var nameExisted = await _context.Folders.AnyAsync( x => 
                     x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
                     && x.Id != folder.Id
+                    && x.Locker.Id == folder.Locker.Id
                     , cancellationToken);
 
             if (nameExisted)
