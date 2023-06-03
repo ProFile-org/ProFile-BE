@@ -18,15 +18,8 @@ public class AddLockerTests : BaseClassFixture
     public async Task ShouldReturnLocker_WhenCreateDetailsAreValid()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         
         await AddAsync(room);
         
@@ -62,15 +55,8 @@ public class AddLockerTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenLockerAlreadyExistsInTheSameRoom()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
         
         await AddAsync(room);
 
@@ -99,27 +85,13 @@ public class AddLockerTests : BaseClassFixture
     public async Task ShouldReturnLocker_WhenLockersHasSameNameButInDifferentRooms()
     {
         // Arrange
-        var room1 = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department1 = CreateDepartment();
+        var room1 = CreateRoom(department1);
         
         await AddAsync(room1);
         
-        var room2 = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 3,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
+        var department2 = CreateDepartment();
+        var room2 = CreateRoom(department2);
         
         await AddAsync(room2);
 
@@ -166,16 +138,9 @@ public class AddLockerTests : BaseClassFixture
     public async Task ShouldThrowLimitExceededException_WhenGoingOverCapacity()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Name.JobArea(),
-            Description = new Faker().Lorem.Sentence(),
-            Capacity = 1,
-            IsAvailable = true,
-            NumberOfLockers = 0,
-        };
-        
+        var department = CreateDepartment();
+        var room = CreateRoom(department);
+        room.Capacity = 1;
         await AddAsync(room);
 
         var addLockerCommand = new AddLocker.Command()

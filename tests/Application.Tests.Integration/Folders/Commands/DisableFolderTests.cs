@@ -16,36 +16,12 @@ public class DisableFolderTests : BaseClassFixture
     public async Task ShouldDisableFolder_WhenFolderHaveNoDocument()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 24,
-            IsAvailable = true,
-            Name = "Kamito's room",
-            NumberOfLockers = 1,
-        };
+        var department = CreateDepartment();
+        var folder = CreateFolder();
+        var locker = CreateLocker(folder);
+        var room = CreateRoom(department, locker);
+        await AddAsync(room);
 
-        var locker = new Locker()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 47,
-            Name = "fqwlkjdb sajdbqwk",
-            IsAvailable = true,
-            Room = room,
-            NumberOfFolders = 1,
-        };
-        
-        var folder = new Folder()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 12,
-            IsAvailable = true,
-            Name = "A Random name",
-            NumberOfDocuments = 0,
-            Locker = locker
-        };
-
-        await AddAsync(folder);
         var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
@@ -84,35 +60,12 @@ public class DisableFolderTests : BaseClassFixture
     public async Task ShouldThrowInvalidOperationException_WhenFolderIsAlreadyDisabled()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 24,
-            IsAvailable = true,
-            Name = "Kamito's room!",
-            NumberOfLockers = 1,
-        };
-
-        var locker = new Locker()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 47,
-            Name = "fqwlkjdb sajdbqwk!",
-            IsAvailable = true,
-            Room = room,
-            NumberOfFolders = 1,
-        };
-        
-        var folder = new Folder()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 12,
-            IsAvailable = false,
-            Name = "A Random name!",
-            NumberOfDocuments = 0,
-            Locker = locker
-        };
-        await AddAsync(folder);
+        var department = CreateDepartment();
+        var folder = CreateFolder();
+        folder.IsAvailable = false;
+        var locker = CreateLocker(folder);
+        var room = CreateRoom(department, locker);
+        await AddAsync(room);
         var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
@@ -135,44 +88,12 @@ public class DisableFolderTests : BaseClassFixture
     public async Task ShouldThrowInvalidOperationException_WhenFolderHasDocuments()
     {
         // Arrange
-        var room = new Room()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 24,
-            IsAvailable = true,
-            Name = "Kamito's room!!safqwf!!",
-            NumberOfLockers = 1,
-        };
-
-        var locker = new Locker()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 47,
-            Name = "fqwlkjdb sawfqfw wfqwfjdbqwk!",
-            IsAvailable = true,
-            Room = room,
-            NumberOfFolders = 1,
-        };
-        
-        var folder = new Folder()
-        {
-            Id = Guid.NewGuid(),
-            Capacity = 12,
-            IsAvailable = true,
-            Name = "A Randasfwqfawfqom name!",
-            NumberOfDocuments = 1,
-            Locker = locker
-        };
-
-        var document = new Document()
-        {
-            DocumentType = "fqwkfwqbfk",
-            Id = Guid.NewGuid(),
-            Title = "wjqk ljfqwjlf qwkhjf ;qikwf",
-            Folder = folder
-        };
-
-        await AddAsync(document);
+        var department = CreateDepartment();
+        var document = CreateNDocuments(1).First();
+        var folder = CreateFolder(document);
+        var locker = CreateLocker(folder);
+        var room = CreateRoom(department, locker);
+        await AddAsync(room);
         var disableFolderCommand = new DisableFolder.Command()
         {
             FolderId = folder.Id
