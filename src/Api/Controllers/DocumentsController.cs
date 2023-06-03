@@ -105,7 +105,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be updated</param>
     /// <param name="request">Update document details</param>
     /// <returns>A DocumentDto of the updated document</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPut("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -128,7 +128,7 @@ public class DocumentsController : ApiControllerBase
     /// Delete a document
     /// </summary>
     /// <param name="documentId">Id of the document to be deleted</param>
-    /// <returns>A DocumentDto of the deleted document</returns>
+    /// <returns>A DocumentDto of the deleted document</returns>    
     [HttpDelete("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

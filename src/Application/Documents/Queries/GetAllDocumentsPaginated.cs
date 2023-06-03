@@ -133,8 +133,8 @@ public class GetAllDocumentsPaginated
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
             var list  = await documents
-                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
             var result = _mapper.Map<List<DocumentDto>>(list);

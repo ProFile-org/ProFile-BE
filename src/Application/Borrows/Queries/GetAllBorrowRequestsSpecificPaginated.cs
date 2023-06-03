@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Borrows.Queries;
 
+[Obsolete]
 public class GetAllBorrowRequestsSpecificPaginated
 {
     public record Query : IRequest<PaginatedList<BorrowDto>>

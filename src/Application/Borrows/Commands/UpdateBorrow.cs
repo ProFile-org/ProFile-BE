@@ -4,6 +4,7 @@ using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
 using Domain.Statuses;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -12,6 +13,24 @@ namespace Application.Borrows.Commands;
 
 public class UpdateBorrow
 {
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+            
+            RuleFor(x => x.Reason)
+                .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
+
+            RuleFor(x => x.BorrowFrom)
+                .GreaterThan(DateTime.Now).WithMessage("Borrow date cannot be in the past.")
+                .Must((command, borrowTime) => borrowTime < command.BorrowTo).WithMessage("Due date cannot be before borrow date.");
+
+            RuleFor(x => x.BorrowTo)
+                .GreaterThan(DateTime.Now).WithMessage("Due date cannot be in the past.");
+        }
+    }
+
     public record Command : IRequest<BorrowDto>
     {
         public Guid BorrowId { get; init; }

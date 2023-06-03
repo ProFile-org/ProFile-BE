@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230528182741_RoomMustHaveADepartment")]
-    partial class RoomMustHaveADepartment
+    [Migration("20230603132557_UpdateBorrow")]
+    partial class UpdateBorrow
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,9 @@ namespace Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<LocalDateTime>("ActualReturnTime")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<LocalDateTime>("BorrowTime")
                         .HasColumnType("timestamp without time zone");
 
@@ -65,6 +68,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -98,6 +104,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("ImporterId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()

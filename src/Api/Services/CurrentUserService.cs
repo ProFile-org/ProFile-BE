@@ -113,6 +113,11 @@ public class CurrentUserService : ICurrentUserService
         {
             throw new UnauthorizedAccessException();
         }
+
+        if (staff.Room is null)
+        {
+            throw new UnauthorizedAccessException();
+        }
         
         return staff.Room!.DepartmentId;
     }

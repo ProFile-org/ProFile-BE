@@ -82,8 +82,8 @@ public class GetAllBorrowRequestsPaginated
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
             var list  = await borrows
-                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
             var result = _mapper.Map<List<BorrowDto>>(list);

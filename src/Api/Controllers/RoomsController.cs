@@ -61,7 +61,7 @@ public class RoomsController : ApiControllerBase
     /// <param name="queryParameters">Get empty containers paginated details</param>
     /// <returns>A paginated list of EmptyLockerDto</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("empty-containers")]
+    [HttpPost("empty-containers/{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
