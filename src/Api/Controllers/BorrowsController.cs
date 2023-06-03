@@ -7,6 +7,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UpdateBorrowRequest = Api.Controllers.Payload.Requests.Borrows.UpdateBorrowRequest;
 
 namespace Api.Controllers;
 
@@ -92,7 +93,7 @@ public class BorrowsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Get all borrow requests as admin paginated
+    /// Get all borrow requests as employee paginated
     /// </summary>
     /// <param name="queryParameters"></param>
     /// <returns></returns>
@@ -133,7 +134,7 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<PaginatedList<BorrowDto>>>> GetAllRequestsForDocumentPaginated(
         [FromRoute] Guid documentId,
-        [FromQuery] GetAllBorrowRequestsPaginatedAsEmployeeQueryParameters queryParameters)
+        [FromQuery] GetAllBorrowRequestsPaginatedForDocumentQueryParameters queryParameters)
     {
         var command = new GetAllBorrowRequestsSpecificPaginated.Query()
         {
@@ -184,6 +185,75 @@ public class BorrowsController : ApiControllerBase
         var command = new RejectBorrowRequest.Command()
         {
             BorrowId = borrowId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Check out a borrow request
+    /// </summary>
+    /// <param name="borrowId">Id of the borrow request to be checked out</param>
+    /// <returns>A BorrowDto of the checked out borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Staff)]
+    [HttpPost("checkout/{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<BorrowDto>>> Checkout([FromRoute] Guid borrowId)
+    {
+        var command = new CheckoutDocument.Command()
+        {
+            BorrowId = borrowId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Return document
+    /// </summary>
+    /// <param name="documentId">Id of the document to be returned</param>
+    /// <returns>A BorrowDto of the returned document borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Staff)]
+    [HttpPost("return/{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<BorrowDto>>> Return([FromRoute] Guid documentId)
+    {
+        var command = new ReturnDocument.Command()
+        {
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Update borrow request
+    /// </summary>
+    /// <param name="borrowId">Id of the borrow request to be updated</param>
+    /// <param name="request">Update borrow details</param>
+    /// <returns>A BorrowDto of the updated borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<BorrowDto>>> Update(
+        [FromRoute] Guid borrowId,
+        [FromBody] UpdateBorrowRequest request)
+    {
+        var command = new UpdateBorrow.Command()
+        {
+            BorrowId = borrowId,
+            BorrowFrom = request.BorrowFrom,
+            BorrowTo = request.BorrowTo,
+            Reason = request.Reason,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));

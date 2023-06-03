@@ -51,6 +51,11 @@ public class GetAllBorrowRequestsSpecificPaginated
                 borrows = borrows.Where(x => x.Borrower.Id == request.EmployeeId);
             }
             
+            if (request.DocumentId is not null)
+            {
+                borrows = borrows.Where(x => x.Document.Id == request.DocumentId);
+            }
+            
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<BorrowDto>())
             {

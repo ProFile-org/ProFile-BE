@@ -78,9 +78,9 @@ public class BorrowDocument
                 throw new KeyNotFoundException("Document does not exist.");
             }
 
-            if (document.Status is DocumentStatus.Lost)
+            if (document.Status is not DocumentStatus.Available)
             {
-                throw new ConflictException("Document is lost.");
+                throw new ConflictException("Document is not available.");
             }
             
             if (document.Department!.Id != user.Department!.Id)
@@ -123,7 +123,7 @@ public class BorrowDocument
             {
                 Borrower = user,
                 Document = document,
-                BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
+                BorrowTime = LocalDateTime.FromDateTime(request.BorrowFrom),
                 DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
                 Reason = request.Reason,
                 Status = BorrowRequestStatus.Pending,

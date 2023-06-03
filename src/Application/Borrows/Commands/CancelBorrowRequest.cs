@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Borrows.Commands;
 
-public class CheckoutDocument
+public class CancelBorrowRequest
 {
     public record Command : IRequest<BorrowDto>
     {
@@ -37,20 +37,13 @@ public class CheckoutDocument
                 throw new KeyNotFoundException("Borrow request does not exist.");
             }
 
-            if (borrowRequest.Document.Status is not DocumentStatus.Available)
-            {
-                throw new ConflictException("Document is not available.");
-            }
-
-            if (borrowRequest.Status is not BorrowRequestStatus.Approved)
+            if (borrowRequest.Status is not (BorrowRequestStatus.Approved or BorrowRequestStatus.Pending))
             {
                 throw new ConflictException("Request cannot be checked out.");
             }
 
-            borrowRequest.Status = BorrowRequestStatus.CheckedOut;
-            borrowRequest.Document.Status = DocumentStatus.Borrowed;
+            borrowRequest.Status = BorrowRequestStatus.Cancelled;
             var result = _context.Borrows.Update(borrowRequest);
-            _context.Documents.Update(borrowRequest.Document);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BorrowDto>(result.Entity);
         }
