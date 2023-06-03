@@ -5,4 +5,6 @@ namespace Api.Controllers.Payload.Requests.Borrows;
 /// </summary>
 public class GetAllBorrowRequestsPaginatedAsStaffQueryParameters : PaginatedQueryParameters
 {
+    public Guid? DocumentId { get; set; }
+    public Guid? EmployeeId { get; set; }
 }

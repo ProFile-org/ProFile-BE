@@ -12,8 +12,8 @@ public class GetAllBorrowRequestsSpecificPaginated
 {
     public record Query : IRequest<PaginatedList<BorrowDto>>
     {
-        public Guid? DocumentId { get; set; }
-        public Guid? EmployeeId { get; set; }
+        public Guid? DocumentId { get; init; }
+        public Guid? EmployeeId { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }

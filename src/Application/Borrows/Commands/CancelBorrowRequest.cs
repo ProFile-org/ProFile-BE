@@ -39,7 +39,7 @@ public class CancelBorrowRequest
 
             if (borrowRequest.Status is not (BorrowRequestStatus.Approved or BorrowRequestStatus.Pending))
             {
-                throw new ConflictException("Request cannot be checked out.");
+                throw new ConflictException("Request cannot be cancelled.");
             }
 
             borrowRequest.Status = BorrowRequestStatus.Cancelled;

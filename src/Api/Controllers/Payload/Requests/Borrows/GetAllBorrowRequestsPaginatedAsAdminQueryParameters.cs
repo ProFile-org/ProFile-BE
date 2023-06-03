@@ -9,4 +9,6 @@ public class GetAllBorrowRequestsPaginatedAsAdminQueryParameters : PaginatedQuer
     /// Id of the department to get borrow requests in
     /// </summary>
     public Guid? DepartmentId { get; set; }
+    public Guid? DocumentId { get; set; }
+    public Guid? EmployeeId { get; set; }
 }

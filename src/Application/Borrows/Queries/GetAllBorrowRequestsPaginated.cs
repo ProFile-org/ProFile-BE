@@ -22,7 +22,9 @@ public class GetAllBorrowRequestsPaginated
     
     public record Query : IRequest<PaginatedList<BorrowDto>>
     {
-        public Guid? DepartmentId { get; set; }
+        public Guid? DepartmentId { get; init; }
+        public Guid? DocumentId { get; init; }
+        public Guid? EmployeeId { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -58,6 +60,16 @@ public class GetAllBorrowRequestsPaginated
             if (request.DepartmentId is not null)
             {
                 borrows = borrows.Where(x => x.Document.Department!.Id == request.DepartmentId);
+            }
+            
+            if (request.EmployeeId is not null)
+            {
+                borrows = borrows.Where(x => x.Borrower.Id == request.EmployeeId);
+            }
+            
+            if (request.DocumentId is not null)
+            {
+                borrows = borrows.Where(x => x.Document.Id == request.DocumentId);
             }
             
             var sortBy = request.SortBy;

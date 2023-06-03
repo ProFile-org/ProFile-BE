@@ -7,7 +7,6 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UpdateBorrowRequest = Api.Controllers.Payload.Requests.Borrows.UpdateBorrowRequest;
 
 namespace Api.Controllers;
 
@@ -57,6 +56,8 @@ public class BorrowsController : ApiControllerBase
         var command = new GetAllBorrowRequestsPaginated.Query()
         {
             DepartmentId = departmentId,
+            EmployeeId = queryParameters.EmployeeId,
+            DocumentId = queryParameters.DocumentId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
@@ -83,6 +84,8 @@ public class BorrowsController : ApiControllerBase
         var command = new GetAllBorrowRequestsPaginated.Query()
         {
             DepartmentId = queryParameters.DepartmentId,
+            EmployeeId = queryParameters.EmployeeId,
+            DocumentId = queryParameters.DocumentId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
@@ -107,7 +110,7 @@ public class BorrowsController : ApiControllerBase
         [FromQuery] GetAllBorrowRequestsPaginatedAsEmployeeQueryParameters queryParameters)
     {
         var userId = _currentUserService.GetCurrentUser().Id;
-        var command = new GetAllBorrowRequestsSpecificPaginated.Query()
+        var command = new GetAllBorrowRequestsPaginated.Query()
         {
             EmployeeId = userId,
             DocumentId = queryParameters.DocumentId,
@@ -136,7 +139,7 @@ public class BorrowsController : ApiControllerBase
         [FromRoute] Guid documentId,
         [FromQuery] GetAllBorrowRequestsPaginatedForDocumentQueryParameters queryParameters)
     {
-        var command = new GetAllBorrowRequestsSpecificPaginated.Query()
+        var command = new GetAllBorrowRequestsPaginated.Query()
         {
             DocumentId = documentId,
             Page = queryParameters.Page,
