@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Folders.Commands;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
 using Xunit;
@@ -37,6 +38,7 @@ public class DisableFolderTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
@@ -82,6 +84,7 @@ public class DisableFolderTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
     
     [Fact]
@@ -111,5 +114,6 @@ public class DisableFolderTests : BaseClassFixture
         Remove(folder);
         Remove(locker);
         Remove(room);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }

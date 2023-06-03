@@ -1,6 +1,7 @@
 ﻿using Application.Common.Exceptions;
 using Application.Lockers.Commands;
 using Bogus;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentAssertions;
@@ -49,6 +50,7 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
@@ -79,6 +81,7 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 
     [Fact]
@@ -132,6 +135,8 @@ public class AddLockerTests : BaseClassFixture
         var room2Entity = await FindAsync<Room>(room2.Id);
         Remove(room1Entity);
         Remove(room2Entity);
+        Remove(await FindAsync<Department>(department1.Id));
+        Remove(await FindAsync<Department>(department2.Id));
     }
 
     [Fact]
@@ -170,5 +175,6 @@ public class AddLockerTests : BaseClassFixture
         // Cleanup
         var roomEntity = await FindAsync<Room>(room.Id);
         Remove(roomEntity);
+        Remove(await FindAsync<Department>(department.Id));
     }
 }
