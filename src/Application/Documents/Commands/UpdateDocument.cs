@@ -59,17 +59,20 @@ public class UpdateDocument
                 throw new KeyNotFoundException("Document does not exist.");
             }
 
-            var titleExisted = await _context.Documents
-                .Include(x => x.Importer)
-                .AnyAsync(x => 
-                x.Title.Trim().ToLower().Equals(request.Title.Trim().ToLower())
-                && x.Id != document.Id
-                && x.Importer!.Id == document.Importer!.Id
-                , cancellationToken);
-
-            if (titleExisted)
+            if (document.Importer is not null)
             {
-                throw new ConflictException("Document name already exists for this importer.");
+                var titleExisted = await _context.Documents
+                    .Include(x => x.Importer)
+                    .AnyAsync(x => 
+                        x.Title.Trim().ToLower().Equals(request.Title.Trim().ToLower())
+                        && x.Id != document.Id
+                        && x.Importer!.Id == document.Importer!.Id
+                        , cancellationToken);
+
+                if (titleExisted)
+                {
+                    throw new ConflictException("Document name already exists for this importer.");
+                }    
             }
 
             document.Title = request.Title;
