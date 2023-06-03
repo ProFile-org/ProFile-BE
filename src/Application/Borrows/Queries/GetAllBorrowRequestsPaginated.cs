@@ -17,21 +17,12 @@ public class GetAllBorrowRequestsPaginated
         public Validator()
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
-
-            RuleFor(x => x.RoomId)
-                .Must((query, roomId) => roomId is null
-                    ? query.LockerId is null && query.FolderId is null
-                    : query.LockerId is not null || query.FolderId is null)
-                .WithMessage("Container orientation is not consistent");
         }
     }
     
     public record Query : IRequest<PaginatedList<BorrowDto>>
     {
-        public Guid? RoomId { get; init; }
-        public Guid? LockerId { get; init; }
-        public Guid? FolderId { get; init; }
-        public string? SearchTerm { get; init; }
+        public Guid? DepartmentId { get; set; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -53,11 +44,9 @@ public class GetAllBorrowRequestsPaginated
             CancellationToken cancellationToken)
         {
             var borrows = _context.Borrows.AsQueryable();
-            var roomExists = request.RoomId is not null;
-            var lockerExists = request.LockerId is not null;
-            var folderExists = request.FolderId is not null;
 
             borrows = borrows
+                .Include(x => x.Borrower)
                 .Include(x => x.Document)
                 .ThenInclude(y => y.Department)
                 .Include(x => x.Document)
@@ -66,62 +55,15 @@ public class GetAllBorrowRequestsPaginated
                 .ThenInclude(t => t.Room)
                 .ThenInclude(s => s.Department);
 
-            if (folderExists)
+            if (request.DepartmentId is not null)
             {
-                var folder = await _context.Folders
-                    .Include(x => x.Locker)
-                    .ThenInclude(y => y.Room)
-                    .FirstOrDefaultAsync(x => x.Id == request.FolderId
-                                              && x.IsAvailable, cancellationToken);
-                if (folder is null)
-                {
-                    throw new KeyNotFoundException("Folder does not exist.");
-                }
-
-                if (folder.Locker.Id != request.LockerId
-                    || folder.Locker.Room.Id != request.RoomId)
-                {
-                    throw new ConflictException("Either locker or room does not match folder.");
-                }
-
-                borrows = borrows
-                    .Where(x => x.Document.Folder!.Id == request.FolderId);
+                borrows = borrows.Where(x => x.Document.Department!.Id == request.DepartmentId);
             }
-            else if (lockerExists)
-            {
-                var locker = await _context.Lockers
-                    .Include(x => x.Room)
-                    .FirstOrDefaultAsync(x => x.Id == request.LockerId
-                                              && x.IsAvailable, cancellationToken);
-                if (locker is null)
-                {
-                    throw new KeyNotFoundException("Locker does not exist.");
-                }
-
-                if (locker.Room.Id != request.RoomId)
-                {
-                    throw new ConflictException("Room does not match locker.");
-                }
-
-                borrows = borrows.Where(x => x.Document.Folder!.Locker.Id == request.LockerId);
-            }
-            else if (roomExists)
-            {
-                var room = await _context.Rooms
-                    .FirstOrDefaultAsync(x => x.Id == request.RoomId
-                                              && x.IsAvailable, cancellationToken);
-                if (room is null)
-                {
-                    throw new KeyNotFoundException("Room does not exist.");
-                }
-
-                borrows = borrows.Where(x => x.Document.Folder!.Locker.Room.Id == request.RoomId);
-            }
-
+            
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<BorrowDto>())
             {
-                sortBy = nameof(BorrowDto.Id);
+                sortBy = nameof(BorrowDto.Status);
             }
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;

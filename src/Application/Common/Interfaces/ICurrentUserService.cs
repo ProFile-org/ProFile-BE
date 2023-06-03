@@ -8,4 +8,5 @@ public interface ICurrentUserService
     string? GetDepartment();
     User GetCurrentUser();
     Guid? GetCurrentRoomForStaff();
+    Guid? GetCurrentDepartmentForStaff();
 }

@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,12 @@ public class BorrowDocument
 
             RuleFor(x => x.Reason)
                 .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
+
+            RuleFor(x => x.BorrowFrom)
+                .GreaterThan(DateTime.Now).WithMessage("Borrow date cannot be in the past.");
+            
+            RuleFor(x => x.BorrowTo)
+                .GreaterThan(DateTime.Now).WithMessage("Due date cannot be in the past.");
         }
     }
     
@@ -27,20 +34,22 @@ public class BorrowDocument
     {
         public Guid DocumentId { get; init; }
         public Guid BorrowerId { get; init; }
+        public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }
         public string Reason { get; init; } = null!;
     }
-    
+
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-        
+
         public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
+
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var user = await _context.Users
@@ -51,6 +60,16 @@ public class BorrowDocument
                 throw new KeyNotFoundException("User does not exist.");
             }
             
+            if (user.IsActive is false)
+            {
+                throw new ConflictException("User is not active.");
+            }
+            
+            if (user.IsActivated is false)
+            {
+                throw new ConflictException("User is not activated.");
+            }
+            
             var document = await _context.Documents
                 .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
@@ -59,16 +78,47 @@ public class BorrowDocument
                 throw new KeyNotFoundException("Document does not exist.");
             }
 
+            if (document.Status is DocumentStatus.Lost)
+            {
+                throw new ConflictException("Document is lost.");
+            }
+            
             if (document.Department!.Id != user.Department!.Id)
             {
                 throw new ConflictException("User is not allowed to borrow this document.");
             }
+
+            // getting out a request of that document which is either not due or overdue
+            // if the request is in time, meaning not overdue,
+            // then check if its due date is less than the borrow request date, if not then check
+            // if it's already been approved, checked out or lost, meaning 
+            var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
+            var existedBorrow = await _context.Borrows
+                .Include(x => x.Borrower)
+                .FirstOrDefaultAsync(x =>
+                    x.Document.Id == request.DocumentId
+                    && ((x.DueTime > localDateTimeNow
+                         && x.BorrowTime < localDateTimeNow)
+                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
             
-            if (DateTime.Now > request.BorrowTo)
+            if (existedBorrow is not null)
             {
-                throw new ConflictException("Due date cannot be in the past.");
+                // Does not make sense if the same person go up and want to borrow the same document again
+                // even if the borrow day will be after the due day
+                if (existedBorrow.Borrower.Id == request.BorrowerId)
+                {
+                    throw new ConflictException("This document is already requested borrow from the same user.");
+                }
+
+                if (existedBorrow.Status 
+                    is BorrowRequestStatus.Approved 
+                    or BorrowRequestStatus.CheckedOut
+                    && LocalDateTime.FromDateTime(request.BorrowFrom) < existedBorrow.DueTime)
+                {
+                    throw new ConflictException("This document cannot be borrowed.");
+                }
             }
-            
+
             var entity = new Borrow()
             {
                 Borrower = user,
@@ -76,7 +126,7 @@ public class BorrowDocument
                 BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
                 DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
                 Reason = request.Reason,
-                IsApproved = false,
+                Status = BorrowRequestStatus.Pending,
             };
 
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);

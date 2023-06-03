@@ -5,4 +5,8 @@ namespace Api.Controllers.Payload.Requests.Rooms;
 /// </summary>
 public class GetAllRoomsPaginatedQueryParameters : PaginatedQueryParameters
 {
+    /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; set; }
 }

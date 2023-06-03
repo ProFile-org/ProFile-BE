@@ -10,9 +10,9 @@ public class BorrowDocumentRequest
     /// </summary>
     public Guid DocumentId { get; set; }
     /// <summary>
-    /// Id of the borrower
+    /// Borrow from
     /// </summary>
-    public Guid BorrowerId { get; set; }
+    public DateTime BorrowFrom { get; set; }
     /// <summary>
     /// Borrow to
     /// </summary>

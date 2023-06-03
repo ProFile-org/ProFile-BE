@@ -11,4 +11,8 @@ public class GetAllLockersPaginatedQueryParameters : PaginatedQueryParameters
     /// Id of the room to find lockers in
     /// </summary>
     public Guid? RoomId { get; set; }
+    /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; set; }
 }

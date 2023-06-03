@@ -1,6 +1,14 @@
 namespace Domain.Statuses;
 
-public class BorrowRequestStatus
+public enum BorrowRequestStatus
 {
-    
+    Approved,
+    Pending,
+    Rejected,
+    Overdue,
+    Cancelled,
+    CheckedOut,
+    Returned,
+    Lost,
+    NotProcessable,
 }

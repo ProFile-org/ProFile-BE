@@ -47,8 +47,8 @@ public class BorrowDocumentTests : BaseClassFixture
         
         // Assert
         result.Should().NotBeNull();
-        result.Borrower.Id.Should().Be(user.Id);
-        result.Document.Id.Should().Be(document.Id);
+        result.BorrowerId.Should().Be(user.Id);
+        result.DocumentId.Should().Be(document.Id);
         result.DueTime.Should().Be(command.BorrowTo);
         result.Reason.Should().Be(command.Reason);
         

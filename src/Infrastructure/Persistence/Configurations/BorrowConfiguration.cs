@@ -31,7 +31,7 @@ public class BorrowConfiguration : IEntityTypeConfiguration<Borrow>
         builder.Property(x => x.Reason)
             .IsRequired();
 
-        builder.Property(x => x.IsApproved)
+        builder.Property(x => x.Status)
             .IsRequired();
     }
 }

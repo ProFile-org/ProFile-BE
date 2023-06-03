@@ -1,6 +1,9 @@
 namespace Domain.Statuses;
 
-public class DocumentStatus
+public enum DocumentStatus
 {
-    
+    Issued,
+    Available,
+    Borrowed,
+    Lost,
 }

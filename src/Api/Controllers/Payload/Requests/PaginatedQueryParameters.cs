@@ -3,10 +3,6 @@ namespace Api.Controllers.Payload.Requests;
 public class PaginatedQueryParameters
 {
     /// <summary>
-    /// Search term
-    /// </summary>
-    public string? SearchTerm { get; set; }
-    /// <summary>
     /// Page number
     /// </summary>
     public int? Page { get; set; }

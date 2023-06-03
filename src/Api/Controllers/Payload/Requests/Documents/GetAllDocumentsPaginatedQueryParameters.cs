@@ -17,4 +17,8 @@ public class GetAllDocumentsPaginatedQueryParameters : PaginatedQueryParameters
     /// Id of the folder to find documents in
     /// </summary>
     public Guid? FolderId { get; set; }
+    /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; set; }
 }

@@ -19,7 +19,7 @@ public class CurrentUserService : ICurrentUserService
     public string GetRole()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub));
+            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
@@ -57,7 +57,7 @@ public class CurrentUserService : ICurrentUserService
     public User GetCurrentUser()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub));
+            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
@@ -76,7 +76,7 @@ public class CurrentUserService : ICurrentUserService
     public Guid? GetCurrentRoomForStaff()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub));
+            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
@@ -93,5 +93,27 @@ public class CurrentUserService : ICurrentUserService
         }
         
         return staff.Room!.Id;
+    }
+    
+    public Guid? GetCurrentDepartmentForStaff()
+    {
+        var userName = _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
+        if (userName is null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var staff = _context.Staffs
+            .Include(x => x.User)
+            .Include(x => x.Room)
+            .FirstOrDefault(x => x.User.Username.Equals(userName));
+
+        if (staff is null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+        
+        return staff.Room!.DepartmentId;
     }
 }

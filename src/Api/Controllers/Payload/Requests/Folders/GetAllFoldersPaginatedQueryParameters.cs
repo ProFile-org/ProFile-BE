@@ -6,6 +6,10 @@ namespace Api.Controllers.Payload.Requests.Folders;
 public class GetAllFoldersPaginatedQueryParameters : PaginatedQueryParameters
 {
     /// <summary>
+    /// Search term
+    /// </summary>
+    public string? SearchTerm { get; set; }
+    /// <summary>
     /// Id of the room to find folders in
     /// </summary>
     public Guid? RoomId { get; set; }
