@@ -59,7 +59,9 @@ public class UpdateLocker
             }
 
             var duplicateLocker = await _context.Lockers.FirstOrDefaultAsync(
-                x => x.Name.Equals(request.Name) && x.Room.Id.Equals(locker.Room.Id), cancellationToken);
+                x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
+                     && x.Id != locker.Id
+                     && x.Room.Id == locker.Room.Id, cancellationToken);
             
             if (duplicateLocker is not null && !duplicateLocker.Equals(locker))
             {
