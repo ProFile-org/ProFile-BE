@@ -60,6 +60,7 @@ public class GetAllLockersPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
+            var count = await lockers.CountAsync(cancellationToken);
             var list  = await lockers
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
@@ -67,7 +68,7 @@ public class GetAllLockersPaginated
             
             var result = _mapper.Map<List<LockerDto>>(list);
 
-            return new PaginatedList<LockerDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<LockerDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
