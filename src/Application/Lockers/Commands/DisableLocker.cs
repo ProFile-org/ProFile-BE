@@ -40,6 +40,7 @@ public class DisableLocker
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var locker = await _context.Lockers
+                .Include(x => x.Room)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
                 
             if (locker is null)
