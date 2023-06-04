@@ -35,7 +35,6 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all documents query parameters</param>
     /// <returns>A paginated list of DocumentDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
