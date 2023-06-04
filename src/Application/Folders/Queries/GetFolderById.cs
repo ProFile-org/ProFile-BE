@@ -29,6 +29,7 @@ public class GetFolderById
             var folder = await _context.Folders
                 .Include(x =>x .Locker)
                 .ThenInclude(x => x.Room)
+                .ThenInclude(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.FolderId), cancellationToken);
 
             if (folder is null)

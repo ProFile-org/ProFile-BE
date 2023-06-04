@@ -26,7 +26,10 @@ public class GetLockerById
 
         public async Task<LockerDto> Handle(Query request, CancellationToken cancellationToken)
         {
-            var locker = await _context.Lockers.FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
+            var locker = await _context.Lockers
+                .Include(x => x.Room)
+                .ThenInclude(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
 
             if (locker is null)
             {
