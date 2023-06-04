@@ -36,6 +36,7 @@ public class GetAllRoomsPaginated
         {
             var rooms = _context.Rooms
                 .Include(x => x.Department)
+                .Include(x => x.Staff)
                 .AsQueryable();
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
