@@ -105,7 +105,9 @@ public class BorrowDocument
             {
                 // Does not make sense if the same person go up and want to borrow the same document again
                 // even if the borrow day will be after the due day
-                if (existedBorrow.Borrower.Id == request.BorrowerId)
+                if (existedBorrow.Borrower.Id == request.BorrowerId
+                    && existedBorrow.Status is BorrowRequestStatus.Pending 
+                        or BorrowRequestStatus.Approved)
                 {
                     throw new ConflictException("This document is already requested borrow from the same user.");
                 }
