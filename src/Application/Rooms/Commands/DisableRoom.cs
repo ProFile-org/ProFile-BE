@@ -40,6 +40,8 @@ public class DisableRoom
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var room = await _context.Rooms
+                .Include(x => x.Department)
+                .Include(x => x.Staff)
                 .Include(x => x.Lockers)
                 .ThenInclude(y => y.Folders)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
