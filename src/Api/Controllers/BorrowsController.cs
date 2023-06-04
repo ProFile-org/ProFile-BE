@@ -151,7 +151,7 @@ public class BorrowsController : ApiControllerBase
     /// <param name="documentId"></param>
     /// <param name="queryParameters"></param>
     /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Employee)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("documents/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -168,6 +168,7 @@ public class BorrowsController : ApiControllerBase
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
             SortOrder = queryParameters.SortOrder,
+            Status = queryParameters.Status,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<PaginatedList<BorrowDto>>.Succeed(result));

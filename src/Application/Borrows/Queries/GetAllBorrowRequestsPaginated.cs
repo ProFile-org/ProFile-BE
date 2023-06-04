@@ -4,6 +4,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Statuses;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ public class GetAllBorrowRequestsPaginated
         public int? Size { get; init; }
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
+        public string? Status { get; init; }
     }
     
     public class QueryHandler : IRequestHandler<Query, PaginatedList<BorrowDto>>
@@ -70,6 +72,21 @@ public class GetAllBorrowRequestsPaginated
             if (request.DocumentId is not null)
             {
                 borrows = borrows.Where(x => x.Document.Id == request.DocumentId);
+            }
+
+            if (request.Status is not null)
+            {
+                var statuses = request.Status.Split(",");
+                var enums = new List<BorrowRequestStatus>();
+                foreach (var status in statuses)
+                {
+                    if (Enum.TryParse(status, true, out BorrowRequestStatus s))
+                    {
+                        enums.Add(s);
+                    }
+                }
+
+                borrows = borrows.Where(x => enums.Contains(x.Status));
             }
             
             var sortBy = request.SortBy;
