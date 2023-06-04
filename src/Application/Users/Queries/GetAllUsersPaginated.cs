@@ -59,6 +59,7 @@ public class GetAllUsersPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
+            var count = await users.CountAsync(cancellationToken);
             var list  = await users
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
@@ -66,7 +67,7 @@ public class GetAllUsersPaginated
             
             var result = _mapper.Map<List<UserDto>>(list);
 
-            return new PaginatedList<UserDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<UserDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

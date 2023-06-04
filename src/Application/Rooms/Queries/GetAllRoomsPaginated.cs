@@ -54,6 +54,7 @@ public class GetAllRoomsPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
+            var count = await rooms.CountAsync(cancellationToken);
             var list  = await rooms
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
@@ -61,7 +62,7 @@ public class GetAllRoomsPaginated
             
             var result = _mapper.Map<List<RoomDto>>(list);
 
-            return new PaginatedList<RoomDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<RoomDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

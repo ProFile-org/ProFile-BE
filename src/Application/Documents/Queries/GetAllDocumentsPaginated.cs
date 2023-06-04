@@ -132,6 +132,7 @@ public class GetAllDocumentsPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
+            var count = await documents.CountAsync(cancellationToken);
             var list  = await documents
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
@@ -139,7 +140,7 @@ public class GetAllDocumentsPaginated
             
             var result = _mapper.Map<List<DocumentDto>>(list);
 
-            return new PaginatedList<DocumentDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<DocumentDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

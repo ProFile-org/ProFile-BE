@@ -55,6 +55,7 @@ public class GetAllStaffsPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
+            var count = await staffs.CountAsync(cancellationToken);
             var list = await staffs
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value,sizeNumber.Value)
@@ -62,7 +63,7 @@ public class GetAllStaffsPaginated
 
             var result = _mapper.Map<List<StaffDto>>(list);
             
-            return new PaginatedList<StaffDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<StaffDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
