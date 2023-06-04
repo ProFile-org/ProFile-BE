@@ -26,6 +26,7 @@ public class GetUserById
         public async Task<UserDto> Handle(Query request, CancellationToken cancellationToken)
         {
             var user = await _context.Users
+                .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.UserId), cancellationToken: cancellationToken);
 
             if (user is null)
