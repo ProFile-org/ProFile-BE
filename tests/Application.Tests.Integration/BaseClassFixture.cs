@@ -5,6 +5,7 @@ using Domain.Common;
 using Domain.Entities;
 using Domain.Entities.Digital;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -218,7 +219,7 @@ public class BaseClassFixture
             FileData = Encoding.ASCII.GetBytes(new Faker().Lorem.Random.Words())
         };
     }
-    
+
     protected static Entry CreateEntry(FileEntity file)
     {
         return new Entry()
@@ -228,6 +229,20 @@ public class BaseClassFixture
             File = file,
             Path = new Faker().Commerce.ProductDescription(),
             FileId = file.Id,
+        };
+    }
+
+    protected static Borrow CreateBorrowRequest(User borrower, Document document, BorrowRequestStatus status)
+    {
+        return new Borrow()
+        {
+            Id = Guid.NewGuid(),
+            Borrower = borrower,
+            Document = document,
+            Reason = "something something",
+            Status = status,
+            BorrowTime = LocalDateTime.FromDateTime(DateTime.UtcNow),
+            DueTime = LocalDateTime.FromDateTime(DateTime.UtcNow + TimeSpan.FromDays(1))
         };
     }
 }
