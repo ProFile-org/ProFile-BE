@@ -36,7 +36,6 @@ public class BorrowRequestService : BackgroundService
                 }
 
                 await context.SaveChangesAsync(stoppingToken);
-                Console.WriteLine("fuck you chien ngu");
                 await Task.Delay(TimeSpan.FromMinutes(20), stoppingToken);
             }
         }
