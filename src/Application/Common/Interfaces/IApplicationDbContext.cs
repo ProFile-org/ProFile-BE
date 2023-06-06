@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Entities.Digital;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,8 @@ public interface IApplicationDbContext
     public DbSet<Folder> Folders { get; }
     public DbSet<Document> Documents { get; }
     public DbSet<Borrow> Borrows { get; }
+    
+    public DbSet<UserGroup> UserGroups { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
