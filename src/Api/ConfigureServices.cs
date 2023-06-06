@@ -14,7 +14,7 @@ public static class ConfigureServices
     {
         // Register services
         services.AddServices();
-        
+        services.AddHostedService<BorrowRequestService>();
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
