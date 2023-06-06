@@ -18,6 +18,8 @@ public interface IApplicationDbContext
     public DbSet<Borrow> Borrows { get; }
     
     public DbSet<UserGroup> UserGroups { get; }
+    public DbSet<FileEntity> Files { get; }
+    public DbSet<Entry> Entries { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

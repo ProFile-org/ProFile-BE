@@ -29,6 +29,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Borrow> Borrows => Set<Borrow>();
     
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
+    public DbSet<FileEntity> Files => Set<FileEntity>();
+    public DbSet<Entry> Entries => Set<Entry>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
