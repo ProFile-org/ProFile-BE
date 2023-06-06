@@ -58,7 +58,8 @@ namespace Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Entries_FileId",
                 table: "Entries",
-                column: "FileId");
+                column: "FileId",
+                unique: true);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Documents_Entries_EntryId",

@@ -61,7 +61,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileId");
+                    b.HasIndex("FileId")
+                        .IsUnique();
 
                     b.ToTable("Entries");
                 });
@@ -432,8 +433,8 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.Digital.Entry", b =>
                 {
                     b.HasOne("Domain.Entities.Digital.FileEntity", "File")
-                        .WithMany()
-                        .HasForeignKey("FileId");
+                        .WithOne()
+                        .HasForeignKey("Domain.Entities.Digital.Entry", "FileId");
 
                     b.Navigation("File");
                 });

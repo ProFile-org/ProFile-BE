@@ -18,5 +18,10 @@ public class EntryConfiguration : IEntityTypeConfiguration<Entry>
 
         builder.Property(x => x.Path)
             .IsRequired();
+
+        builder.HasOne(x => x.File)
+            .WithOne()
+            .HasForeignKey<Entry>(x => x.FileId)
+            .IsRequired(false);
     }
 }
