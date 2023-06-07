@@ -1,7 +1,9 @@
+using System.Text;
 using Application.Helpers;
 using Bogus;
 using Domain.Common;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using Infrastructure.Persistence;
@@ -95,7 +97,6 @@ public class BaseClassFixture
                 Id = Guid.NewGuid(),
                 Title = new Faker().Commerce.ProductName(),
                 DocumentType = "Something Department",
-                Status = DocumentStatus.Available
             };
             list.Add(document);
         }
@@ -199,6 +200,38 @@ public class BaseClassFixture
         };
     }
     
+    protected static UserGroup CreateUserGroup(User[] users)
+    {
+        return new UserGroup()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.ProductName(),
+            Users = users,
+        };
+    }
+    
+    protected static FileEntity CreateFile()
+    {
+        return new FileEntity()
+        {
+            Id = Guid.NewGuid(),
+            FileType = new Faker().Database.Type(),
+            FileData = Encoding.ASCII.GetBytes(new Faker().Lorem.Random.Words())
+        };
+    }
+
+    protected static Entry CreateEntry(FileEntity file)
+    {
+        return new Entry()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.ProductName(),
+            File = file,
+            Path = new Faker().Commerce.ProductDescription(),
+            FileId = file.Id,
+        };
+    }
+
     protected static Borrow CreateBorrowRequest(User borrower, Document document, BorrowRequestStatus status)
     {
         return new Borrow()
@@ -208,8 +241,8 @@ public class BaseClassFixture
             Document = document,
             Reason = "something something",
             Status = status,
-            BorrowTime = LocalDateTime.FromDateTime(DateTime.UtcNow),
-            DueTime = LocalDateTime.FromDateTime(DateTime.UtcNow + TimeSpan.FromDays(1))
+            BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
+            DueTime = LocalDateTime.FromDateTime(DateTime.Now + TimeSpan.FromDays(1))
         };
     }
 }
