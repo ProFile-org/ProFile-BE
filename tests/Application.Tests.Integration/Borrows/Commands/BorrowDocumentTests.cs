@@ -88,6 +88,9 @@ public class BorrowDocumentTests : BaseClassFixture
         // Assert
         await result.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("User does not exist.");
+        
+        // Cleanup
+        Remove(document);
     }
     
     [Fact]
@@ -119,6 +122,7 @@ public class BorrowDocumentTests : BaseClassFixture
             .WithMessage("User is not active.");
         
         // Cleanup
+        Remove(document);
         Remove(user);
     }
     
@@ -151,6 +155,7 @@ public class BorrowDocumentTests : BaseClassFixture
             .WithMessage("User is not activated.");
         
         // Cleanup
+        Remove(document);
         Remove(user);
     }
 
