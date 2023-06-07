@@ -5,6 +5,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
+using Domain.Statuses;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -302,6 +303,24 @@ public class BorrowsController : ApiControllerBase
         {
             BorrowId = borrowId,
         };
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Report lost document
+    /// </summary>
+    /// <param name="borrowId">Id of the borrow request to be reported</param>
+    /// <returns>A BorrowDto of the cancelled borrow request</returns>
+    [HttpPost("lost/{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<BorrowDto>>> LostReport([FromRoute] Guid borrowId)
+    {
+        var command = new ReportLostDocument.Command()
+        {
+            BorrowId = borrowId,
+        };
+        
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
     }
