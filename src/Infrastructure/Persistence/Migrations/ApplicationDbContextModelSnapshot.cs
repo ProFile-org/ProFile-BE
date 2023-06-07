@@ -280,6 +280,29 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ResetPasswordToken", b =>
+                {
+                    b.Property<string>("TokenHash")
+                        .HasColumnType("text");
+
+                    b.Property<LocalDateTime>("ExpirationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsInvalidated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("TokenHash");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ResetPasswordTokens");
+                });
+
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -437,6 +460,17 @@ namespace Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ResetPasswordToken", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()

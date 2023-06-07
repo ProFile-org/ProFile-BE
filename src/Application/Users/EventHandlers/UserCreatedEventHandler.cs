@@ -11,27 +11,21 @@ namespace Application.Users.EventHandlers;
 public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 {
     private readonly IMailService _mailService;
-    private readonly IApplicationDbContext _applicationDbContext;
     private readonly IAuthDbContext _authDbContext;
 
-    public UserCreatedEventHandler(IMailService mailService, IAuthDbContext authDbContext, IApplicationDbContext applicationDbContext)
+    public UserCreatedEventHandler(IMailService mailService, IAuthDbContext authDbContext)
     {
         _mailService = mailService;
-        _applicationDbContext = applicationDbContext;
         _authDbContext = authDbContext;
     }
 
     public async Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
     {
-        var user = await _applicationDbContext.Users.FirstAsync(
-            x => x.Email.ToLower()
-                .Equals(notification.Email.ToLower()), cancellationToken);
-
         var expirationDate = LocalDateTime.FromDateTime(DateTime.Now.AddDays(1));
         
         var resetPasswordToken = new ResetPasswordToken()
         {
-            User = user,
+            User = notification.User,
             TokenHash = SecurityUtil.Hash(Guid.NewGuid().ToString()),
             ExpirationDate = expirationDate,
             IsInvalidated = false,
@@ -40,6 +34,6 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
         var tokenEntity = await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken, cancellationToken);
         await _authDbContext.SaveChangesAsync(cancellationToken);
         
-        _mailService.SendResetPasswordHtmlMail(notification.Email, notification.Password, tokenEntity.Entity.TokenHash);
+        _mailService.SendResetPasswordHtmlMail(notification.User.Email, notification.Password, tokenEntity.Entity.TokenHash);
     }
 }
