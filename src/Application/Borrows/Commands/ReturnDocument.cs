@@ -33,7 +33,7 @@ public class ReturnDocument
                 .Include(x => x.Borrower)
                 .Include(x => x.Document)
                 .FirstOrDefaultAsync(x => x.Document.Id == request.DocumentId
-                    && x.Status == BorrowRequestStatus.CheckedOut, cancellationToken);
+                    , cancellationToken);
             if (borrowRequest is null)
             {
                 throw new KeyNotFoundException("Borrow request does not exist.");
@@ -44,7 +44,7 @@ public class ReturnDocument
                 throw new ConflictException("Document is not borrowed.");
             }
 
-            if (borrowRequest.Status is not BorrowRequestStatus.CheckedOut)
+            if (borrowRequest.Status is not (BorrowRequestStatus.CheckedOut or BorrowRequestStatus.Overdue))
             {
                 throw new ConflictException("Request cannot be made.");
             }
