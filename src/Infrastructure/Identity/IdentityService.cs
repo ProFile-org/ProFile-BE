@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
@@ -229,6 +230,35 @@ public class IdentityService : IIdentityService
         }
 
         _authDbContext.RefreshTokens.Remove(storedRefreshToken);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
+    }
+
+    public async Task ResetPassword(string token, string newPassword)
+    {
+        var tokenHash = SecurityUtil.Hash(token);
+        var resetPasswordToken = await _authDbContext.ResetPasswordTokens
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.TokenHash.Equals(tokenHash));
+        if (resetPasswordToken is null)
+        {
+            throw new KeyNotFoundException("Token is invalid.");
+        }
+
+        if (resetPasswordToken.IsInvalidated)
+        {
+            throw new ConflictException("Token is invalid.");
+        }
+
+        var user = resetPasswordToken.User;
+
+        if (user.IsActivated is false)
+        {
+            user.IsActivated = true;
+        }
+
+        user.PasswordHash = SecurityUtil.Hash(newPassword);
+        resetPasswordToken.IsInvalidated = true;
+        await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
         await _authDbContext.SaveChangesAsync(CancellationToken.None);
     }
 
