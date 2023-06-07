@@ -22,18 +22,19 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
     public async Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
     {
         var expirationDate = LocalDateTime.FromDateTime(DateTime.Now.AddDays(1));
-        
+
+        var token = Guid.NewGuid().ToString();
         var resetPasswordToken = new ResetPasswordToken()
         {
             User = notification.User,
-            TokenHash = SecurityUtil.Hash(Guid.NewGuid().ToString()),
+            TokenHash = SecurityUtil.Hash(token),
             ExpirationDate = expirationDate,
             IsInvalidated = false,
         };
 
-        var tokenEntity = await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken, cancellationToken);
+        await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken, cancellationToken);
         await _authDbContext.SaveChangesAsync(cancellationToken);
         
-        _mailService.SendResetPasswordHtmlMail(notification.User.Email, notification.Password, tokenEntity.Entity.TokenHash);
+        _mailService.SendResetPasswordHtmlMail(notification.User.Email, notification.Password, token);
     }
 }
