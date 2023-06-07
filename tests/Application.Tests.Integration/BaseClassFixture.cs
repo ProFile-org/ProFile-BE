@@ -241,8 +241,8 @@ public class BaseClassFixture
             Document = document,
             Reason = "something something",
             Status = status,
-            BorrowTime = LocalDateTime.FromDateTime(DateTime.UtcNow),
-            DueTime = LocalDateTime.FromDateTime(DateTime.UtcNow + TimeSpan.FromDays(1))
+            BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
+            DueTime = LocalDateTime.FromDateTime(DateTime.Now + TimeSpan.FromDays(1))
         };
     }
 }
