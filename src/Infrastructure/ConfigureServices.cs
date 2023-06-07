@@ -18,6 +18,7 @@ public static class ConfigureServices
     {
         services.AddApplicationDbContext(configuration);
         services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+        services.AddScoped<IAuthDbContext, ApplicationDbContext>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddMailService(configuration);
 
