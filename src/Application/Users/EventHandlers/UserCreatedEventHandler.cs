@@ -15,6 +15,6 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
 
     public async Task Handle(UserCreatedEvent notification, CancellationToken cancellationToken)
     {
-        _mailService.SendResetPasswordHtmlMail(notification.Email, notification.Password);
+        _mailService.SendResetPasswordHtmlMail(notification.Email, notification.Password, "");
     }
 }
