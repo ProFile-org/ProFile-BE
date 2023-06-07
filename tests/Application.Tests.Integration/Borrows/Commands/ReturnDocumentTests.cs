@@ -12,42 +12,69 @@ public class ReturnDocumentTests : BaseClassFixture
 {
     public ReturnDocumentTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
-        
     }
 
     [Fact]
-    public async Task ShouldReturnTheDocument_WhenDocumentIsCheckedOut()
+    public async Task ShouldReturnBorrowRequest_WhenRequestIsValidAndBorrowRequestStatusIsCheckedOut()
     {
         // Arrange
         var user = CreateUser(IdentityData.Roles.Employee, "abcdef");
 
         var document = CreateNDocuments(1).First();
         document.Status = DocumentStatus.Borrowed;
-
         var borrow = CreateBorrowRequest(user, document, BorrowRequestStatus.CheckedOut);
-
         await AddAsync(borrow);
-
         var command = new ReturnDocument.Command()
         {
-            DocumentId = document.Id,
+            DocumentId = document.Id
         };
         
         // Act
         var result = await SendAsync(command);
-        var documentResult = await FindAsync<Document>(document.Id);
-
+        
         // Assert
+        result.Id.Should().Be(borrow.Id);
         result.Status.Should().Be(BorrowRequestStatus.Returned.ToString());
-        result.ActualReturnTime.Should().BeBefore(result.DueTime);
+        var documentResult = await FindAsync<Document>(result.DocumentId);
         documentResult!.Status.Should().Be(DocumentStatus.Available);
+        result.BorrowTime.Should().NotBeAfter(borrow.BorrowTime.ToDateTimeUnspecified());
         
         // Cleanup
-        Remove(borrow);
+        Remove(await FindAsync<Borrow>(borrow.Id));
+        Remove(documentResult);
         Remove(user);
-        Remove(document);
     }
-    
+
+    [Fact]
+    public async Task ShouldReturnBorrowRequest_WhenRequestIsValidAndBorrowRequestStatusIsOverdue()
+    {
+        // Arrange
+        var user = CreateUser(IdentityData.Roles.Employee, "randompassword");
+        var document = CreateNDocuments(1).First();
+        document.Status = DocumentStatus.Borrowed;
+        var borrow = CreateBorrowRequest(user,document,BorrowRequestStatus.Overdue);
+        await AddAsync(borrow);
+        var command = new ReturnDocument.Command()
+        {
+            DocumentId = document.Id
+        };
+        
+        // Act
+        var result = await SendAsync(command);
+        
+        // Assert
+        result.Id.Should().Be(borrow.Id);
+        result.Status.Should().Be(BorrowRequestStatus.Returned.ToString());
+        var documentResult = await FindAsync<Document>(result.DocumentId);
+        documentResult!.Status.Should().Be(DocumentStatus.Available);
+        result.BorrowTime.Should().NotBeAfter(borrow.BorrowTime.ToDateTimeUnspecified());
+        
+        // Cleanup
+        Remove(await FindAsync<Borrow>(borrow.Id));
+        Remove(documentResult);
+        Remove(user);
+    }
+
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenBorrowRequestDoesNotExist()
     {
@@ -61,9 +88,10 @@ public class ReturnDocumentTests : BaseClassFixture
         var result = async () => await SendAsync(command);
 
         // Assert
-        await result.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Borrow request does not exist.");
+        await result.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage("Borrow request does not exist.");
     }
-    
+
     [Fact]
     public async Task ShouldThrowConflictException_WhenDocumentStatusIsNotBorrowed()
     {
@@ -86,11 +114,39 @@ public class ReturnDocumentTests : BaseClassFixture
         var result = async () => await SendAsync(command);
 
         // Assert
-        await result.Should().ThrowAsync<ConflictException>().WithMessage("Document is not borrowed.");
-        
+        await result.Should().ThrowAsync<ConflictException>()
+            .WithMessage("Document is not borrowed.");
+
         // Cleanup
         Remove(borrow);
-        Remove(user);
         Remove(document);
+        Remove(user);
+    }
+
+    [Fact]
+    public async Task ShouldThrowConflictException_WhenBorrowRequestStatusIsNotCheckedOutOrOverdue()
+    {
+        // Arrange
+        var user = CreateUser(IdentityData.Roles.Employee, "randompassword");
+        var document = CreateNDocuments(1).First();
+        document.Status = DocumentStatus.Borrowed;
+        var borrow = CreateBorrowRequest(user,document,BorrowRequestStatus.Rejected);
+        await AddAsync(borrow);
+        var command = new ReturnDocument.Command()
+        {
+            DocumentId = document.Id
+        };
+        
+        // Act
+        var result = async () => await SendAsync(command);
+
+        // Assert
+        await result.Should().ThrowAsync<ConflictException>()
+            .WithMessage("Request cannot be made.");
+
+        // Cleanup
+        Remove(borrow);
+        Remove(document);
+        Remove(user);
     }
 }
