@@ -18,7 +18,7 @@ public class ResetPasswordTokenConfiguration : IEntityTypeConfiguration<ResetPas
         
         builder.HasOne(x => x.User)
             .WithMany()
-            .HasForeignKey()
+            .HasForeignKey("UserId")
             .IsRequired();
     }
 }
