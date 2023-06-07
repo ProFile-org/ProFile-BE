@@ -1,7 +1,5 @@
-using System.Data;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,7 +10,6 @@ using Application.Helpers;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
-using Infrastructure.Persistence;
 using Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -26,16 +23,25 @@ public class IdentityService : IIdentityService
 {
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly JweSettings _jweSettings;
-    private readonly ApplicationDbContext _context;
+    private readonly IApplicationDbContext _applicationDbContext;
+    private readonly IAuthDbContext _authDbContext;
     private readonly RSA _encryptionKey;
     private readonly ECDsa _signingKey;
     private readonly IMapper _mapper;
 
-    public IdentityService(TokenValidationParameters tokenValidationParameters, IOptions<JweSettings> jweSettingsOptions, ApplicationDbContext context, RSA encryptionKey, ECDsa signingKey, IMapper mapper)
+    public IdentityService(
+        TokenValidationParameters tokenValidationParameters, 
+        IOptions<JweSettings> jweSettingsOptions, 
+        IApplicationDbContext applicationDbContext, 
+        IAuthDbContext authDbContext, 
+        RSA encryptionKey, 
+        ECDsa signingKey, 
+        IMapper mapper)
     {
         _tokenValidationParameters = tokenValidationParameters;
         _jweSettings = jweSettingsOptions.Value;
-        _context = context;
+        _applicationDbContext = applicationDbContext;
+        _authDbContext = authDbContext; 
         _encryptionKey = encryptionKey;
         _signingKey = signingKey;
         _mapper = mapper;
@@ -54,7 +60,7 @@ public class IdentityService : IIdentityService
         
         var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
         
-        var user = await _context.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -75,7 +81,7 @@ public class IdentityService : IIdentityService
         }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
-        var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+        var storedRefreshToken = await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
         if (storedRefreshToken is null)
         {
@@ -113,7 +119,7 @@ public class IdentityService : IIdentityService
         
         var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
         
-        var user = await _context.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -123,7 +129,7 @@ public class IdentityService : IIdentityService
         }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
-        var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+        var storedRefreshToken = await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
         if (storedRefreshToken is null)
         {
@@ -185,7 +191,7 @@ public class IdentityService : IIdentityService
 
     public async Task<(AuthenticationResult, UserDto)> LoginAsync(string email, string password)
     {
-        var user = _context.Users
+        var user = _applicationDbContext.Users
             .Include(x => x.Department)
             .FirstOrDefault(x => x.Email!.Equals(email));
 
@@ -194,10 +200,10 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("Username or password is invalid.");
         }
         
-        var existedRefreshTokens = _context.RefreshTokens.Where(x => x.User.Email!.Equals(user.Email));
+        var existedRefreshTokens = _authDbContext.RefreshTokens.Where(x => x.User.Email!.Equals(user.Email));
 
-        _context.RemoveRange(existedRefreshTokens);
-        await _context.SaveChangesAsync();
+        _authDbContext.RefreshTokens.RemoveRange(existedRefreshTokens);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
         
         return (await GenerateAuthenticationResultForUserAsync(user), _mapper.Map<UserDto>(user));
     }
@@ -213,7 +219,7 @@ public class IdentityService : IIdentityService
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
         var storedRefreshToken =
-            await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+            await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
         if (storedRefreshToken is null) return;
         
@@ -222,8 +228,8 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        _context.RefreshTokens.Remove(storedRefreshToken);
-        await _context.SaveChangesAsync();
+        _authDbContext.RefreshTokens.Remove(storedRefreshToken);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)
@@ -239,8 +245,8 @@ public class IdentityService : IIdentityService
             ExpiryDateTime = LocalDateTime.FromDateTime(utcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays))
         };
 
-        await _context.RefreshTokens.AddAsync(refreshToken);
-        await _context.SaveChangesAsync();
+        await _authDbContext.RefreshTokens.AddAsync(refreshToken);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
         return new()
         {
             Token = token,
