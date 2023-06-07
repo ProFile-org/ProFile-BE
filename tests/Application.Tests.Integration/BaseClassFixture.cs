@@ -3,6 +3,7 @@ using Bogus;
 using Domain.Common;
 using Domain.Entities;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -94,6 +95,7 @@ public class BaseClassFixture
                 Id = Guid.NewGuid(),
                 Title = new Faker().Commerce.ProductName(),
                 DocumentType = "Something Department",
+                Status = DocumentStatus.Available
             };
             list.Add(document);
         }
@@ -194,6 +196,20 @@ public class BaseClassFixture
             Id = user.Id,
             User = user,
             Room = room,
+        };
+    }
+    
+    protected static Borrow CreateBorrowRequest(User borrower, Document document, BorrowRequestStatus status)
+    {
+        return new Borrow()
+        {
+            Id = Guid.NewGuid(),
+            Borrower = borrower,
+            Document = document,
+            Reason = "something something",
+            Status = status,
+            BorrowTime = LocalDateTime.FromDateTime(DateTime.UtcNow),
+            DueTime = LocalDateTime.FromDateTime(DateTime.UtcNow + TimeSpan.FromDays(1))
         };
     }
 }
