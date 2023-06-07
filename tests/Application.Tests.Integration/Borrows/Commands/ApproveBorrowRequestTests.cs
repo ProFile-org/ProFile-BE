@@ -1,6 +1,7 @@
 ﻿using Application.Borrows.Commands;
 using Application.Common.Exceptions;
 using Application.Identity;
+using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentAssertions;
 using Infrastructure.Persistence;
@@ -88,7 +89,8 @@ public class ApproveBorrowRequestTests : BaseClassFixture
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("Document is lost. Request is unprocessable.");
-        
+        (await FindAsync<Borrow>(request.Id))!.Status.Should().Be(BorrowRequestStatus.NotProcessable);
+
         // Cleanup
         Remove(request);
         Remove(user);
@@ -137,8 +139,8 @@ public class ApproveBorrowRequestTests : BaseClassFixture
         var request1 = CreateBorrowRequest(user1, document, BorrowRequestStatus.Approved);
         
         var request2 = CreateBorrowRequest(user2, document, BorrowRequestStatus.Pending);
-        request2.BorrowTime = request2.BorrowTime.Plus(Period.FromHours(1));
-        request2.BorrowTime = request2.BorrowTime.Plus(Period.FromHours(1));
+        request2.BorrowTime = request2.BorrowTime.Plus(Period.FromMinutes(30));
+        request2.DueTime = request2.DueTime.Plus(Period.FromHours(1));
         
         await context.AddAsync(request1);
         await context.AddAsync(request2);
