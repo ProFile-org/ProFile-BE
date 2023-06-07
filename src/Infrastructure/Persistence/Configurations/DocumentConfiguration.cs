@@ -41,5 +41,10 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
 
         builder.Property(x => x.Status)
             .IsRequired();
+
+        builder.HasOne(x => x.Entry)
+            .WithOne()
+            .HasForeignKey<Document>(x => x.EntryId)
+            .IsRequired(false);
     }
 }

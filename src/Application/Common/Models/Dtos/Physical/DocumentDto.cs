@@ -1,4 +1,5 @@
 using Application.Common.Mappings;
+using Application.Common.Models.Dtos.Digital;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities.Physical;
@@ -14,7 +15,8 @@ public class DocumentDto : IMapFrom<Document>
     public DepartmentDto? Department { get; set; }
     public UserDto? Importer { get; set; }
     public FolderDto? Folder { get; set; }
-    public string Status { get; set; }
+    public string Status { get; set; } = null!;
+    public EntryDto? Entry { get; set; }
 
     public void Mapping(Profile profile)
     {
