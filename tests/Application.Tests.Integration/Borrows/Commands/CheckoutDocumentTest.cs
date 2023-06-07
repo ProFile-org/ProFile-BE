@@ -15,7 +15,7 @@ public class CheckoutDocumentTest : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldCheckoutDocument_WhenBorrowRequestDocument()
+    public async Task ShouldCheckoutDocument_WhenBorrowRequestIsApprovedAndDocumentIsAvailable()
     {
         // Arrange
         var user = CreateUser(IdentityData.Roles.Employee, "randompassword");
@@ -91,7 +91,7 @@ public class CheckoutDocumentTest : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowConflictException_WhenBorrowRequestStatusIsApproved()
+    public async Task ShouldThrowConflictException_WhenBorrowRequestStatusIsNotApproved()
     {
         // Arrange
         var user = CreateUser(IdentityData.Roles.Employee, "randompassword");
