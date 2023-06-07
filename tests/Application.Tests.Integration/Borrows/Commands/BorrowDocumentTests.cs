@@ -69,10 +69,14 @@ public class BorrowDocumentTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenUserDoesNotExist()
     {
         // Arrange
+        var document = CreateNDocuments(1).First();
+        document.Status = DocumentStatus.Available;
+        await AddAsync(document);
+        
         var command = new BorrowDocument.Command()
         {
             BorrowerId = Guid.NewGuid(),
-            DocumentId = Guid.NewGuid(),
+            DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             Reason = "Example",
@@ -90,6 +94,10 @@ public class BorrowDocumentTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenUserIsNotActive()
     {
         // Arrange
+        var document = CreateNDocuments(1).First();
+        document.Status = DocumentStatus.Available;
+        await AddAsync(document);
+        
         var user = CreateUser(IdentityData.Roles.Employee, "aaaaaa");
         user.IsActive = false;
         await AddAsync(user);
@@ -97,7 +105,7 @@ public class BorrowDocumentTests : BaseClassFixture
         var command = new BorrowDocument.Command()
         {
             BorrowerId = user.Id,
-            DocumentId = Guid.NewGuid(),
+            DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             Reason = "Example",
@@ -118,6 +126,10 @@ public class BorrowDocumentTests : BaseClassFixture
     public async Task ShouldThrowConflictException_WhenUserIsNotActivated()
     {
         // Arrange
+        var document = CreateNDocuments(1).First();
+        document.Status = DocumentStatus.Available;
+        await AddAsync(document);
+        
         var user = CreateUser(IdentityData.Roles.Employee, "aaaaaa");
         user.IsActivated = false;
         await AddAsync(user);
@@ -125,7 +137,7 @@ public class BorrowDocumentTests : BaseClassFixture
         var command = new BorrowDocument.Command()
         {
             BorrowerId = user.Id,
-            DocumentId = Guid.NewGuid(),
+            DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             Reason = "Example",
@@ -287,7 +299,8 @@ public class BorrowDocumentTests : BaseClassFixture
         Remove(department);
     }
 
-    [Fact] public async Task ShouldThrowConflictException_WhenARequestIsMadeWhileDocumentIsAlreadyBeingBorrowed()
+    [Fact] 
+    public async Task ShouldThrowConflictException_WhenARequestIsMadeWhileDocumentIsAlreadyBeingBorrowed()
     {
         // Arrange
         using var scope = ScopeFactory.CreateScope();
