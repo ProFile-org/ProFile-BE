@@ -28,13 +28,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Borrow> Borrows => Set<Borrow>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<ResetPasswordToken> ResetPasswordTokens => Set<ResetPasswordToken>();
 
-    protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Scan for entity configurations using FluentAPI
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        base.OnModelCreating(builder);
+        base.OnModelCreating(modelBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
