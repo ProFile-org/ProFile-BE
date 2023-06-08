@@ -171,6 +171,8 @@ public class BaseClassFixture
 
     protected static User CreateUser(string role, string password)
     {
+        var salt = StringUtil.RandomSalt();
+        
         return new User()
         {
             Id = Guid.NewGuid(),
@@ -183,7 +185,8 @@ public class BaseClassFixture
             IsActivated = true,
             IsActive = true,
             Created = LocalDateTime.FromDateTime(DateTime.Now),
-            PasswordHash = SecurityUtil.Hash(password)
+            PasswordHash = password.HashPasswordWith(salt, "random pepper"),
+            PasswordSalt = salt
         };
     }
 

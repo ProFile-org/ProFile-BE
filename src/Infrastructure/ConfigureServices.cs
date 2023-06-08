@@ -24,6 +24,7 @@ public static class ConfigureServices
         services.AddJweAuthentication(configuration);
 
         services.AddAuthorization();
+        services.AddSecurityService(configuration);
         
         return services;
     }
@@ -105,6 +106,20 @@ public static class ConfigureServices
         });
         
         services.AddTransient<IMailService, MailService>();
+        
+        return services;
+    }
+
+    private static IServiceCollection AddSecurityService(this IServiceCollection services, IConfiguration configuration)
+    {
+        var securitySettings = configuration.GetSection(nameof(SecuritySettings)).Get<SecuritySettings>();
+
+        services.Configure<SecuritySettings>(option =>
+        {
+            option.Pepper = securitySettings!.Pepper;
+        });
+
+        services.AddTransient<ISecurityService, SecurityService>();
         
         return services;
     }

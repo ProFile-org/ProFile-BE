@@ -14,10 +14,11 @@ public class ApplicationDbContextSeed
     public static async Task Seed(ApplicationDbContext context, IConfiguration configuration, ILogger logger)
     {
         if (!configuration.GetValue<bool>("Seed")) return;
-
+        
+        var securitySettings = configuration.GetSection(nameof(SecuritySettings)).Get<SecuritySettings>();
         try
         {
-            await TrySeedAsync(context);
+            await TrySeedAsync(context, securitySettings!.Pepper);
         }
         catch (Exception ex)
         {
@@ -26,19 +27,22 @@ public class ApplicationDbContextSeed
         }
     }
 
-    private static async Task TrySeedAsync(ApplicationDbContext context)
+    private static async Task TrySeedAsync(ApplicationDbContext context, string pepper)
     {
         var department = new Department()
         {
             Name = "Admin"
         };
+
+        var salt = StringUtil.RandomSalt();
         
         // Default users
         var admin = new User
         {
             Username = "admin", 
             Email = "admin@profile.dev", 
-            PasswordHash = SecurityUtil.Hash("admin"),
+            PasswordHash = "admin".HashPasswordWith(salt, pepper),
+            PasswordSalt = salt,
             IsActive = true,
             IsActivated = true,
             Created = LocalDateTime.FromDateTime(DateTime.UtcNow),
