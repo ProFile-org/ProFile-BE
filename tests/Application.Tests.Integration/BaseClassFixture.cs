@@ -1,8 +1,11 @@
+using System.Text;
 using Application.Helpers;
 using Bogus;
 using Domain.Common;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -197,6 +200,52 @@ public class BaseClassFixture
             Id = user.Id,
             User = user,
             Room = room,
+        };
+    }
+    
+    protected static UserGroup CreateUserGroup(User[] users)
+    {
+        return new UserGroup()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.ProductName(),
+            Users = users,
+        };
+    }
+    
+    protected static FileEntity CreateFile()
+    {
+        return new FileEntity()
+        {
+            Id = Guid.NewGuid(),
+            FileType = new Faker().Database.Type(),
+            FileData = Encoding.ASCII.GetBytes(new Faker().Lorem.Random.Words())
+        };
+    }
+
+    protected static Entry CreateEntry(FileEntity file)
+    {
+        return new Entry()
+        {
+            Id = Guid.NewGuid(),
+            Name = new Faker().Commerce.ProductName(),
+            File = file,
+            Path = new Faker().Commerce.ProductDescription(),
+            FileId = file.Id,
+        };
+    }
+
+    protected static Borrow CreateBorrowRequest(User borrower, Document document, BorrowRequestStatus status)
+    {
+        return new Borrow()
+        {
+            Id = Guid.NewGuid(),
+            Borrower = borrower,
+            Document = document,
+            Reason = "something something",
+            Status = status,
+            BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
+            DueTime = LocalDateTime.FromDateTime(DateTime.Now + TimeSpan.FromDays(1))
         };
     }
 }

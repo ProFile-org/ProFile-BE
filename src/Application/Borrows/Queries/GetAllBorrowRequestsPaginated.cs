@@ -97,15 +97,16 @@ public class GetAllBorrowRequestsPaginated
             var sortOrder = request.SortOrder ?? "asc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
+
+            var count = await borrows.CountAsync(cancellationToken);
             var list  = await borrows
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
-            
+
             var result = _mapper.Map<List<BorrowDto>>(list);
 
-            return new PaginatedList<BorrowDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<BorrowDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

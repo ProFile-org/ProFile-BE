@@ -115,6 +115,22 @@ public class AuthController : ControllerBase
 
         return Ok();
     }
+    
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (string.IsNullOrEmpty(request.NewPassword))
+        {
+            return BadRequest("Password cannot be empty.");
+        }
+        
+        if (!request.NewPassword.Equals(request.ConfirmPassword))
+        {
+            return BadRequest("Confirm password must match with new password.");
+        }
+
+        await _identityService.ResetPassword(request.Token, request.NewPassword);
+        return Ok();
+    }
 
     private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {

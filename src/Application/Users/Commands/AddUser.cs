@@ -111,7 +111,7 @@ public class AddUser
                 IsActivated = false,
                 Created = LocalDateTime.FromDateTime(DateTime.UtcNow)
             };
-            entity.AddDomainEvent(new UserCreatedEvent(entity.Email, password));
+            entity.AddDomainEvent(new UserCreatedEvent(entity, password));
             var result = await _context.Users.AddAsync(entity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);

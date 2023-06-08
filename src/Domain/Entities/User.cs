@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Entities.Digital;
 using Domain.Entities.Physical;
 
 namespace Domain.Entities;
@@ -16,4 +17,6 @@ public class User : BaseAuditableEntity
     public string? Position { get; set; }
     public bool IsActive { get; set; }
     public bool IsActivated { get; set; }
+    
+    public ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
 }

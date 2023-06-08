@@ -104,6 +104,7 @@ public class GetAllFoldersPaginated
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
+            var count = await folders.CountAsync(cancellationToken);
             var list  = await folders
                 .OrderByCustom(sortBy, sortOrder)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
@@ -111,7 +112,7 @@ public class GetAllFoldersPaginated
             
             var result = _mapper.Map<List<FolderDto>>(list);
 
-            return new PaginatedList<FolderDto>(result, result.Count, pageNumber.Value, sizeNumber.Value);
+            return new PaginatedList<FolderDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

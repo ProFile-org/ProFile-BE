@@ -39,6 +39,7 @@ public class RemoveRoom
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var room = await _context.Rooms
+                .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
 
             if (room is null)
