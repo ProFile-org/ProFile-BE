@@ -8,7 +8,7 @@ namespace Application.UserGroups.Commands;
 
 public class DeleteUserGroup
 {
-    public class Command : IRequest<UserGroupDto>
+    public record Command : IRequest<UserGroupDto>
     {
         public Guid UserGroupId { get; init; }
     }
