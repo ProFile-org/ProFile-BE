@@ -4,7 +4,7 @@ namespace Application.Tests.Integration;
 
 public class CustomMailService : IMailService
 {
-    public bool SendResetPasswordHtmlMail(string userEmail, string password)
+    public bool SendResetPasswordHtmlMail(string userEmail, string temporaryPassword, string resetPasswordTokenHash)
     {
         return true;
     }

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Application.Common.Models;
 
-public class HTMLMailData
+public class HtmlMailData
 {
     [JsonPropertyName("from")]
     public From From { get; set; }
@@ -32,8 +32,8 @@ public class TemplateVariables
 {
     [JsonPropertyName("user_email")]
     public string UserEmail { get; set; }
-    [JsonPropertyName("pass_reset_link")]
-    public string PassResetLink { get; set; }
+    [JsonPropertyName("reset_password_token_hash")]
+    public string ResetPasswordTokenHash { get; set; }
     [JsonPropertyName("user_password")]
     public string UserPassword { get; set; }
 }

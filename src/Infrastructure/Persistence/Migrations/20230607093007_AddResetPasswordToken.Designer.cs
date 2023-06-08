@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230607093007_AddResetPasswordToken")]
+    partial class AddResetPasswordToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,69 +42,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasAlternateKey("Name");
 
                     b.ToTable("Departments");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Digital.Entry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileId")
-                        .IsUnique();
-
-                    b.ToTable("Entries");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Digital.FileEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("FileData")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Digital.UserGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("Name");
-
-                    b.ToTable("UserGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
@@ -159,9 +99,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<Guid?>("EntryId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("FolderId")
                         .HasColumnType("uuid");
 
@@ -179,9 +116,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
-
-                    b.HasIndex("EntryId")
-                        .IsUnique();
 
                     b.HasIndex("FolderId");
 
@@ -438,30 +372,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Memberships", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserGroupId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserId", "UserGroupId");
-
-                    b.HasIndex("UserGroupId");
-
-                    b.ToTable("Memberships");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Digital.Entry", b =>
-                {
-                    b.HasOne("Domain.Entities.Digital.FileEntity", "File")
-                        .WithOne()
-                        .HasForeignKey("Domain.Entities.Digital.Entry", "FileId");
-
-                    b.Navigation("File");
-                });
-
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
                 {
                     b.HasOne("Domain.Entities.User", "Borrower")
@@ -487,10 +397,6 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("DepartmentId");
 
-                    b.HasOne("Domain.Entities.Digital.Entry", "Entry")
-                        .WithOne()
-                        .HasForeignKey("Domain.Entities.Physical.Document", "EntryId");
-
                     b.HasOne("Domain.Entities.Physical.Folder", "Folder")
                         .WithMany("Documents")
                         .HasForeignKey("FolderId");
@@ -500,8 +406,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("ImporterId");
 
                     b.Navigation("Department");
-
-                    b.Navigation("Entry");
 
                     b.Navigation("Folder");
 
@@ -587,21 +491,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("Memberships", b =>
-                {
-                    b.HasOne("Domain.Entities.Digital.UserGroup", null)
-                        .WithMany()
-                        .HasForeignKey("UserGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Department", b =>
