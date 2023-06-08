@@ -1,7 +1,5 @@
-using System.Data;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,7 +11,6 @@ using Application.Helpers;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
-using Infrastructure.Persistence;
 using Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
