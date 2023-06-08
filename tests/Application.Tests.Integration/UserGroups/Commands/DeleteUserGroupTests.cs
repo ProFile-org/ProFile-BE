@@ -46,6 +46,6 @@ public class DeleteUserGroupTests : BaseClassFixture
         var result = async () => await SendAsync(command);
         
         // Assert
-        await result.Should().ThrowAsync<KeyNotFoundException>("User group does not exist.");
+        await result.Should().ThrowAsync<KeyNotFoundException>().WithMessage("User group does not exist.");
     }
 }
