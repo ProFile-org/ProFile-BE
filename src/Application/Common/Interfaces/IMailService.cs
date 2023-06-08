@@ -4,5 +4,5 @@ namespace Application.Common.Interfaces;
 
 public interface IMailService
 {
-    bool SendResetPasswordHtmlMail(string userEmail, string password);
+    bool SendResetPasswordHtmlMail(string userEmail, string temporaryPassword, string resetPasswordTokenHash);
 }
