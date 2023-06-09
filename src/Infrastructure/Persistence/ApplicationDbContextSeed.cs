@@ -1,15 +1,20 @@
+using Application.Common.Interfaces;
 using Application.Helpers;
 using Application.Identity;
 using Domain.Entities;
+using Domain.Entities.Physical;
+using Domain.Statuses;
+using Infrastructure.Identity.Authorization;
 using Infrastructure.Shared;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NodaTime;
 using Serilog;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContextSeed
+public static class ApplicationDbContextSeed
 {
     public static async Task Seed(ApplicationDbContext context, IConfiguration configuration, ILogger logger)
     {
@@ -36,6 +41,7 @@ public class ApplicationDbContextSeed
         // Default users
         var admin = new User
         {
+            Id = Guid.NewGuid(),
             Username = "admin", 
             Email = "admin@profile.dev", 
             PasswordHash = SecurityUtil.Hash("admin"),

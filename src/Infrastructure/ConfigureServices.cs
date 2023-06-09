@@ -1,7 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Application.Common.Interfaces;
 using Infrastructure.Identity;
 using Infrastructure.Identity.Authentication;
+using Infrastructure.Identity.Authorization;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Shared;
@@ -20,6 +22,7 @@ public static class ConfigureServices
         services.AddScoped<IApplicationDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IAuthDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddSingleton<IPhysicalAccessControlList, PhysicalAccessControlList>();
         services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);
@@ -82,7 +85,7 @@ public static class ConfigureServices
         services.AddSingleton(encryptionKey);
         services.AddSingleton(signingKey);
         services.AddSingleton(tokenValidationParameters);
-
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         services.AddAuthentication(JweAuthenticationOptions.DefaultScheme)
             .AddScheme<JweAuthenticationOptions, JweAuthenticationHandler>(JweAuthenticationOptions.DefaultScheme,
                 options =>

@@ -1,9 +1,13 @@
 ﻿using Api.Controllers.Payload.Requests.Lockers;
+using Application.Common.AccessControl.Models;
+using Application.Common.AccessControl.Models.Operations;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Lockers.Commands;
 using Application.Lockers.Queries;
+using Domain.Entities.Physical;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +15,14 @@ namespace Api.Controllers;
 
 public class LockersController : ApiControllerBase
 {
+    private readonly IPhysicalAccessControlList _physicalAccessControlList;
+    private readonly ICurrentUserService _currentUserService;
+
+    public LockersController(IPhysicalAccessControlList physicalAccessControlList, ICurrentUserService currentUserService)
+    {
+        _physicalAccessControlList = physicalAccessControlList;
+        _currentUserService = currentUserService;
+    }
     /// <summary>
     /// Get a locker by id
     /// </summary>
@@ -27,7 +39,62 @@ public class LockersController : ApiControllerBase
             LockerId = lockerId,
         };
         var result = await Mediator.Send(query);
+        
+        // admin and staff get a pass
+        var role = _currentUserService.GetRole();
+        if (role.Equals(IdentityData.Roles.Admin)
+            || role.Equals(IdentityData.Roles.Staff))
+        {
+            return Ok(Result<LockerDto>.Succeed(result));
+        }
+        // check if the locker is not in user's department
+        var departmentId = _currentUserService.GetDepartmentId();
+        if (departmentId != result.Room.Department!.Id)
+        {
+            return Forbid();
+        }
+        
+        // if it's public then pass
+        if (!result.IsPrivate)
+        {
+            return Ok(Result<LockerDto>.Succeed(result));
+        }
+        
+        var userId = _currentUserService.GetId();
+        var resource = new PhysicalResource()
+        {
+            Id = lockerId,
+            Type = ResourceType.Locker,
+        };
+        var principal = new PhysicalPrincipal()
+        {
+            UserId = userId,
+        };
+        
+        if (!_physicalAccessControlList.IsGranted(resource, LockerOperation.Read, principal))
+        {
+            return Forbid();
+        }
+        
         return Ok(Result<LockerDto>.Succeed(result));
+    }
+
+    [HttpPost("{lockerId:guid}/share/{userId:guid}")]
+    public IActionResult Share([FromRoute] Guid lockerId, [FromRoute] Guid userId)
+    {
+        var resource = new PhysicalResource()
+        {
+            Id = lockerId,
+            Type = ResourceType.Locker,
+        };
+        var id = _currentUserService.GetId();
+        var principal = new PhysicalPrincipal() { UserId = id };
+        if (!_physicalAccessControlList.IsGranted(resource, LockerOperation.Share, principal))
+        {
+            return Forbid();
+        }
+
+        return Ok();
     }
    
     /// <summary>
@@ -77,6 +144,22 @@ public class LockersController : ApiControllerBase
             OwnerId = request.OwnerId,
         };
         var result = await Mediator.Send(command);
+        var userId = _currentUserService.GetId();
+        var resource = new PhysicalResource()
+        {
+            Id = result.Id,
+            Type = ResourceType.Locker,
+        };
+        var principal = new PhysicalPrincipal()
+        {
+            UserId = userId,
+        };
+        _physicalAccessControlList.Grant(resource, LockerOperation.Read, principal);
+        _physicalAccessControlList.Grant(resource, LockerOperation.Share, principal);
+        _physicalAccessControlList.Grant(resource, LockerOperation.Update, principal);
+        _physicalAccessControlList.Grant(resource, LockerOperation.Delete, principal);
+        _physicalAccessControlList.Grant(resource, LockerOperation.AddFolder, principal);
+        _physicalAccessControlList.Grant(resource, LockerOperation.RemoveFolder, principal);
         return Ok(Result<LockerDto>.Succeed(result));
     }
 

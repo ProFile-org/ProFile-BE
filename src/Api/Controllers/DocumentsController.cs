@@ -1,4 +1,7 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Application.Common.AccessControl.Models;
+using Application.Common.AccessControl.Models.Operations;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;

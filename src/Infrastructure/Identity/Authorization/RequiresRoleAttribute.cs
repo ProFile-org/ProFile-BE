@@ -3,6 +3,7 @@ using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Infrastructure.Identity.Authorization;
 
@@ -20,17 +21,13 @@ public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
     {
         var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
-        var email = context.HttpContext.User.Claims.SingleOrDefault(y => y.Type.Equals(emailClaim))!.Value;
+        var email = context.HttpContext.User.Claims.SingleOrDefault(y => y.Type.Equals(JwtRegisteredClaimNames.Email))!.Value;
 
         var user = dbContext.Users.FirstOrDefault(x => x.Email!.Equals(email));
 
-        foreach (var claimValue in _claimValues)
+        if (Array.Exists(_claimValues, claimValue => user!.Role.Equals(claimValue)))
         {
-            if (user!.Role.Equals(claimValue))
-            {
-                return;
-            }
+            return;
         }
 
         context.Result = new ForbidResult();

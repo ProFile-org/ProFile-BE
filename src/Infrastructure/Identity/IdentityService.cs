@@ -57,9 +57,7 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
-        
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
         var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
@@ -116,11 +114,11 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("Invalid token.");
         }
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
-        
-        var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users
+            .Include(x => x.Department)
+            .FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -290,9 +288,11 @@ public class IdentityService : IIdentityService
         var authClaims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Username),
+            new(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, utcNow.ToString(CultureInfo.InvariantCulture)),
+            new("departmentId", user.Department!.Id.ToString()),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
         var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};

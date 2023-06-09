@@ -26,6 +26,7 @@ public class GetLockerById
 
         public async Task<LockerDto> Handle(Query request, CancellationToken cancellationToken)
         {
+            
             var locker = await _context.Lockers
                 .Include(x => x.Room)
                 .ThenInclude(x => x.Department)
