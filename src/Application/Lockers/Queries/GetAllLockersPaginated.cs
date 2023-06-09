@@ -36,6 +36,7 @@ public class GetAllLockersPaginated
         public async Task<PaginatedList<LockerDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var lockers = _context.Lockers
+                .Include(x => x.Owner)
                 .Include(x => x.Room)
                 .ThenInclude(y => y.Department)
                 .AsQueryable();

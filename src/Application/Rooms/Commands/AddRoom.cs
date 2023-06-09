@@ -75,6 +75,14 @@ public class AddRoom
                 throw new ConflictException("Room name already exists.");
             }
             
+            var room1 = await _context.Rooms.FirstOrDefaultAsync(r =>
+                r.DepartmentId == request.DepartmentId, cancellationToken);
+    
+            if (room1 is not null)
+            {
+                throw new ConflictException("Room for department already exists.");
+            }
+            
             var entity = new Room
             {
                 Name = request.Name.Trim(),

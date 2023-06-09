@@ -240,6 +240,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -248,10 +251,15 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int>("NumberOfFolders")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("RoomId");
 
@@ -521,11 +529,17 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>
                 {
+                    b.HasOne("Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId");
+
                     b.HasOne("Domain.Entities.Physical.Room", "Room")
                         .WithMany("Lockers")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Owner");
 
                     b.Navigation("Room");
                 });

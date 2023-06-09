@@ -39,6 +39,7 @@ public class AddLocker
         public string? Description { get; init; }
         public Guid RoomId { get; init; }
         public int Capacity { get; init; }
+        public Guid? OwnerId { get; set; }
     }
 
     public class CommandHandler : IRequestHandler<Command, LockerDto>
@@ -75,7 +76,6 @@ public class AddLocker
             {
                 throw new ConflictException("Locker name already exists.");
             }
-
             var entity = new Locker
             {
                 Name = request.Name.Trim(),
@@ -83,8 +83,28 @@ public class AddLocker
                 NumberOfFolders = 0,
                 Capacity = request.Capacity,
                 Room = room,
-                IsAvailable = true
+                IsAvailable = true,
+                IsPrivate = false,
             };
+            
+            if (request.OwnerId is not null)
+            {
+                var owner = await _context.Users
+                    .Include(x => x.Department)
+                    .FirstOrDefaultAsync(x => x.Id == request.OwnerId, cancellationToken);
+                if (owner is null)
+                {
+                    throw new KeyNotFoundException("User does not exist.");
+                }
+
+                if (owner.Department?.Id != room.DepartmentId)
+                {
+                    throw new ConflictException("User does not belong to department.");
+                }
+
+                entity.Owner = owner;
+                entity.IsPrivate = true;
+            }
 
             var result = await _context.Lockers.AddAsync(entity, cancellationToken);
             room.NumberOfLockers += 1;

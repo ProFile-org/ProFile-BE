@@ -74,6 +74,7 @@ public class LockersController : ApiControllerBase
             Description = request.Description,
             Capacity = request.Capacity,
             RoomId = request.RoomId,
+            OwnerId = request.OwnerId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));

@@ -39,6 +39,7 @@ public static class ConfigureServices
             {
                 options.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
                 options.UseNodaTime();
+                options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
         });
 

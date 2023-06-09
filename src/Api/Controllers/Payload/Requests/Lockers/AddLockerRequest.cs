@@ -21,4 +21,6 @@ public class AddLockerRequest
     /// Number of folders this locker can hold
     /// </summary>
     public int Capacity { get; init; }
+
+    public Guid? OwnerId { get; set; }
 }

@@ -24,6 +24,11 @@ public class LockerConfiguration : IEntityTypeConfiguration<Locker>
             .HasForeignKey("RoomId")
             .IsRequired();
 
+        builder.HasOne(x => x.Owner)
+            .WithMany()
+            .HasForeignKey("OwnerId")
+            .IsRequired(false);
+
         builder.Property(x => x.Capacity)
             .IsRequired();
 
@@ -31,6 +36,9 @@ public class LockerConfiguration : IEntityTypeConfiguration<Locker>
             .IsRequired();
         
         builder.Property(x => x.IsAvailable)
+            .IsRequired();
+
+        builder.Property(x => x.IsPrivate)
             .IsRequired();
     }
 }
