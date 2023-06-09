@@ -5,12 +5,12 @@ namespace Domain.Events;
 
 public class UserCreatedEvent : BaseEvent
 {
-    public UserCreatedEvent(string email, string password)
+    public UserCreatedEvent(User user, string password)
     {
-        Email = email;
+        User = user;
         Password = password;
     }
 
-    public string Email { get; }
+    public User User { get; }
     public string Password { get; }
 }
