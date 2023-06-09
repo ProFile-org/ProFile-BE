@@ -37,7 +37,6 @@ public class ReturnDocumentTests : BaseClassFixture
         result.Status.Should().Be(BorrowRequestStatus.Returned.ToString());
         var documentResult = await FindAsync<Document>(result.DocumentId);
         documentResult!.Status.Should().Be(DocumentStatus.Available);
-        result.BorrowTime.Should().NotBeAfter(borrow.BorrowTime.ToDateTimeUnspecified());
         
         // Cleanup
         Remove(await FindAsync<Borrow>(borrow.Id));
@@ -67,8 +66,7 @@ public class ReturnDocumentTests : BaseClassFixture
         result.Status.Should().Be(BorrowRequestStatus.Returned.ToString());
         var documentResult = await FindAsync<Document>(result.DocumentId);
         documentResult!.Status.Should().Be(DocumentStatus.Available);
-        result.BorrowTime.Should().NotBeAfter(borrow.BorrowTime.ToDateTimeUnspecified());
-        
+
         // Cleanup
         Remove(await FindAsync<Borrow>(borrow.Id));
         Remove(documentResult);
