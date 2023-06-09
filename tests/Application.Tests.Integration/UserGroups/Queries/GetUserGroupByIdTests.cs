@@ -35,7 +35,7 @@ public class GetUserGroupByIdTests : BaseClassFixture
     }
 
     [Fact]
-    public async Task ShouldThrowKeyNotFoundException_WhenUsergroupDoesNotExist()
+    public async Task ShouldThrowKeyNotFoundException_WhenUserGroupDoesNotExist()
     {
         // Arrange
         var query = new GetUserGroupById.Query()
