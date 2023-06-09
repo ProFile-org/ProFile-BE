@@ -8,6 +8,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - PROFILE_DatabaseSettings__ConnectionString=Server=database;Port=5432;Database=mydb;User ID=profiletest;Password=supasecured;
+      - PROFILE_JweSettings__SigningKeyId=4bd28be8eac5414fb01c5cbe343b50144bd28be8eac5414fb01c5cbe343b50144bd28be8eac5414fb01c5cbe343b50144bd28be8eac5414fb01c5cbe343b50144bd28be8eac5414fb01c5cbe343b5014
+      - PROFILE_JweSettings__EncryptionKeyId=4bd28be8eac5414fb01c5cbe343b5014
+      - PROFILE_JweSettings__TokenLifetime=00:20:00
+      - PROFILE_JweSettings__RefreshTokenLifetimeInDays=3
+      - PROFILE_MailSettings__ClientUrl=https://send.api.mailtrap.io/api/send
+      - PROFILE_MailSettings__Token=745f040659edff0ce87b545567da72d2
+      - PROFILE_MailSettings__SenderName=ProFile
+      - PROFILE_MailSettings__SenderEmail=profile@ezarp.dev
+      - PROFILE_MailSettings__TemplateUuid=9d6a8f25-65e9-4819-be7d-106ce077acf1
     depends_on:
       database:
         condition: service_started

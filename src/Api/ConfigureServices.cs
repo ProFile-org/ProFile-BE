@@ -1,4 +1,5 @@
 using System.Reflection;
+using Api.Common;
 using Api.Middlewares;
 using Api.Policies;
 using Api.Services;
@@ -10,8 +11,11 @@ namespace Api;
 
 public static class ConfigureServices
 {
-    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    public static IServiceCollection AddApiServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // TODO: Move this away in the future
+        var frontendBaseUrl = configuration.GetValue<string>("BASE_FRONTEND_URL") ?? "http://localhost";
+        
         // Register services
         services.AddServices();
         
@@ -22,9 +26,17 @@ public static class ConfigureServices
         
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowAllOrigins", builder =>
+            options.AddPolicy(CORSPolicy.Development, builder =>
             {
-                builder.WithOrigins("http://localhost:3000");
+                builder.SetIsOriginAllowed(_ => true);
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+                builder.AllowCredentials();
+            });
+            
+            options.AddPolicy(CORSPolicy.Production, builder =>
+            {
+                builder.WithOrigins(frontendBaseUrl);
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();
                 builder.AllowCredentials();
