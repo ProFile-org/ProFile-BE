@@ -1,3 +1,7 @@
+using Application.AuthorizationRequirements;
+using Application.Common.AbstractClasses;
+using Application.Common.AccessControl.Models;
+using Application.Common.AccessControl.Models.Operations;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -12,7 +16,23 @@ public class GetLockerById
     {
         public Guid LockerId { get; init; }
     }
-    
+
+    public class Authorizer : AbstractRequestAuthorizer<Query>
+    {
+        public override void BuildPolicy(Query request)
+        {
+            UseRequirement(new MustBeGrantedRequirement()
+            {
+                Resource = new PhysicalResource()
+                {
+                    Id = request.LockerId,
+                    Type = ResourceType.Locker,
+                },
+                
+                Operation = LockerOperation.Read
+            });
+        }
+    }
     public class QueryHandler : IRequestHandler<Query, LockerDto>
     {
         private readonly IApplicationDbContext _context;
