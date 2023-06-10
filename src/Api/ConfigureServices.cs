@@ -14,7 +14,7 @@ public static class ConfigureServices
     {
         // Register services
         services.AddServices();
-        services.AddHostedService<BorrowRequestService>();
+        services.AddBackgroundServices();
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
 
@@ -56,6 +56,13 @@ public static class ConfigureServices
         // In order for ExceptionMiddleware to work
         services.AddScoped<ExceptionMiddleware>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        services.AddHostedService<BorrowRequestService>();
 
         return services;
     }

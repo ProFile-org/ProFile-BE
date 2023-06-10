@@ -32,11 +32,11 @@ public class BorrowRequestService : BackgroundService
                 foreach (var request in overdueRequests)
                 {
                     request.Status = BorrowRequestStatus.Overdue;
-                    context.Borrows.Update(request);
                 }
-
+                context.UpdateRange(overdueRequests);
+                
                 await context.SaveChangesAsync(stoppingToken);
-                await Task.Delay(TimeSpan.FromMinutes(20), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(2), stoppingToken);
             }
         }
     }
