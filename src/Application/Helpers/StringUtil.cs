@@ -16,4 +16,8 @@ public class StringUtil
 
         return stringBuilder.ToString();
     }
+
+    public static string RandomPassword() => RandomString(8);
+
+    public static string RandomSalt() => RandomString(24);
 }
