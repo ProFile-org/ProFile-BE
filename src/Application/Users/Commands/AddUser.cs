@@ -66,11 +66,13 @@ public class AddUser
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly ISecurityService _securityService;
 
-        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper)
+        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService)
         {
             _context = context;
             _mapper = mapper;
+            _securityService = securityService;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
@@ -91,11 +93,14 @@ public class AddUser
                 throw new KeyNotFoundException("Department does not exist.");
             }
 
-            var password = StringUtil.RandomString(8);
+            var password = StringUtil.RandomPassword();
+            var salt = StringUtil.RandomSalt();
+            
             var entity = new User
             {
                 Username = request.Username,
-                PasswordHash = SecurityUtil.Hash(password),
+                PasswordHash = _securityService.Hash(password, salt),
+                PasswordSalt = salt,
                 Email = request.Email,
                 FirstName = request.FirstName?.Trim(),
                 LastName = request.LastName?.Trim(),
