@@ -1,3 +1,5 @@
+using Application.AuthorizationRequirements;
+using Application.Common.AbstractClasses;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Helpers;
@@ -61,7 +63,7 @@ public class AddUser
         public string Role { get; init; } = null!;
         public string? Position { get; init; }
     }
-
+    
     public class AddUserCommandHandler : IRequestHandler<Command, UserDto>
     {
         private readonly IApplicationDbContext _context;
