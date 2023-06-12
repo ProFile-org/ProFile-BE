@@ -28,6 +28,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<Borrow> Borrows => Set<Borrow>();
+    public DbSet<Permission> Permissions => Set<Permission>();
     
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<FileEntity> Files => Set<FileEntity>();
