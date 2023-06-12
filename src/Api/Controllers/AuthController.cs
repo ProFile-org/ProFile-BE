@@ -116,6 +116,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
     
+    [HttpPost]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (string.IsNullOrEmpty(request.NewPassword))
