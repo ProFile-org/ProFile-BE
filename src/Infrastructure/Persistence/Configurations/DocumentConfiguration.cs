@@ -46,5 +46,8 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .WithOne()
             .HasForeignKey<Document>(x => x.EntryId)
             .IsRequired(false);
+
+        builder.Property(x => x.IsPrivate)
+            .IsRequired();
     }
 }

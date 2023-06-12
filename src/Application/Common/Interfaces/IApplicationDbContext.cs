@@ -28,6 +28,7 @@ public interface IApplicationDbContext
     public DbSet<FolderLog> FolderLogs { get; }
     public DbSet<DocumentLog> DocumentLogs { get; }
     public DbSet<RequestLog> RequestLogs { get; }
+    public DbSet<UserLog> UserLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

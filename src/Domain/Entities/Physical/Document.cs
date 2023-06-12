@@ -14,6 +14,7 @@ public class Document : BaseAuditableEntity
     public Folder? Folder { get; set; }
     public DocumentStatus Status { get; set; }
     public Guid? EntryId { get; set; }
+    public bool IsPrivate { get; set; }
     
     public virtual Entry? Entry { get; set; }
 }

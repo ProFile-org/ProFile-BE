@@ -42,6 +42,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<FolderLog> FolderLogs => Set<FolderLog>();
     public DbSet<DocumentLog> DocumentLogs => Set<DocumentLog>();
     public DbSet<RequestLog> RequestLogs => Set<RequestLog>();
+    public DbSet<UserLog> UserLogs => Set<UserLog>();
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
