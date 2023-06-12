@@ -3,7 +3,6 @@ using Application.Identity;
 using Domain.Entities;
 using Infrastructure.Shared;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using NodaTime;
 using Serilog;
 
@@ -49,6 +48,36 @@ public class ApplicationDbContextSeed
             Role = IdentityData.Roles.Admin,
         };
         
+        salt = StringUtil.RandomSalt();
+        var staff = new User()
+        {
+            Username = "staff", 
+            Email = "staff@profile.dev", 
+            PasswordHash = "staff".HashPasswordWith(salt, pepper),
+            PasswordSalt = salt,
+            IsActive = true,
+            IsActivated = true,
+            Created = LocalDateTime.FromDateTime(DateTime.UtcNow),
+            Role = IdentityData.Roles.Staff,
+        };
+        
+        var itDepartment = new Department()
+        {
+            Name = "IT"
+        };
+        salt = StringUtil.RandomSalt();
+        var employee = new User()
+        {
+            Username = "employee", 
+            Email = "employee@profile.dev", 
+            PasswordHash = "employee".HashPasswordWith(salt, pepper),
+            PasswordSalt = salt,
+            IsActive = true,
+            IsActivated = true,
+            Created = LocalDateTime.FromDateTime(DateTime.UtcNow),
+            Role = IdentityData.Roles.Employee,
+        };
+        
         if (context.Departments.All(u => u.Name != department.Name))
         {
             await context.Departments.AddAsync(department);
@@ -56,6 +85,11 @@ public class ApplicationDbContextSeed
             {
                 admin.Department = department;
                 await context.Users.AddAsync(admin);
+            }
+            if (context.Users.All(u => u.Username != staff.Username))
+            {
+                staff.Department = department;
+                await context.Users.AddAsync(staff);
             }
         }
         else
@@ -65,6 +99,30 @@ public class ApplicationDbContextSeed
             {
                 admin.Department = departmentEntity;
                 await context.Users.AddAsync(admin);
+            }
+            if (context.Users.All(u => u.Username != staff.Username))
+            {
+                staff.Department = departmentEntity;
+                await context.Users.AddAsync(staff);
+            }
+        }
+        
+        if (context.Departments.All(u => u.Name != itDepartment.Name))
+        {
+            await context.Departments.AddAsync(itDepartment);
+            if (context.Users.All(u => u.Username != employee.Username))
+            {
+                employee.Department = itDepartment;
+                await context.Users.AddAsync(employee);
+            }
+        }
+        else
+        {
+            var departmentEntity = context.Departments.Single(x => x.Name.Equals(itDepartment.Name));
+            if (context.Users.All(u => u.Username != employee.Username))
+            {
+                employee.Department = departmentEntity;
+                await context.Users.AddAsync(employee);
             }
         }
 
