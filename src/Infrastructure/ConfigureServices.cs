@@ -20,6 +20,7 @@ public static class ConfigureServices
         services.AddScoped<IApplicationDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IAuthDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPermissionManager, PermissionManager>();
         services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);
