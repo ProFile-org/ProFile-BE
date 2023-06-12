@@ -2,6 +2,7 @@ using System.Reflection;
 using Application.Common.Interfaces;
 using Domain.Entities;
 using Domain.Entities.Digital;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Infrastructure.Common;
 using MediatR;
@@ -34,6 +35,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ResetPasswordToken> ResetPasswordTokens => Set<ResetPasswordToken>();
+    
+    public DbSet<RoomLog> RoomLogs => Set<RoomLog>();
+    public DbSet<LockerLog> LockerLogs => Set<LockerLog>();
+    public DbSet<FolderLog> FolderLogs => Set<FolderLog>();
+    public DbSet<DocumentLog> DocumentLogs => Set<DocumentLog>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

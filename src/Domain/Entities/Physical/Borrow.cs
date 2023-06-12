@@ -4,7 +4,7 @@ using NodaTime;
 
 namespace Domain.Entities.Physical;
 
-public class Borrow : BaseEntity
+public class Borrow : BaseAuditableEntity
 {
     public User Borrower { get; set; } = null!;
     public Document Document { get; set; } = null!;

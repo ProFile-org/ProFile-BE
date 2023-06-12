@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.Entities.Digital;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,11 @@ public interface IApplicationDbContext
     public DbSet<UserGroup> UserGroups { get; }
     public DbSet<FileEntity> Files { get; }
     public DbSet<Entry> Entries { get; }
+    
+    public DbSet<RoomLog> RoomLogs { get; }
+    public DbSet<LockerLog> LockerLogs { get; }
+    public DbSet<FolderLog> FolderLogs { get; }
+    public DbSet<DocumentLog> DocumentLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

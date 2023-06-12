@@ -4,7 +4,7 @@ using Domain.Statuses;
 
 namespace Domain.Entities.Physical;
 
-public class Document : BaseEntity
+public class Document : BaseAuditableEntity
 {
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
