@@ -177,4 +177,30 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
+    
+    /// <summary>
+    /// Get all documents of a user.
+    /// </summary>
+    /// <param name="userId">Id of the user</param>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of DocumentDtos of the user.</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("user/{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentDto>>> GetDocumentsOfUserPaginated([FromRoute] Guid userId,
+        [FromQuery] GetDocumentsOfUserPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetDocumentsOfUserPaginated.Query()
+        {
+            UserId = userId,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
+    }
 }
