@@ -12,6 +12,7 @@ public class IssuedDocumentDto : IMapFrom<Document>
     public string DocumentType { get; set; } = null!;
     public IssuerDto? Issuer { get; set; }
     public string Status { get; set; } = null!;
+    public bool IsPrivate { get; set; }
         
     public void Mapping(Profile profile)
     {

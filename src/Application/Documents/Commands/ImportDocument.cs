@@ -77,7 +77,7 @@ public class ImportDocument
                 Importer = importer,
                 Department = importer.Department,
                 Folder = folder,
-                Status = DocumentStatus.Issued,
+                Status = DocumentStatus.Available,
                 IsPrivate = request.IsPrivate,
                 Created = LocalDateTime.FromDateTime(DateTime.Now),
                 CreatedBy = performingUser!.Id,

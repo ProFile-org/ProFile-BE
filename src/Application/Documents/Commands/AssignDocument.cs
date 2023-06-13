@@ -4,7 +4,6 @@ using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Logging;
-using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +11,13 @@ using NodaTime;
 
 namespace Application.Documents.Commands;
 
-public class CheckinDocument
+public class AssignDocument
 {
     public record Command : IRequest<DocumentDto>
     {
         public Guid PerformingUserId { get; init; }
         public Guid DocumentId { get; init; }
+        public Guid FolderId { get; init; }
     }
 
     public class CommandHandler : IRequestHandler<Command, DocumentDto>
@@ -34,40 +34,55 @@ public class CheckinDocument
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var document = await _context.Documents
-                    .Include(x => x.Department)
-                    .Include(x => x.Folder)
-                    .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
-
+                .Include(x => x.Folder)
+                .FirstOrDefaultAsync(x =>
+                x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {
-                throw new KeyNotFoundException("Document does not exist.");
+                throw new ConflictException("Document does not exist.");
             }
-            
+
             if (document.Status is not DocumentStatus.Approved)
             {
-                throw new ConflictException("Request cannot be checked in.");
+                throw new ConflictException("Document cannot be assigned.");
             }
-            
-            if (document.Folder is null)
+
+            var folder = await _context.Folders
+                .FirstOrDefaultAsync(x => x.Id == request.FolderId, cancellationToken);
+
+            if (folder is null)
             {
-                throw new ConflictException("Request cannot be checked in.");
+                throw new ConflictException("Folder does not exist.");
+            }
+
+            if (folder.NumberOfDocuments >= folder.Capacity)
+            {
+                throw new ConflictException("This folder cannot accept more documents.");
             }
 
             var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-            document.Status = DocumentStatus.Available;
+            document.Folder = folder;
             document.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
             document.LastModifiedBy = performingUser!.Id;
             var log = new DocumentLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
                 Object = document,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
-                Action = DocumentLogMessages.Import.Checkin,
+                User = performingUser!,
+                UserId = performingUser!.Id,
+                Action = DocumentLogMessages.Import.Assign,
             };
-
+            var folderLog = new FolderLog()
+            {
+                Object = folder,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                User = performingUser!,
+                UserId = performingUser!.Id,
+                Action = FolderLogMessage.AssignDocument,
+            };
             var result = _context.Documents.Update(document);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
+            await _context.FolderLogs.AddAsync(folderLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(result.Entity);
         }

@@ -30,13 +30,10 @@ public class RequestImportDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        private readonly ILogger<CommandHandler> _logger;
-
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, ILogger<CommandHandler> logger)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _logger = logger;
         }
 
         public async Task<IssuedDocumentDto> Handle(Command request, CancellationToken cancellationToken)
@@ -66,6 +63,7 @@ public class RequestImportDocument
                 Importer = issuer,
                 Department = issuer.Department,
                 Status = DocumentStatus.Issued,
+                IsPrivate = request.IsPrivate,
                 Created = LocalDateTime.FromDateTime(DateTime.Now),
                 CreatedBy = issuer.Id,
             };
@@ -75,7 +73,7 @@ public class RequestImportDocument
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 User = issuer,
                 UserId = issuer.Id,
-                Action = DocumentLogMessages.Import.NewImportRequest
+                Action = DocumentLogMessages.Import.NewImportRequest,
             };
 
             var result = await _context.Documents.AddAsync(entity, cancellationToken);

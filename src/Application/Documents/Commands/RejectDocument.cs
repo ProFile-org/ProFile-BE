@@ -32,7 +32,9 @@ public class RejectDocument
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var document = await _context.Documents.FirstOrDefaultAsync(x =>
+            var document = await _context.Documents
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x =>
                 x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {
