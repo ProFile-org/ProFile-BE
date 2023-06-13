@@ -72,7 +72,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters"></param>
     /// <returns></returns>
-    [HttpGet("get-self-documents/{employeeId:guid}")]
+    [HttpGet("get-self-documents")]
     [RequiresRole(IdentityData.Roles.Employee)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetSelfPaginated(
