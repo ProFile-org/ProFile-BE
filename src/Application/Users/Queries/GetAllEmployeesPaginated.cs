@@ -19,7 +19,7 @@ public class GetAllEmployeesPaginated
         public string? SortOrder { get; init; }
     }
 
-    public class QueryHandler : IRequestHandler<Query, PaginatedList<UserDto>>
+    public class Handler : IRequestHandler<Query, PaginatedList<UserDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
