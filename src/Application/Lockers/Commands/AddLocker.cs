@@ -1,12 +1,16 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using Org.BouncyCastle.Math.EC.Rfc8032;
 
 namespace Application.Lockers.Commands;
 
@@ -35,6 +39,7 @@ public class AddLocker
 
     public record Command : IRequest<LockerDto>
     {
+        public Guid PerformingUserId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public Guid RoomId { get; init; }
@@ -76,6 +81,7 @@ public class AddLocker
                 throw new ConflictException("Locker name already exists.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var entity = new Locker
             {
                 Name = request.Name.Trim(),
@@ -83,12 +89,23 @@ public class AddLocker
                 NumberOfFolders = 0,
                 Capacity = request.Capacity,
                 Room = room,
-                IsAvailable = true
+                IsAvailable = true,
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = performingUser!.Id,
+            };
+            var log = new LockerLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = entity,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = LockerLogMessage.Add,
             };
 
             var result = await _context.Lockers.AddAsync(entity, cancellationToken);
             room.NumberOfLockers += 1;
             _context.Rooms.Update(room);
+            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<LockerDto>(result.Entity);
         }

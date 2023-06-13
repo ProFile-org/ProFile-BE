@@ -1,12 +1,15 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Folders.Commands;
 
@@ -36,6 +39,7 @@ public class AddFolder
 
     public record Command : IRequest<FolderDto>
     {
+        public Guid PerformingUserId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
@@ -76,6 +80,7 @@ public class AddFolder
                 throw new ConflictException("Folder name already exists.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var entity = new Folder
             {
                 Name = request.Name.Trim(),
@@ -83,11 +88,22 @@ public class AddFolder
                 NumberOfDocuments = 0,
                 Capacity = request.Capacity,
                 Locker = locker,
-                IsAvailable = true
+                IsAvailable = true,
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = performingUser!.Id,
+            };
+            var log = new FolderLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = entity,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = FolderLogMessage.Add,
             };
             var result = await _context.Folders.AddAsync(entity, cancellationToken);
             locker.NumberOfFolders += 1;
             _context.Lockers.Update(locker);
+            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<FolderDto>(result.Entity);
         }

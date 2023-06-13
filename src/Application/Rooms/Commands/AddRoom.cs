@@ -1,11 +1,14 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Rooms.Commands;
 
@@ -41,6 +44,7 @@ public class AddRoom
     
     public record Command : IRequest<RoomDto>
     {
+        public Guid PerformingUserId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
@@ -75,6 +79,7 @@ public class AddRoom
                 throw new ConflictException("Room name already exists.");
             }
             
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var entity = new Room
             {
                 Name = request.Name.Trim(),
@@ -84,8 +89,19 @@ public class AddRoom
                 Department = department,
                 DepartmentId = request.DepartmentId,
                 IsAvailable = true,
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = performingUser!.Id,
+            };
+            var log = new RoomLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = entity,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = RoomLogMessage.Add,
             };
             var result = await _context.Rooms.AddAsync(entity, cancellationToken);
+            await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<RoomDto>(result.Entity);
         }
