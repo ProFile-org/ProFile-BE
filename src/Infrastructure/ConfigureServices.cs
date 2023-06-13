@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Application.Common.Interfaces;
 using Infrastructure.Identity;
@@ -83,7 +84,7 @@ public static class ConfigureServices
         services.AddSingleton(encryptionKey);
         services.AddSingleton(signingKey);
         services.AddSingleton(tokenValidationParameters);
-
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         services.AddAuthentication(JweAuthenticationOptions.DefaultScheme)
             .AddScheme<JweAuthenticationOptions, JweAuthenticationHandler>(JweAuthenticationOptions.DefaultScheme,
                 options =>
