@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
+using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Logging;
@@ -15,7 +16,7 @@ namespace Application.Documents.Commands;
 
 public class ImportDocument
 {
-    public record Command : IRequest<DocumentDto>
+    public record Command : IRequest<IssuedDocumentDto>
     {
         public string Title { get; init; } = null!;
         public string? Description { get; init; }
@@ -24,7 +25,7 @@ public class ImportDocument
         public bool IsPrivate { get; init; }
     }
 
-    public class CommandHandler : IRequestHandler<Command, DocumentDto>
+    public class CommandHandler : IRequestHandler<Command, IssuedDocumentDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -38,7 +39,7 @@ public class ImportDocument
             _logger = logger;
         }
 
-        public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<IssuedDocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var importer = await _context.Users
                 .Include(x => x.Department)
@@ -82,7 +83,7 @@ public class ImportDocument
             var result = await _context.Documents.AddAsync(entity, cancellationToken);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<DocumentDto>(result.Entity);
+            return _mapper.Map<IssuedDocumentDto>(result.Entity);
         }
     }
 }

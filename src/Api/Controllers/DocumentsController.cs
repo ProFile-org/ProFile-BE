@@ -1,10 +1,13 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
 using Application.Identity;
+using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,6 +41,38 @@ public class DocumentsController : ApiControllerBase
         return Ok(Result<DocumentDto>.Succeed(result));
     }
 
+    /// <summary>
+    /// Get all documents paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all documents query parameters</param>
+    /// <returns>A paginated list of DocumentDto</returns>
+    [RequiresRole(IdentityData.Roles.Staff)]
+    [HttpGet("issued")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<PaginatedList<IssuedDocumentDto>>>> GetAllIssuedPaginated(
+        [FromQuery] GetAllIssuedPaginatedQueryParameters queryParameters)
+    {
+        var departmentId = _currentUserService.GetCurrentDepartmentForStaff();
+        if (departmentId is null)
+        {
+            return Result<PaginatedList<IssuedDocumentDto>>.Fail(new Exception("Staff does not have a room"));
+        }
+        var query = new GetAllIssuedDocumentsPaginated.Query()
+        {
+            DepartmentId = departmentId.Value,
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<IssuedDocumentDto>>.Succeed(result));
+    }
+    
     /// <summary>
     /// Get all documents paginated
     /// </summary>
@@ -92,7 +127,7 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] ImportDocumentRequest request)
+    public async Task<ActionResult<Result<IssuedDocumentDto>>> Import([FromBody] ImportDocumentRequest request)
     {
         var userId = _currentUserService.GetId();
         var command = new ImportDocument.Command()
@@ -104,7 +139,7 @@ public class DocumentsController : ApiControllerBase
             IsPrivate = request.IsPrivate,
         };
         var result = await Mediator.Send(command);
-        return Ok(Result<DocumentDto>.Succeed(result));
+        return Ok(Result<IssuedDocumentDto>.Succeed(result));
     }
 
     /// <summary>
