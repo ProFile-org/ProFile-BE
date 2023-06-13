@@ -33,6 +33,7 @@ public class UpdateBorrow
 
     public record Command : IRequest<BorrowDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid BorrowId { get; init; }
         public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }

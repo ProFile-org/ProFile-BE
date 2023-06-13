@@ -13,6 +13,7 @@ public class ReturnDocument
 {
     public record Command : IRequest<BorrowDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid DocumentId { get; init; }
     }
 

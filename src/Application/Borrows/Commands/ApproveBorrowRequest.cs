@@ -1,7 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ public class ApproveBorrowRequest
 {
     public record Command : IRequest<BorrowDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid BorrowId { get; init; }
     }
 
@@ -71,8 +74,26 @@ public class ApproveBorrowRequest
                 }
             }
             
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             borrowRequest.Status = BorrowRequestStatus.Approved;
+            var log = new DocumentLog()
+            {
+                Object = borrowRequest.Document,
+                UserId = performingUser!.Id,
+                User = performingUser,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = DocumentLogMessages.Borrow.Approve,
+            };
+            var requestLog = new RequestLog()
+            {
+                Object = borrowRequest.Document,
+                UserId = performingUser.Id,
+                User = performingUser,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = DocumentLogMessages.Borrow.Approve,
+            };
             var result = _context.Borrows.Update(borrowRequest);
+            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BorrowDto>(result.Entity);
         }

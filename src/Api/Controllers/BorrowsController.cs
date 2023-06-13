@@ -187,8 +187,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<BorrowDto>>> ApproveRequest([FromRoute] Guid borrowId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new ApproveBorrowRequest.Command()
         {
+            PerformingUserId = performingUserId,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
@@ -208,8 +210,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<BorrowDto>>> RejectRequest([FromRoute] Guid borrowId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new RejectBorrowRequest.Command()
         {
+            PerformingUserId = performingUserId,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
@@ -229,8 +233,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<BorrowDto>>> Checkout([FromRoute] Guid borrowId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new CheckoutDocument.Command()
         {
+            PerformingUserId = performingUserId,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
@@ -250,8 +256,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<BorrowDto>>> Return([FromRoute] Guid documentId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new ReturnDocument.Command()
         {
+            PerformingUserId = performingUserId,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(command);
@@ -274,8 +282,10 @@ public class BorrowsController : ApiControllerBase
         [FromRoute] Guid borrowId,
         [FromBody] UpdateBorrowRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new UpdateBorrow.Command()
         {
+            PerformingUserId = performingUserId,
             BorrowId = borrowId,
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,
@@ -298,8 +308,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<BorrowDto>>> Cancel([FromRoute] Guid borrowId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new CancelBorrowRequest.Command()
         {
+            PerformingUserId = performingUserId,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);

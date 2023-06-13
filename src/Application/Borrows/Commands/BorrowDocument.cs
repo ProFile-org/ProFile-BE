@@ -1,7 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
@@ -130,8 +132,17 @@ public class BorrowDocument
                 Reason = request.Reason,
                 Status = BorrowRequestStatus.Pending,
             };
+            var log = new DocumentLog()
+            {
+                UserId = user.Id,
+                User = user,
+                Object = document,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = DocumentLogMessages.Borrow.NewBorrowRequest,
+            };
 
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);
+            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return _mapper.Map<BorrowDto>(result.Entity);

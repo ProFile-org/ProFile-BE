@@ -12,6 +12,7 @@ public class RejectBorrowRequest
 {
     public record Command : IRequest<BorrowDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid BorrowId { get; init; }
     }
     
