@@ -1,9 +1,12 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Staffs.Commands;
 
@@ -11,6 +14,7 @@ public class RemoveStaff
 {
     public record Command : IRequest<StaffDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid StaffId { get; init; }
     }
     
@@ -37,7 +41,17 @@ public class RemoveStaff
                 throw new KeyNotFoundException("Staff does not exist.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            var log = new UserLog()
+            {
+                User = performingUser!,
+                UserId = performingUser!.Id,
+                Object = staff.User,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = UserLogMessages.Staff.Remove,
+            };
             var result = _context.Staffs.Remove(staff);
+            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<StaffDto>(result.Entity);
         }

@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Staffs;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
@@ -11,6 +12,13 @@ namespace Api.Controllers;
 
 public class StaffsController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public StaffsController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a staff by id
     /// </summary>
@@ -84,8 +92,10 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] AddStaffRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new AddStaff.Command()
         {
+            PerformingUserId = performingUserId,
             RoomId = request.RoomId,
             UserId = request.UserId,
         };
@@ -106,8 +116,10 @@ public class StaffsController : ApiControllerBase
     public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
         [FromRoute] Guid staffId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new RemoveStaffFromRoom.Command()
         {
+            PerformingUserId = performingUserId,
             StaffId = staffId,
         };
         var result = await Mediator.Send(command);
@@ -126,8 +138,10 @@ public class StaffsController : ApiControllerBase
     public async Task<ActionResult<Result<StaffDto>>> Remove(
         [FromRoute] Guid staffId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new RemoveStaff.Command()
         {
+            PerformingUserId = performingUserId,
             StaffId = staffId
         };
 

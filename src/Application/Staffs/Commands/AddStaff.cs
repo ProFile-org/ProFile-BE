@@ -1,10 +1,13 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Staffs.Commands;
 
@@ -12,6 +15,7 @@ public class AddStaff
 {
     public record Command : IRequest<StaffDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid UserId { get; init; }
         public Guid? RoomId { get; init; }
     }
@@ -46,6 +50,7 @@ public class AddStaff
                 .Include(x => x.Room)
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == user.Id, cancellationToken);
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             if (existedStaff is not null)
             {
                 if (existedStaff.Room is not null)
@@ -54,7 +59,16 @@ public class AddStaff
                 }
 
                 existedStaff.Room = room;
+                var log = new UserLog()
+                {
+                    User = performingUser!,
+                    UserId = performingUser!.Id,
+                    Object = user,
+                    Time = LocalDateTime.FromDateTime(DateTime.Now),
+                    Action = UserLogMessages.Staff.AddStaff(room.Id.ToString()),
+                };
                 var result = _context.Staffs.Update(existedStaff);
+                await _context.UserLogs.AddAsync(log, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
                 return _mapper.Map<StaffDto>(result.Entity);
             }
@@ -64,10 +78,19 @@ public class AddStaff
                 {
                     Id = user.Id,
                     User = user,
-                    Room = room
+                    Room = room,
+                };
+                var log = new UserLog()
+                {
+                    User = performingUser!,
+                    UserId = performingUser!.Id,
+                    Object = user,
+                    Time = LocalDateTime.FromDateTime(DateTime.Now),
+                    Action = UserLogMessages.Staff.AddStaff(room.Id.ToString()),
                 };
 
                 var result = await _context.Staffs.AddAsync(staff, cancellationToken);
+                await _context.UserLogs.AddAsync(log, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
                 return _mapper.Map<StaffDto>(result.Entity);
             }

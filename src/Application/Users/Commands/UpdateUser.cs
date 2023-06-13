@@ -1,9 +1,12 @@
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Users.Queries;
 using AutoMapper;
+using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Users.Commands;
 
@@ -27,6 +30,7 @@ public class UpdateUser
     }
     public record Command : IRequest<UserDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid UserId { get; init; }
         public string? FirstName { get; init; }
         public string? LastName { get; init; }
@@ -54,11 +58,22 @@ public class UpdateUser
                 throw new KeyNotFoundException("User does not exist.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
             user.Position = request.Position;
-
+            user.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            user.LastModifiedBy = performingUser!.Id;
+            var log = new UserLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = user,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = UserLogMessages.Update,
+            };
             var result = _context.Users.Update(user);
+            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
         }
