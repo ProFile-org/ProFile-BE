@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Application.Borrows.Commands;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
@@ -233,6 +234,48 @@ public class DocumentsController : ApiControllerBase
     {
         var query = new DeleteDocument.Command()
         {
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Approve a document request
+    /// </summary>
+    /// <param name="documentId">Id of the document to be approved</param>
+    /// <returns>A DocumentDto of the approved document</returns>    
+    [HttpPost("approve/{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentDto>>> Approve([FromRoute] Guid documentId)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var query = new ApproveDocument.Command()
+        {
+            PerformingUserId = performingUserId,
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Reject a document request
+    /// </summary>
+    /// <param name="documentId">Id of the document to be rejected</param>
+    /// <returns>A DocumentDto of the rejected document</returns>    
+    [HttpPost("reject/{documentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentDto>>> Reject([FromRoute] Guid documentId)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var query = new RejectDocument.Command()
+        {
+            PerformingUserId = performingUserId,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(query);
