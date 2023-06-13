@@ -17,4 +17,5 @@ public class ImportDocumentRequest
     /// Document type of the document to be imported
     /// </summary>
     public string DocumentType { get; set; } = null!;
+    public bool IsPrivate { get; set; }
 }

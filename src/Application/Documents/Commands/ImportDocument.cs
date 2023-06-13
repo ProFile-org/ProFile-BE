@@ -21,6 +21,7 @@ public class ImportDocument
         public string? Description { get; init; }
         public string DocumentType { get; init; } = null!;
         public Guid ImporterId { get; init; }
+        public bool IsPrivate { get; init; }
     }
 
     public class CommandHandler : IRequestHandler<Command, DocumentDto>
@@ -64,6 +65,9 @@ public class ImportDocument
                 Importer = importer,
                 Department = importer.Department,
                 Status = DocumentStatus.Issued,
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = importer.Id,
+                IsPrivate = request.IsPrivate,
             };
 
             var log = new DocumentLog()
