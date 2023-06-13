@@ -207,7 +207,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId"></param>
     /// <returns>A DocumentDto of the imported document</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("{documentId:guid}/checkin")]
+    [HttpPost("checkin{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -276,7 +276,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be approved</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the approved document</returns>    
-    [HttpPost("{documentId:guid}/approve")]
+    [HttpPost("approve/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -301,7 +301,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
-    [HttpPost("{documentId:guid}/reject")]
+    [HttpPost("reject/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -326,7 +326,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <returns>A DocumentDto of the rejected document</returns>    
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("{documentId:guid}/reason")]
+    [HttpPost("reason/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
