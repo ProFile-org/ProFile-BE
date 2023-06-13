@@ -17,8 +17,9 @@ public class ApproveDocument
 {
     public record Command : IRequest<DocumentDto>
     {
-        public Guid PerformingUserId { get; set; }
-        public Guid DocumentId { get; set; }
+        public Guid PerformingUserId { get; init; }
+        public Guid DocumentId { get; init; }
+        public string Reason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, DocumentDto>
@@ -58,8 +59,18 @@ public class ApproveDocument
                 UserId = performingUser!.Id,
                 Action = DocumentLogMessages.Import.Approve,
             };
+            var requestLog = new RequestLog()
+            {
+                Object = document,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                User = performingUser,
+                UserId = performingUser.Id,
+                Action = RequestLogMessages.ApproveImport,
+                Reason = request.Reason,
+            };
             var result = _context.Documents.Update(document);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
+            await _context.RequestLogs.AddAsync(requestLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(result.Entity);
         }

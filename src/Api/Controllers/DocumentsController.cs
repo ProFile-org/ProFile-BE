@@ -1,14 +1,13 @@
 using Api.Controllers.Payload.Requests.Documents;
-using Application.Borrows.Commands;
-using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
 using Application.Identity;
-using FluentValidation.Results;
+using Domain.Enums;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -270,47 +269,77 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Approve a document request
     /// </summary>
     /// <param name="documentId">Id of the document to be approved</param>
+    /// <param name="request"></param>
     /// <returns>A DocumentDto of the approved document</returns>    
     [HttpPost("{documentId:guid}/approve")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> Approve([FromRoute] Guid documentId)
+    public async Task<ActionResult<Result<DocumentDto>>> Approve(
+        [FromRoute] Guid documentId,
+        [FromBody] ApproveImportRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var query = new ApproveDocument.Command()
         {
             PerformingUserId = performingUserId,
             DocumentId = documentId,
+            Reason = request.Reason,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Reject a document request
     /// </summary>
     /// <param name="documentId">Id of the document to be rejected</param>
+    /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
     [HttpPost("{documentId:guid}/reject")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> Reject([FromRoute] Guid documentId)
+    public async Task<ActionResult<Result<DocumentDto>>> Reject(
+        [FromRoute] Guid documentId,
+        [FromBody] RejectImportRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var query = new RejectDocument.Command()
         {
             PerformingUserId = performingUserId,
             DocumentId = documentId,
+            Reason = request.Reason,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get a document request reason
+    /// </summary>
+    /// <param name="documentId">Id of the document to be rejected</param>
+    /// <returns>A DocumentDto of the rejected document</returns>    
+    [RequiresRole(IdentityData.Roles.Staff)]
+    [HttpPost("{documentId:guid}/reason")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<ReasonDto>>> Reason(
+        [FromRoute] Guid documentId)
+    {
+        var query = new GetDocumentReason.Query()
+        {
+            DocumentId = documentId,
+            Type = RequestType.Import,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<ReasonDto>.Succeed(result));
     }
 
     /// <summary>

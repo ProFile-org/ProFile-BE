@@ -15,8 +15,9 @@ public class RejectDocument
 {
     public record Command : IRequest<DocumentDto>
     {
-        public Guid PerformingUserId { get; set; }
-        public Guid DocumentId { get; set; }
+        public Guid PerformingUserId { get; init; }
+        public Guid DocumentId { get; init; }
+        public string Reason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, DocumentDto>
@@ -55,6 +56,15 @@ public class RejectDocument
                 User = performingUser!,
                 UserId = performingUser!.Id,
                 Action = DocumentLogMessages.Import.Reject,
+            };
+            var requestLog = new RequestLog()
+            {
+                Object = document,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                User = performingUser,
+                UserId = performingUser.Id,
+                Action = RequestLogMessages.RejectImport,
+                Reason = request.Reason,
             };
             var result = _context.Documents.Update(document);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
