@@ -1,4 +1,5 @@
 ﻿using Api.Controllers.Payload.Requests.Lockers;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
@@ -11,6 +12,13 @@ namespace Api.Controllers;
 
 public class LockersController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public LockersController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a locker by id
     /// </summary>
@@ -68,8 +76,10 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] AddLockerRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new AddLocker.Command()
         {
+            PerformingUserId = performingUserId,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -156,8 +166,10 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Update([FromRoute] Guid lockerId, [FromBody] UpdateLockerRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new UpdateLocker.Command()
         {
+            PerformingUserId = performingUserId,
             LockerId = lockerId,
             Name = request.Name,
             Description = request.Description,

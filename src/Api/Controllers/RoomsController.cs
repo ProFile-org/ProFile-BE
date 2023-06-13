@@ -1,5 +1,6 @@
 using Api.Controllers.Payload.Requests.Lockers;
 using Api.Controllers.Payload.Requests.Rooms;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
@@ -12,6 +13,13 @@ namespace Api.Controllers;
 
 public class RoomsController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public RoomsController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a room by id
     /// </summary>
@@ -54,10 +62,11 @@ public class RoomsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<RoomDto>>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Get empty containers in a room
     /// </summary>
+    /// <param name="roomId"></param>
     /// <param name="queryParameters">Get empty containers paginated details</param>
     /// <returns>A paginated list of EmptyLockerDto</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
@@ -93,8 +102,10 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] AddRoomRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new AddRoom.Command()
         {
+            PerformingUserId = performingUserId,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -179,8 +190,10 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new UpdateRoom.Command()
         {
+            PerformingUserId = performingUserId,
             RoomId = roomId,
             Name = request.Name,
             Description = request.Description,

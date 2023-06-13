@@ -1,10 +1,13 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Folders.Commands;
 
@@ -31,6 +34,7 @@ public class UpdateFolder
     
     public record Command : IRequest<FolderDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid FolderId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -77,11 +81,23 @@ public class UpdateFolder
                 throw new ConflictException("New capacity cannot be less than current number of documents.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             folder.Name = request.Name;
             folder.Description = request.Description;
             folder.Capacity = request.Capacity;
-
+            folder.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            folder.LastModifiedBy = performingUser!.Id;
+            
+            var log = new FolderLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = folder,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = FolderLogMessage.Update,
+            };
             var result = _context.Folders.Update(folder);
+            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<FolderDto>(result.Entity);
         }

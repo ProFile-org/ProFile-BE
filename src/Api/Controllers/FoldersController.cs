@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Folders;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands;
@@ -11,6 +12,13 @@ namespace Api.Controllers;
 
 public class FoldersController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public FoldersController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a folder by id
     /// </summary>
@@ -71,8 +79,10 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new AddFolder.Command()
         {
+            PerformingUserId = performingUserId,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -161,8 +171,10 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new UpdateFolder.Command()
         {
+            PerformingUserId = performingUserId,
             FolderId = folderId,
             Name = request.Name,
             Description = request.Description,

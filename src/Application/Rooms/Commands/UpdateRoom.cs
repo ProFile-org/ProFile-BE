@@ -1,11 +1,14 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Rooms.Commands;
 
@@ -30,6 +33,7 @@ public class UpdateRoom
     }
     public record Command : IRequest<RoomDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid RoomId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -74,6 +78,8 @@ public class UpdateRoom
                 throw new ConflictException("New capacity cannot be less than current number of lockers.");
             }
 
+            var performingUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var updatedRoom = new Room
             {
                 Id = room.Id,
@@ -85,11 +91,22 @@ public class UpdateRoom
                 Capacity = request.Capacity,
                 NumberOfLockers = room.NumberOfLockers,
                 IsAvailable = room.IsAvailable,
-                Lockers = room.Lockers
+                Lockers = room.Lockers,
+                LastModified = LocalDateTime.FromDateTime(DateTime.Now),
+                LastModifiedBy = performingUser!.Id,
+            };
+            var log = new RoomLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = updatedRoom,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = RoomLogMessage.Update,
             };
 
             _context.Rooms.Entry(room).State = EntityState.Detached;
             _context.Rooms.Entry(updatedRoom).State = EntityState.Modified;
+            await _context.RoomLogs.AddAsync(log, cancellationToken);
             
             await _context.SaveChangesAsync(cancellationToken);
             

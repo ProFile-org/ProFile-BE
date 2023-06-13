@@ -1,12 +1,15 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Lockers.Commands;
 
@@ -31,6 +34,7 @@ public class UpdateLocker
     }
     public record Command : IRequest<LockerDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid LockerId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -74,12 +78,23 @@ public class UpdateLocker
             {
                 throw new ConflictException("New capacity cannot be less than current number of folders.");
             }
-
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             locker.Name = request.Name;
             locker.Description = request.Description;
             locker.Capacity = request.Capacity;
+            locker.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            locker.LastModifiedBy = performingUser!.Id;
 
+            var log = new LockerLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = locker,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = LockerLogMessage.Update,
+            };
             var result = _context.Lockers.Update(locker);
+            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<LockerDto>(result.Entity);
         }
