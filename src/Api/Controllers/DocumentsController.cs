@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
@@ -11,6 +12,13 @@ namespace Api.Controllers;
 
 public class DocumentsController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public DocumentsController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a document by id
     /// </summary>
@@ -77,7 +85,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="request">Import document details</param>
     /// <returns>A DocumentDto of the imported document</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -86,13 +94,13 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] ImportDocumentRequest request)
     {
+        var userId = _currentUserService.GetId();
         var command = new ImportDocument.Command()
         {
             Title = request.Title,
             Description = request.Description,
             DocumentType = request.DocumentType,
-            FolderId = request.FolderId,
-            ImporterId = request.ImporterId,
+            ImporterId = userId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));

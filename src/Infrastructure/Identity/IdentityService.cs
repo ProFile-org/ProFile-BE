@@ -29,6 +29,7 @@ public class IdentityService : IIdentityService
     private readonly RSA _encryptionKey;
     private readonly ECDsa _signingKey;
     private readonly IMapper _mapper;
+    private readonly SecuritySettings _securitySettings;
 
     public IdentityService(
         TokenValidationParameters tokenValidationParameters, 
@@ -37,7 +38,8 @@ public class IdentityService : IIdentityService
         IAuthDbContext authDbContext, 
         RSA encryptionKey, 
         ECDsa signingKey, 
-        IMapper mapper)
+        IMapper mapper, 
+        IOptions<SecuritySettings> securitySettingsOptions)
     {
         _tokenValidationParameters = tokenValidationParameters;
         _jweSettings = jweSettingsOptions.Value;
@@ -46,6 +48,7 @@ public class IdentityService : IIdentityService
         _encryptionKey = encryptionKey;
         _signingKey = signingKey;
         _mapper = mapper;
+        _securitySettings = securitySettingsOptions.Value;
     }
 
     public async Task<bool> Validate(string token, string refreshToken)
@@ -57,9 +60,7 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
-        
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
         var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
@@ -115,10 +116,8 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
         
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
         var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
@@ -196,7 +195,7 @@ public class IdentityService : IIdentityService
             .Include(x => x.Department)
             .FirstOrDefault(x => x.Email!.Equals(email));
 
-        if (user is null || !user.PasswordHash.Equals(SecurityUtil.Hash(password)))
+        if (user is null || !user.PasswordHash.Equals(password.HashPasswordWith(user.PasswordSalt, _securitySettings.Pepper)))
         {
             throw new AuthenticationException("Username or password is invalid.");
         }
@@ -255,8 +254,9 @@ public class IdentityService : IIdentityService
         {
             user.IsActivated = true;
         }
-
-        user.PasswordHash = SecurityUtil.Hash(newPassword);
+        var salt = StringUtil.RandomSalt();
+        user.PasswordSalt = salt;
+        user.PasswordHash = newPassword.HashPasswordWith(salt, newPassword);
         resetPasswordToken.IsInvalidated = true;
         await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
         await _authDbContext.SaveChangesAsync(CancellationToken.None);

@@ -17,12 +17,4 @@ public class ImportDocumentRequest
     /// Document type of the document to be imported
     /// </summary>
     public string DocumentType { get; set; } = null!;
-    /// <summary>
-    /// Id of the importer
-    /// </summary>
-    public Guid ImporterId { get; set; }
-    /// <summary>
-    /// Id of the folder that this document will be in
-    /// </summary>
-    public Guid FolderId { get; set; }
 }
