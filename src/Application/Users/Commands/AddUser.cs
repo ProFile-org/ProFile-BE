@@ -1,10 +1,12 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Helpers;
 using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Events;
 using FluentValidation;
 using MediatR;
@@ -53,6 +55,7 @@ public class AddUser
 
     public record Command : IRequest<UserDto>
     {
+        public Guid PerformingUserId { get; init; }
         public string Username { get; init; } = null!;
         public string Email { get; init; } = null!;
         public string? FirstName { get; init; }
@@ -96,6 +99,7 @@ public class AddUser
             var password = StringUtil.RandomPassword();
             var salt = StringUtil.RandomSalt();
             
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var entity = new User
             {
                 Username = request.Username,
@@ -109,10 +113,20 @@ public class AddUser
                 Position = request.Position,
                 IsActive = true,
                 IsActivated = false,
-                Created = LocalDateTime.FromDateTime(DateTime.UtcNow)
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = performingUser!.Id,
+            };
+            var log = new UserLog()
+            {
+                User = performingUser,
+                UserId = performingUser.Id,
+                Object = entity,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = UserLogMessages.Add,
             };
             entity.AddDomainEvent(new UserCreatedEvent(entity, password));
             var result = await _context.Users.AddAsync(entity, cancellationToken);
+            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
         }

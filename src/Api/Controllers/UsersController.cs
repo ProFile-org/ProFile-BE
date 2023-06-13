@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Users;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Identity;
 using Application.Users.Commands;
@@ -10,6 +11,13 @@ namespace Api.Controllers;
 
 public class UsersController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public UsersController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a user by id
     /// </summary>
@@ -68,8 +76,10 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Add([FromBody] AddUserRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new AddUser.Command()
         {
+            PerformingUserId = performingUserId,
             Username = request.Username,
             Email = request.Email,
             FirstName = request.FirstName,
@@ -115,8 +125,10 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Disable([FromRoute] Guid userId)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new DisableUser.Command()
         {
+            PerformingUserId = performingUserId,
             UserId = userId,
         };
         var result = await Mediator.Send(command);
@@ -136,8 +148,10 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Update([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
     {
+        var performingUserId = _currentUserService.GetId();
         var command = new UpdateUser.Command()
         {
+            PerformingUserId = performingUserId,
             UserId = userId,
             FirstName = request.FirstName,
             LastName = request.LastName,

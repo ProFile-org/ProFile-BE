@@ -7,6 +7,7 @@ public class EnableUser
 {
     public record Command : IRequest<UserDto>
     {
+        public Guid PerformingUserId { get; init; }
         public Guid UserId { get; init; }
     }
 }
