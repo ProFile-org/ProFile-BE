@@ -69,7 +69,7 @@ public class ImportDocument
             var log = new DocumentLog()
             {
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.UtcNow),
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
                 User = importer,
                 UserId = importer.Id,
                 Action = DocumentLogMessages.Import.NewImport

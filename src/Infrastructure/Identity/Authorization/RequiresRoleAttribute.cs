@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Application.Identity;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,7 @@ public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
     {
         var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
-        var email = context.HttpContext.User.Claims.SingleOrDefault(y => y.Type.Equals(emailClaim))!.Value;
+        var email = context.HttpContext.User.Claims.SingleOrDefault(y => y.Type.Equals(JwtRegisteredClaimNames.Email))!.Value;
 
         var user = dbContext.Users.FirstOrDefault(x => x.Email!.Equals(email));
 
