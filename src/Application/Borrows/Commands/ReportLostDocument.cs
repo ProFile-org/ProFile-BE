@@ -32,7 +32,7 @@ public class ReportLostDocument
                 .Include(x => x.Borrower)
                 .Include(x => x.Document)
                 .FirstOrDefaultAsync(x => x.Id == request.BorrowId, cancellationToken);
-
+            
             if (borrowRequest is null)
             {
                 throw new KeyNotFoundException("Borrow request does not exist.");
@@ -46,6 +46,18 @@ public class ReportLostDocument
             if (borrowRequest.Status is not (BorrowRequestStatus.Overdue or BorrowRequestStatus.CheckedOut))
             {
                 throw new ConflictException("Request cannot be lost.");
+            }
+
+            // Get borrows for the lost document which is still pending 
+            var borrowsForDocument = _context.Borrows
+                .Include(x => x.Document)
+                .Where( x => x.Id != request.BorrowId 
+                             && x.Document.Id == borrowRequest.Document.Id 
+                             && x.Status == BorrowRequestStatus.Pending);
+
+            foreach (var borrow in borrowsForDocument)
+            {
+                borrow.Status = BorrowRequestStatus.NotProcessable;
             }
 
             borrowRequest.Status = BorrowRequestStatus.Lost;
