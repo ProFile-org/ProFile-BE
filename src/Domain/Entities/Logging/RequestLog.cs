@@ -7,4 +7,5 @@ namespace Domain.Entities.Logging;
 public class RequestLog : BaseLoggingEntity<Document>
 {
     public RequestType Type { get; set; }
+    public string Reason { get; set; } = null!;
 }
