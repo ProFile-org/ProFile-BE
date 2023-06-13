@@ -1,17 +1,18 @@
 ﻿using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Identity;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries;
 
-public class GetAllUsersWithRoleEmployeePaginated
+public class GetAllEmployeesPaginated
 {
     public record Query : IRequest<PaginatedList<UserDto>>
     {
-        public Guid UserId { get; init; }
+        public Guid DepartmentId { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -31,10 +32,11 @@ public class GetAllUsersWithRoleEmployeePaginated
 
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.Include(x => x.Department)
-                .FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
             var users = _context.Users.AsQueryable()
-                .Where(x => x.Department!.Equals(user!.Department));
+                .Where(x => x.Department!.Id == request.DepartmentId 
+                            && x.Role.Equals(IdentityData.Roles.Employee)
+                            && x.IsActive
+                            && x.IsActivated);
 
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<UserDto>())

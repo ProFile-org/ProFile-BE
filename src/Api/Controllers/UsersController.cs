@@ -6,6 +6,7 @@ using Application.Users.Commands;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Security;
 
 namespace Api.Controllers;
 
@@ -171,13 +172,19 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllWithRoleEmployeePaginated(
-        [FromQuery] GetAllUsersWithRoleEmployeePaginatedQueryParameters queryParameters)
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllEmployeesPaginated(
+        [FromQuery] GetAllEmployeesPaginatedQueryParameters queryParameters)
     {
-        var performingUserId = _currentUserService.GetId();
-        var query = new GetAllUsersWithRoleEmployeePaginated.Query()
+        var performingUserDepartmentId = _currentUserService.GetDepartmentId();
+
+        if (performingUserDepartmentId is null)
         {
-            UserId = performingUserId,
+            throw new KeyNotFoundException("User does not belong to a department.");
+        }
+        
+        var query = new GetAllEmployeesPaginated.Query()
+        {
+            DepartmentId = performingUserDepartmentId.Value,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,

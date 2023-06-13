@@ -47,7 +47,7 @@ public class CurrentUserService : ICurrentUserService
         var claim =  _httpContextAccessor.HttpContext!.User.Claims
             .FirstOrDefault(x => x.Type.Equals("departmentId"));
         var id = claim?.Value;
-        return id is not null ? Guid.Parse(id) : null;
+        return id is not null && Guid.TryParse(id, out _) ? Guid.Parse(id) : null;
     }
 
     public User GetCurrentUser()
