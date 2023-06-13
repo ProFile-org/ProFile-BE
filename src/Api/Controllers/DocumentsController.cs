@@ -120,23 +120,51 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="request">Import document details</param>
     /// <returns>A DocumentDto of the imported document</returns>
-    [RequiresRole(IdentityData.Roles.Employee)]
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<IssuedDocumentDto>>> Import([FromBody] ImportDocumentRequest request)
+    public async Task<ActionResult<Result<DocumentDto>>> Import([FromBody] ImportDocumentRequest request)
     {
-        var userId = _currentUserService.GetId();
+        var performingUserId = _currentUserService.GetId();
         var command = new ImportDocument.Command()
+        {
+            PerformingUserId = performingUserId,
+            Title = request.Title,
+            Description = request.Description,
+            DocumentType = request.DocumentType,
+            FolderId = request.FolderId,
+            ImporterId = request.ImporterId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Request to import a document
+    /// </summary>
+    /// <param name="request">Import document request details</param>
+    /// <returns>A DocumentDto of the imported document</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPost("request")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<IssuedDocumentDto>>> RequestImport([FromBody] RequestImportDocumentRequest request)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var command = new RequestImportDocument.Command()
         {
             Title = request.Title,
             Description = request.Description,
             DocumentType = request.DocumentType,
-            ImporterId = userId,
             IsPrivate = request.IsPrivate,
+            IssuerId = performingUserId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<IssuedDocumentDto>.Succeed(result));

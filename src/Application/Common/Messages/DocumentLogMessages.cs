@@ -4,6 +4,7 @@ public static class DocumentLogMessages
 {
     public static class Import
     {
-        public const string NewImport = "Created new import request";
+        public const string NewImport = "Imported new document";
+        public const string NewImportRequest = "Created new import request";
     }
 }
