@@ -171,6 +171,31 @@ public class DocumentsController : ApiControllerBase
     }
 
     /// <summary>
+    /// Checkin a document
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <returns>A DocumentDto of the imported document</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPost("{documentId:guid}/checkin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<DocumentDto>>> Checkin(
+        [FromRoute] Guid documentId)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var command = new CheckinDocument.Command()
+        {
+            PerformingUserId = performingUserId,
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
+
+    /// <summary>
     /// Update a document
     /// </summary>
     /// <param name="documentId">Id of the document to be updated</param>
