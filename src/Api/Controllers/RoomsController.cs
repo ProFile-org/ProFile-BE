@@ -65,7 +65,15 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<PaginatedList<RoomDto>>.Succeed(result));
     }
 
+    /// <summary>
+    ///  Get a room log by id 
+    /// </summary>
+    /// <param name="logId"></param>
+    /// <returns>return a RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<RoomLogDto>>> GetLogById([FromRoute] Guid logId)
     {
         var query = new GetLogOfRoomById.Query()
@@ -77,7 +85,15 @@ public class RoomsController : ApiControllerBase
         return Ok(Result<RoomLogDto>.Succeed(result));
     }
 
-    [HttpGet("logs")] public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
+    /// <summary>
+    /// Get all room logs paginated
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns>A paginated list of RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")] 
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllRoomLogsPaginated.Query()
