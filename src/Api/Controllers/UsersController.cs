@@ -160,4 +160,31 @@ public class UsersController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }
+
+    /// <summary>
+    /// Get all users with the "Employee" role of the current user's department.
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of UserDtos with the employee role of that department</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("employees")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllWithRoleEmployeePaginated(
+        [FromQuery] GetAllUsersWithRoleEmployeePaginatedQueryParameters queryParameters)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var query = new GetAllUsersWithRoleEmployeePaginated.Query()
+        {
+            UserId = performingUserId,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    }
 }
