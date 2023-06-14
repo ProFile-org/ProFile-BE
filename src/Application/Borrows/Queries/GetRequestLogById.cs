@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Borrows.Queries;
 
-public class GetBorrowRequestLogById
+public class GetRequestLogById
 {
     public record Query : IRequest<RequestLogDto>
     {
@@ -40,11 +40,6 @@ public class GetBorrowRequestLogById
             if (log is null)
             {
                 throw new KeyNotFoundException("Log does not exist.");
-            }
-
-            if (log.Type != RequestType.Borrow)
-            {
-                throw new ConflictException("This is not a borrow request log.");
             }
 
             return _mapper.Map<RequestLogDto>(log);

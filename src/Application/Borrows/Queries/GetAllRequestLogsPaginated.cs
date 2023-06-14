@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Borrows.Queries;
 
-public class GetAllBorrowRequestLogsPaginated
+public class GetAllRequestLogsPaginated
 {
     public record Query : IRequest<PaginatedList<RequestLogDto>>
     {
@@ -35,7 +35,6 @@ public class GetAllBorrowRequestLogsPaginated
         {
             var logs = _context.RequestLogs
                 .Include(x => x.Object)
-                .Where(x => x.Type == RequestType.Borrow)
                 .AsQueryable();
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

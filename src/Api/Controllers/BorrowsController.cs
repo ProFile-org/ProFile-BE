@@ -309,7 +309,7 @@ public class BorrowsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Get all logs related to borrow requests.
+    /// Get all logs related to requests.
     /// </summary>
     /// <param name="queryParameters">Query parameters</param>
     /// <returns>A list of RequestLogsDtos.</returns>
@@ -317,10 +317,10 @@ public class BorrowsController : ApiControllerBase
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<RequestLogDto>>>> GetAllBorrowRequestLogs(
+    public async Task<ActionResult<Result<PaginatedList<RequestLogDto>>>> GetAllRequestLogs(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
-        var query = new GetAllBorrowRequestLogsPaginated.Query()
+        var query = new GetAllRequestLogsPaginated.Query()
         {
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
@@ -333,7 +333,7 @@ public class BorrowsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Get a log related to borrow request by Id.
+    /// Get a log related to request by Id.
     /// </summary>
     /// <param name="logId">Id of the requested log</param>
     /// <returns>A LockerLogDto of the requested log.</returns>
@@ -342,9 +342,9 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RequestLogDto>>> GetBorrowRequestLogById([FromRoute] Guid logId)
+    public async Task<ActionResult<Result<RequestLogDto>>> GetRequestLogById([FromRoute] Guid logId)
     {
-        var query = new GetBorrowRequestLogById.Query()
+        var query = new GetRequestLogById.Query()
         {
             LogId = logId
         };
