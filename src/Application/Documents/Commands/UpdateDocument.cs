@@ -51,6 +51,7 @@ public class UpdateDocument
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var document = await _context.Documents
+                .Include(x => x.Department)
                 .Include( x => x.Importer)
                 .FirstOrDefaultAsync( x => x.Id.Equals(request.DocumentId), cancellationToken);
 

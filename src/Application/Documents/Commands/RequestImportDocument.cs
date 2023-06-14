@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
+using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Logging;
@@ -15,29 +16,27 @@ namespace Application.Documents.Commands;
 
 public class RequestImportDocument
 {
-    public record Command : IRequest<DocumentDto>
+    public record Command : IRequest<IssuedDocumentDto>
     {
         public string Title { get; init; } = null!;
         public string? Description { get; init; }
         public string DocumentType { get; init; } = null!;
         public Guid IssuerId { get; init; }
+        public bool IsPrivate { get; set; }
     }
 
-    public class CommandHandler : IRequestHandler<Command, DocumentDto>
+    public class CommandHandler : IRequestHandler<Command, IssuedDocumentDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        private readonly ILogger<CommandHandler> _logger;
-
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, ILogger<CommandHandler> logger)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _logger = logger;
         }
 
-        public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<IssuedDocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var issuer = await _context.Users
                 .Include(x => x.Department)
@@ -64,6 +63,7 @@ public class RequestImportDocument
                 Importer = issuer,
                 Department = issuer.Department,
                 Status = DocumentStatus.Issued,
+                IsPrivate = request.IsPrivate,
                 Created = LocalDateTime.FromDateTime(DateTime.Now),
                 CreatedBy = issuer.Id,
             };
@@ -73,13 +73,13 @@ public class RequestImportDocument
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 User = issuer,
                 UserId = issuer.Id,
-                Action = DocumentLogMessages.Import.NewImportRequest
+                Action = DocumentLogMessages.Import.NewImportRequest,
             };
 
             var result = await _context.Documents.AddAsync(entity, cancellationToken);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<DocumentDto>(result.Entity);
+            return _mapper.Map<IssuedDocumentDto>(result.Entity);
         }
     }
 }
