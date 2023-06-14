@@ -1,6 +1,8 @@
-﻿using Api.Controllers.Payload.Requests.Lockers;
+﻿using Api.Controllers.Payload.Requests;
+using Api.Controllers.Payload.Requests.Lockers;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Lockers.Commands;
@@ -177,5 +179,50 @@ public class LockersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all logs related to locker.
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of LockerLogsDtos.</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllFolderLogs(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllLockerLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<LockerLogDto>>.Succeed(result));    
+    }
+
+    /// <summary>
+    /// Get a log related to locker by Id.
+    /// </summary>
+    /// <param name="logId">Id of the requested log</param>
+    /// <returns>A LockerLogDto of the requested log.</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<LockerLogDto>>> GetUserLogById([FromRoute] Guid logId)
+    {
+        var query = new GetLockerLogById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<LockerLogDto>.Succeed(result));
     }
 }
