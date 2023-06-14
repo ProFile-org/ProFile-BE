@@ -49,7 +49,7 @@ public class GetAllRequestLogsPaginated
                 sortBy = nameof(RequestLogDto.Time);
             }
 
-            var sortOrder = request.SortOrder ?? "dsc";
+            var sortOrder = request.SortOrder ?? "desc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
