@@ -8,6 +8,7 @@ using Application.Users.Commands;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Security;
 
 namespace Api.Controllers;
 
@@ -164,6 +165,33 @@ public class UsersController : ApiControllerBase
     }
 
     /// <summary>
+    /// Get all users with the "Employee" role of the current user's department.
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of UserDtos with the employee role of that department</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("employees")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllEmployeesPaginated(
+        [FromQuery] GetAllEmployeesPaginatedQueryParameters queryParameters)
+    {
+        var performingUserDepartmentId = _currentUserService.GetDepartmentId();
+
+        if (performingUserDepartmentId is null)
+        {
+            throw new KeyNotFoundException("User does not belong to a department.");
+        }
+        
+        var query = new GetAllEmployeesPaginated.Query()
+        {
+            DepartmentId = performingUserDepartmentId.Value,
+        }
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    }
+    
     /// Get all user related logs paginated
     /// </summary>
     /// <param name="queryParameters">Get all users related logs query parameters</param>
