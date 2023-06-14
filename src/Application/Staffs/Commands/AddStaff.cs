@@ -39,11 +39,18 @@ public class AddStaff
                 throw new KeyNotFoundException("User does not exist.");
             }
 
-            var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+            var room = await _context.Rooms
+                .Include(x => x.Staff)
+                .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
+            }
+
+            if (room.Staff is not null)
+            {
+                throw new ConflictException("Room already has a staff.");
             }
 
             var existedStaff = await _context.Staffs

@@ -296,7 +296,7 @@ public class IdentityService : IIdentityService
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, utcNow.ToString(CultureInfo.InvariantCulture)),
-            new("departmentId", user.Department!.Id.ToString()),
+            new("departmentId", user.Department is not null ? user.Department.Id.ToString() : String.Empty),
             new("isActive", user.IsActive.ToString()),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
