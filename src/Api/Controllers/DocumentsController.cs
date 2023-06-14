@@ -102,6 +102,7 @@ public class DocumentsController : ApiControllerBase
     /// <returns>A paginated list of DocumentDto</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -125,6 +126,32 @@ public class DocumentsController : ApiControllerBase
     }
 
     /// <summary>
+    /// Get documents of the employee
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns></returns>
+    [HttpGet("get-self-documents")]
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetSelfPaginated(
+        [FromQuery] GetSelfDocumentsPaginatedQueryParameters queryParameters)
+    {
+        var userId = _currentUserService.GetId();
+        
+        var query = new GetSelfDocumentsPaginated.Query()
+        {
+            EmployeeId = userId,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SearchTerm = queryParameters.SearchTerm,
+            SortOrder = queryParameters.SortOrder
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
+    }
+
     /// Get all log of document
     /// </summary>
     /// <param name="queryParameters"></param>
