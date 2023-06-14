@@ -94,6 +94,7 @@ public class ApproveBorrowRequest
             };
             var result = _context.Borrows.Update(borrowRequest);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
+            await _context.RequestLogs.AddAsync(requestLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BorrowDto>(result.Entity);
         }

@@ -14,6 +14,7 @@ public static class ConfigureServices
     {
         // Register services
         services.AddServices();
+        services.AddHostedService<ExpiryPermissionService>();
         
         services.AddControllers(opt =>
             opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));

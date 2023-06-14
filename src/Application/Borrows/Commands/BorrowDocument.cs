@@ -5,6 +5,7 @@ using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
+using Domain.Events;
 using Domain.Statuses;
 using FluentValidation;
 using MediatR;
@@ -75,6 +76,7 @@ public class BorrowDocument
             
             var document = await _context.Documents
                 .Include(x => x.Department)
+                .Include(x => x.Importer)
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {

@@ -54,10 +54,12 @@ public class CheckoutDocument
             var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             borrowRequest.Status = BorrowRequestStatus.CheckedOut;
             borrowRequest.Document.Status = DocumentStatus.Borrowed;
+            borrowRequest.Document.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            borrowRequest.Document.LastModifiedBy = performingUser!.Id;
             var log = new DocumentLog()
             {
                 Object = borrowRequest.Document,
-                UserId = performingUser!.Id,
+                UserId = performingUser.Id,
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Checkout,

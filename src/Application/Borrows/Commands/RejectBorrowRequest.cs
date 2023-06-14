@@ -1,10 +1,13 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Borrows.Commands;
 
@@ -42,8 +45,18 @@ public class RejectBorrowRequest
                 throw new ConflictException("Request cannot be rejected.");
             }
 
+            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             borrowRequest.Status = BorrowRequestStatus.Rejected;
+            var requestLog = new RequestLog()
+            {
+                Object = borrowRequest.Document,
+                UserId = performingUser!.Id,
+                User = performingUser,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = DocumentLogMessages.Borrow.Approve,
+            };
             var result = _context.Borrows.Update(borrowRequest);
+            await _context.RequestLogs.AddAsync(requestLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BorrowDto>(result.Entity);
         }

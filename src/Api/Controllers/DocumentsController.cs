@@ -348,7 +348,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
-    [HttpPost("{documentId:guid}/assign")]
+    [HttpPost("assign/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -365,5 +365,55 @@ public class DocumentsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Share permissions for an employee of a specific document
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <param name="request"></param>
+    /// <returns>A DocumentDto</returns>    
+    [HttpPost("{documentId:guid}/permissions")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<bool>>> SharePermissions(
+        [FromRoute] Guid documentId,
+        [FromBody] SharePermissionsRequest request)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var query = new ShareDocument.Command()
+        {
+            PerformingUserId = performingUserId,
+            DocumentId = documentId,
+            UserIds = request.UserIds,
+            CanRead = request.CanRead,
+            CanBorrow = request.CanBorrow,
+            ExpiryDate = request.ExpiryDate,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<bool>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get permissions for an employee of a specific document
+    /// </summary>
+    /// <param name="documentId">Id of the document to be getting permissions from</param>
+    /// <returns>A DocumentDto of the rejected document</returns>    
+    [HttpGet("{documentId:guid}/permissions")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PermissionDto>>> GetPermissions(
+        [FromRoute] Guid documentId)
+    {
+        var performingUserId = _currentUserService.GetId();
+        var query = new GetPermissions.Query()
+        {
+            PerformingUserId = performingUserId,
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PermissionDto>.Succeed(result));
     }
 }
