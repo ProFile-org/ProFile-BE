@@ -1,9 +1,17 @@
-namespace Api.Controllers.Payload.Requests;
+﻿namespace Api.Controllers.Payload.Requests;
 
 /// <summary>
-///  get all logs paginated
+/// Get all logs paginated
 /// </summary>
-public class GetAllLogsPaginatedQueryParameters : PaginatedQueryParameters
+public class GetAllLogsPaginatedQueryParameters
 {
-    public string? SearchTerm { get; set; }    
+    public string? SearchTerm { get; set; }
+    /// <summary>
+    /// Page number
+    /// </summary>
+    public int? Page { get; set; }
+    /// <summary>
+    /// Size number
+    /// </summary>
+    public int? Size { get; set; }
 }

@@ -258,7 +258,7 @@ public class IdentityService : IIdentityService
         }
         var salt = StringUtil.RandomSalt();
         user.PasswordSalt = salt;
-        user.PasswordHash = newPassword.HashPasswordWith(salt, newPassword);
+        user.PasswordHash = newPassword.HashPasswordWith(salt, _securitySettings.Pepper);
         resetPasswordToken.IsInvalidated = true;
         await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
         await _authDbContext.SaveChangesAsync(CancellationToken.None);

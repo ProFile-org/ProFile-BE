@@ -102,7 +102,6 @@ public class DocumentsController : ApiControllerBase
     /// <returns>A paginated list of DocumentDto</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
-    [RequiresRole(IdentityData.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -167,8 +166,6 @@ public class DocumentsController : ApiControllerBase
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
         };        
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));

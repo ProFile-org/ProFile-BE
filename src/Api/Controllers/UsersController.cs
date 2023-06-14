@@ -183,15 +183,16 @@ public class UsersController : ApiControllerBase
         {
             throw new KeyNotFoundException("User does not belong to a department.");
         }
-        
+
         var query = new GetAllEmployeesPaginated.Query()
         {
             DepartmentId = performingUserDepartmentId.Value,
-        }
+        };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
     }
     
+    /// <summary>
     /// Get all user related logs paginated
     /// </summary>
     /// <param name="queryParameters">Get all users related logs query parameters</param>
@@ -208,8 +209,6 @@ public class UsersController : ApiControllerBase
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserLogDto>>.Succeed(result));

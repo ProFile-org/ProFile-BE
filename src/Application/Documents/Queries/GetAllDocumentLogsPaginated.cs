@@ -15,8 +15,6 @@ public class GetAllDocumentLogsPaginated
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
-        public string? SortBy { get; init; }
-        public string? SortOrder { get; init; }
     }
 
     public class QueryHandler : IRequestHandler<Query, PaginatedList<DocumentLogDto>>
@@ -44,18 +42,12 @@ public class GetAllDocumentLogsPaginated
                     x.Action.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<DocumentLogDto>())
-            {
-                sortBy = nameof(DocumentLogDto.Time);
-            }
-            var sortOrder = request.SortOrder ?? "desc";
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
 
             var count = await logs.CountAsync(cancellationToken);
             var list  = await logs
-                .OrderByCustom(sortBy, sortOrder)
+                .OrderByDescending(x => x.Time)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
 

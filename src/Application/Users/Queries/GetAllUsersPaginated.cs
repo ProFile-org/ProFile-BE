@@ -61,8 +61,8 @@ public class GetAllUsersPaginated
             
             var count = await users.CountAsync(cancellationToken);
             var list  = await users
-                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
             var result = _mapper.Map<List<UserDto>>(list);

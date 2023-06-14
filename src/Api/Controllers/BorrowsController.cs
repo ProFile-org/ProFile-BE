@@ -325,8 +325,6 @@ public class BorrowsController : ApiControllerBase
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<RequestLogDto>>.Succeed(result));    
