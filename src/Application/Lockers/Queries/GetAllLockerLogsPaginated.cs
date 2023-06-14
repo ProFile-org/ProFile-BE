@@ -34,6 +34,7 @@ public class GetAllLockerLogsPaginated
         {
             var logs = _context.LockerLogs
                 .Include(x => x.Object)
+                .ThenInclude(x => x!.Room)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();

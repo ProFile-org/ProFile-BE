@@ -28,6 +28,7 @@ public class GetLockerLogById
         {
             var log = await _context.LockerLogs
                 .Include(x => x.Object)
+                .ThenInclude(x => x!.Room)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.LogId), cancellationToken);
