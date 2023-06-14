@@ -190,7 +190,7 @@ public class LockersController : ApiControllerBase
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllFolderLogs(
+    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllLockerLogs(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllLockerLogsPaginated.Query()
@@ -215,7 +215,7 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<LockerLogDto>>> GetUserLogById([FromRoute] Guid logId)
+    public async Task<ActionResult<Result<LockerLogDto>>> GetLockerLogById([FromRoute] Guid logId)
     {
         var query = new GetLockerLogById.Query()
         {
