@@ -6,6 +6,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Statuses;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -63,7 +64,9 @@ public class GetAllDocumentsPaginated
                 .Include(x => x.Folder)
                 .ThenInclude(y => y.Locker)
                 .ThenInclude(z => z.Room)
-                .ThenInclude(t => t.Department);
+                .ThenInclude(t => t.Department)
+                .Where(x => !x.IsPrivate && x.Status != DocumentStatus.Issued);
+                
 
             if (folderExists)
             {
