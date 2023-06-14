@@ -41,7 +41,10 @@ public class GetDocumentsOfUserPaginated
                 throw new KeyNotFoundException("User does not exist.");
             }
 
-            var documents = _context.Documents.AsQueryable()
+            var documents = _context.Documents
+                .Include(x => x.Department)
+                .Include(x => x.Folder)
+                .AsQueryable()
                 .Where(x => x.Importer!.Id.Equals(request.UserId) && !x.IsPrivate);
             
             var sortBy = request.SortBy;
