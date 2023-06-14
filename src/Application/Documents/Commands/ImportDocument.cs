@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
+using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities.Logging;
@@ -22,6 +23,7 @@ public class ImportDocument
         public string DocumentType { get; init; } = null!;
         public Guid ImporterId { get; init; }
         public Guid FolderId { get; init; }
+        public bool IsPrivate { get; init; }
     }
 
     public class CommandHandler : IRequestHandler<Command, DocumentDto>
@@ -75,7 +77,8 @@ public class ImportDocument
                 Importer = importer,
                 Department = importer.Department,
                 Folder = folder,
-                Status = DocumentStatus.Issued,
+                Status = DocumentStatus.Available,
+                IsPrivate = request.IsPrivate,
                 Created = LocalDateTime.FromDateTime(DateTime.Now),
                 CreatedBy = performingUser!.Id,
             };
