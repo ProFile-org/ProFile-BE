@@ -1,8 +1,10 @@
+using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Borrows;
 using Application.Borrows.Commands;
 using Application.Borrows.Queries;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
@@ -316,5 +318,48 @@ public class BorrowsController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all logs related to requests.
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of RequestLogsDtos.</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<RequestLogDto>>>> GetAllRequestLogs(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllRequestLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<RequestLogDto>>.Succeed(result));    
+    }
+
+    /// <summary>
+    /// Get a log related to request by Id.
+    /// </summary>
+    /// <param name="logId">Id of the requested log</param>
+    /// <returns>A LockerLogDto of the requested log.</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RequestLogDto>>> GetRequestLogById([FromRoute] Guid logId)
+    {
+        var query = new GetRequestLogById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<RequestLogDto>.Succeed(result));
     }
 }

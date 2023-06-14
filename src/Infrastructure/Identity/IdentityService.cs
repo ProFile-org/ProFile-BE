@@ -258,7 +258,7 @@ public class IdentityService : IIdentityService
         }
         var salt = StringUtil.RandomSalt();
         user.PasswordSalt = salt;
-        user.PasswordHash = newPassword.HashPasswordWith(salt, newPassword);
+        user.PasswordHash = newPassword.HashPasswordWith(salt, _securitySettings.Pepper);
         resetPasswordToken.IsInvalidated = true;
         await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
         await _authDbContext.SaveChangesAsync(CancellationToken.None);
@@ -296,7 +296,7 @@ public class IdentityService : IIdentityService
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, utcNow.ToString(CultureInfo.InvariantCulture)),
-            new("departmentId", user.Department!.Id.ToString()),
+            new("departmentId", user.Department is not null ? user.Department.Id.ToString() : String.Empty),
             new("isActive", user.IsActive.ToString()),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};

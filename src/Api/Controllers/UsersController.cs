@@ -1,11 +1,14 @@
+using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Logging;
 using Application.Identity;
 using Application.Users.Commands;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Security;
 
 namespace Api.Controllers;
 
@@ -159,5 +162,75 @@ public class UsersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Get all users with the "Employee" role of the current user's department.
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of UserDtos with the employee role of that department</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("employees")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllEmployeesPaginated(
+        [FromQuery] GetAllEmployeesPaginatedQueryParameters queryParameters)
+    {
+        var performingUserDepartmentId = _currentUserService.GetDepartmentId();
+
+        if (performingUserDepartmentId is null)
+        {
+            throw new KeyNotFoundException("User does not belong to a department.");
+        }
+
+        var query = new GetAllEmployeesPaginated.Query()
+        {
+            DepartmentId = performingUserDepartmentId.Value,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all user related logs paginated
+    /// </summary>
+    /// <param name="queryParameters">Get all users related logs query parameters</param>
+    /// <returns>A paginated list of UserLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<UserLogDto>>>> GetAllUserLogs(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllUserLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserLogDto>>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Get user related log by Id
+    /// </summary>
+    /// <param name="logId">Id of the logged user</param>
+    /// <returns>UserLogDto of the logged user</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<UserLogDto>>> GetUserLogById([FromRoute] Guid logId)
+    {
+        var query = new GetUserLogById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<UserLogDto>.Succeed(result));
     }
 }
