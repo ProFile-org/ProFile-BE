@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
+using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
@@ -47,11 +48,13 @@ public class BorrowDocument
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IPermissionManager _permissionManager;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IPermissionManager permissionManager)
         {
             _context = context;
             _mapper = mapper;
+            _permissionManager = permissionManager;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -91,6 +94,12 @@ public class BorrowDocument
             if (document.Department!.Id != user.Department!.Id)
             {
                 throw new ConflictException("User is not allowed to borrow this document.");
+            }
+            
+            var isGranted = _permissionManager.IsGranted(request.DocumentId, DocumentOperation.Borrow, request.BorrowerId);
+            if (!isGranted)
+            {
+                throw new UnauthorizedAccessException("You don't have permission to borrow this document.");
             }
 
             // getting out a request of that document which is either not due or overdue

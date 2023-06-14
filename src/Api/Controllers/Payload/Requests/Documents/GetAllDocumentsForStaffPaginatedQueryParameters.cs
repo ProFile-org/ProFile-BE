@@ -3,10 +3,6 @@ namespace Api.Controllers.Payload.Requests.Documents;
 public class GetAllDocumentsForStaffPaginatedQueryParameters : PaginatedQueryParameters
 {
     /// <summary>
-    /// Id of the room to find documents in
-    /// </summary>
-    public Guid? RoomId { get; set; }
-    /// <summary>
     /// Id of the locker to find documents in
     /// </summary>
     public Guid? LockerId { get; set; }

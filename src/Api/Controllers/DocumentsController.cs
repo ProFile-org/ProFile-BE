@@ -1,9 +1,11 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
+using Application.Common.Models.Operations;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
 using Application.Identity;
@@ -16,10 +18,12 @@ namespace Api.Controllers;
 public class DocumentsController : ApiControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
+    private readonly IPermissionManager _permissionManager;
 
-    public DocumentsController(ICurrentUserService currentUserService)
+    public DocumentsController(ICurrentUserService currentUserService, IPermissionManager permissionManager)
     {
         _currentUserService = currentUserService;
+        _permissionManager = permissionManager;
     }
 
     /// <summary>
@@ -56,13 +60,9 @@ public class DocumentsController : ApiControllerBase
         [FromQuery] GetAllIssuedPaginatedQueryParameters queryParameters)
     {
         var departmentId = _currentUserService.GetCurrentDepartmentForStaff();
-        if (departmentId is null)
-        {
-            return Result<PaginatedList<IssuedDocumentDto>>.Fail(new Exception("Staff does not have a room"));
-        }
         var query = new GetAllIssuedDocumentsPaginated.Query()
         {
-            DepartmentId = departmentId.Value,
+            DepartmentId = departmentId!.Value,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
@@ -238,7 +238,9 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DocumentDto>>> Update([FromRoute] Guid documentId, [FromBody] UpdateDocumentRequest request)
+    public async Task<ActionResult<Result<DocumentDto>>> Update(
+        [FromRoute] Guid documentId,
+        [FromBody] UpdateDocumentRequest request)
     {
         var query = new UpdateDocument.Command()
         {
@@ -256,11 +258,13 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="documentId">Id of the document to be deleted</param>
     /// <returns>A DocumentDto of the deleted document</returns>    
+    
     [HttpDelete("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> Delete([FromRoute] Guid documentId)
+    public async Task<ActionResult<Result<DocumentDto>>> Delete(
+        [FromRoute] Guid documentId)
     {
         var query = new DeleteDocument.Command()
         {
@@ -276,6 +280,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be approved</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the approved document</returns>    
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost("approve/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -301,6 +306,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost("reject/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -325,7 +331,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <returns>A DocumentDto of the rejected document</returns>    
-    [RequiresRole(IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpPost("reason/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -348,6 +354,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document to be rejected</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost("assign/{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -373,6 +380,7 @@ public class DocumentsController : ApiControllerBase
     /// <param name="documentId">Id of the document</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto</returns>    
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost("{documentId:guid}/permissions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -400,6 +408,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="documentId">Id of the document to be getting permissions from</param>
     /// <returns>A DocumentDto of the rejected document</returns>    
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("{documentId:guid}/permissions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -407,10 +416,10 @@ public class DocumentsController : ApiControllerBase
     public async Task<ActionResult<Result<PermissionDto>>> GetPermissions(
         [FromRoute] Guid documentId)
     {
-        var performingUserId = _currentUserService.GetId();
+        var performingUser = _currentUserService.GetCurrentUser();
         var query = new GetPermissions.Query()
         {
-            PerformingUserId = performingUserId,
+            PerformingUser = performingUser,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(query);

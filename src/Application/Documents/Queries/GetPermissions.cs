@@ -1,8 +1,11 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +15,10 @@ public class GetPermissions
 {
     public record Query : IRequest<PermissionDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User PerformingUser { get; init; } = null!;
         public Guid DocumentId { get; init; }
     }
-    
+
     public class QueryHandler : IRequestHandler<Query, PermissionDto>
     {
         private readonly IApplicationDbContext _context;
@@ -29,16 +32,7 @@ public class GetPermissions
 
         public async Task<PermissionDto> Handle(Query request, CancellationToken cancellationToken)
         {
-            var performingUser =
-                await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-
-            if (performingUser is null)
-            {
-                throw new UnauthorizedAccessException();
-            }
-            
             var document = await _context.Documents
-                .Include(x => x.Folder)
                 .Include(x => x.Importer)
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             if (document is null)
@@ -46,21 +40,19 @@ public class GetPermissions
                 throw new ConflictException("Document does not exist.");
             }
 
-            if (document.Importer!.Id == request.PerformingUserId)
+            if (IsOwner(request.PerformingUser.Id, document))
             {
-                var result = new PermissionDto()
+                return new PermissionDto()
                 {
                     DocumentId = document.Id,
-                    EmployeeId = performingUser.Id,
+                    EmployeeId = request.PerformingUser.Id,
                     CanRead = true,
                     CanBorrow = true,
                 };
-
-                return result;
             }
 
             var permission = await _context.Permissions.FirstOrDefaultAsync(
-                x => x.DocumentId == request.DocumentId && x.EmployeeId == request.PerformingUserId,
+                x => x.DocumentId == request.DocumentId && x.EmployeeId == request.PerformingUser.Id,
                 cancellationToken);
 
             if (permission is null)
@@ -68,13 +60,18 @@ public class GetPermissions
                 return new PermissionDto()
                 {
                     DocumentId = document.Id,
-                    EmployeeId = performingUser.Id,
+                    EmployeeId = request.PerformingUser.Id,
                     CanRead = false,
                     CanBorrow = false,
                 };
             }
 
             return _mapper.Map<PermissionDto>(permission);
+        }
+
+        private static bool IsOwner(Guid userId, Document document)
+        {
+            return document.Importer!.Id == userId;
         }
     }
 }
