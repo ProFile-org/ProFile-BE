@@ -24,7 +24,7 @@ public class GetAllEmployeesPaginated
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public QueryHandler(IApplicationDbContext context, IMapper mapper)
+        public Handler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -33,6 +33,7 @@ public class GetAllEmployeesPaginated
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var users = _context.Users.AsQueryable()
+                .Include(x => x.Department)
                 .Where(x => x.Department!.Id == request.DepartmentId 
                             && x.Role.Equals(IdentityData.Roles.Employee)
                             && x.IsActive
