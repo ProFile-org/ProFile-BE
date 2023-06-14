@@ -1,8 +1,10 @@
+using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.ImportDocument;
+using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
@@ -72,6 +74,26 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<IssuedDocumentDto>>.Succeed(result));
     }
+
+    /// <summary>
+    ///  Get a document log by Id 
+    /// </summary>
+    /// <param name="logId"></param>
+    /// <returns>Return a DocumentLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentLogDto>>> GetLogById([FromRoute] Guid logId)
+    {
+        var query = new GetLogOfDocumentById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentLogDto>.Succeed(result));
+    }
     
     /// <summary>
     /// Get all documents paginated
@@ -101,7 +123,30 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
     }
-    
+
+    /// <summary>
+    /// Get all log of document
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns>Paginated list of DocumentLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllDocumentLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };        
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
+    }
+
     /// <summary>
     /// Get all documents for staff paginated
     /// </summary>
