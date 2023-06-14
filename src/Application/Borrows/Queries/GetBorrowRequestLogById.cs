@@ -1,6 +1,8 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Logging;
 using AutoMapper;
+using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +40,11 @@ public class GetBorrowRequestLogById
             if (log is null)
             {
                 throw new KeyNotFoundException("Log does not exist.");
+            }
+
+            if (log.Type != RequestType.Borrow)
+            {
+                throw new ConflictException("This is not a borrow request log.");
             }
 
             return _mapper.Map<RequestLogDto>(log);

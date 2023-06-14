@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Logging;
 using AutoMapper;
+using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,7 @@ public class GetAllBorrowRequestLogsPaginated
         {
             var logs = _context.RequestLogs
                 .Include(x => x.Object)
+                .Where(x => x.Type == RequestType.Borrow)
                 .AsQueryable();
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
