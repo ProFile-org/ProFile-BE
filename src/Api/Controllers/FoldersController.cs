@@ -220,7 +220,7 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<FolderLogDto>>> GetUserLogById([FromRoute] Guid logId)
+    public async Task<ActionResult<Result<FolderLogDto>>> GetFolderLogById([FromRoute] Guid logId)
     {
         var query = new GetFolderLogById.Query()
         {
