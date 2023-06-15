@@ -1,7 +1,9 @@
+using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Lockers;
 using Api.Controllers.Payload.Requests.Rooms;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands;
@@ -61,6 +63,50 @@ public class RoomsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<RoomDto>>.Succeed(result));
+    }
+
+    /// <summary>
+    ///  Get a room log by id 
+    /// </summary>
+    /// <param name="logId"></param>
+    /// <returns>return a RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RoomLogDto>>> GetLogById([FromRoute] Guid logId)
+    {
+        var query = new GetLogOfRoomById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<RoomLogDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Get all room logs paginated
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns>A paginated list of RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")] 
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllRoomLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<RoomLogDto>>.Succeed(result));
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace Api.Controllers.Payload.Requests;
+namespace Api.Controllers.Payload.Requests;
 
 /// <summary>
 ///  get all logs paginated
