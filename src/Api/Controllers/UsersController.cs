@@ -13,7 +13,7 @@ public class UsersController : ApiControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
 
-    public UsersController(ICurrentUserService currentUserService)
+    public UsersController(ICurrentUserService currentUserService, IMailService mailService)
     {
         _currentUserService = currentUserService;
     }
@@ -158,6 +158,26 @@ public class UsersController : ApiControllerBase
             Position = request.Position,
         };
         var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Resend email base on userId
+    /// </summary>
+    /// <returns>a UserDto of the user who Admin resend the email to</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpPost("resend-email")]
+    public async Task<ActionResult<Result<UserDto>>> ResendEmail(ResendEmailRequest request)
+    {
+        var command = new ResendUserEmail.Command()
+        {
+            UserId = request.UserId,
+        };
+        
+        var result = await Mediator.Send(command);
+
         return Ok(Result<UserDto>.Succeed(result));
     }
 }
