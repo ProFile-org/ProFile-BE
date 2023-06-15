@@ -3,6 +3,8 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Logging;
 using AutoMapper;
+using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,18 +44,12 @@ public class GetAllDocumentLogsPaginated
                     x.Action.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-
-            var count = await logs.CountAsync(cancellationToken);
-            var list  = await logs
-                .OrderByDescending(x => x.Time)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-
-            var result = _mapper.Map<List<DocumentLogDto>>(list);
-
-            return new PaginatedList<DocumentLogDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await logs
+                .LoggingListPaginateAsync<Document, DocumentLog, DocumentLogDto>(
+                    request.Page,
+                    request.Size,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

@@ -6,6 +6,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,24 +51,14 @@ public class GetAllUsersPaginated
                     x.FirstName!.ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
             
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<UserDto>())
-            {
-                sortBy = nameof(UserDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-            var count = await users.CountAsync(cancellationToken);
-            var list  = await users
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<UserDto>>(list);
-
-            return new PaginatedList<UserDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await users
+                .ListPaginateWithFilterAsync<User, UserDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

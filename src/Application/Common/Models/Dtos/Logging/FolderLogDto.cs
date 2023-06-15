@@ -6,9 +6,8 @@ using Domain.Entities.Logging;
 
 namespace Application.Common.Models.Dtos.Logging;
 
-public class FolderLogDto : IMapFrom<FolderLog>
+public class FolderLogDto : BaseDto, IMapFrom<FolderLog>
 {
-    public Guid Id { get; set; }
     public string Action { get; set; } = null!;
     public FolderDto? Object { get; set; }
     public DateTime Time { get; set; }

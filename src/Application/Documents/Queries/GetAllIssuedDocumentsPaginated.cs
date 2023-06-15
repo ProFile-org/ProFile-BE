@@ -51,24 +51,14 @@ public class GetAllIssuedDocumentsPaginated
                     x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<IssuedDocumentDto>())
-            {
-                sortBy = nameof(IssuedDocumentDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-            var count = await documents.CountAsync(cancellationToken);
-            var list  = await documents
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<IssuedDocumentDto>>(list);
-
-            return new PaginatedList<IssuedDocumentDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await documents
+                .ListPaginateWithFilterAsync<Document, IssuedDocumentDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

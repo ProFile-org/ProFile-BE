@@ -25,7 +25,7 @@ public class DepartmentsController : ApiControllerBase
     {
         var query = new GetDepartmentById.Query()
         {
-            DepartmentId = departmentId
+            DepartmentId = departmentId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DepartmentDto>.Succeed(result));
@@ -63,7 +63,7 @@ public class DepartmentsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<DepartmentDto>.Succeed(result));
     }
-
+    
     /// <summary>
     /// Update a department
     /// </summary>

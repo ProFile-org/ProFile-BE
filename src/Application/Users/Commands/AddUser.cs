@@ -55,7 +55,7 @@ public class AddUser
 
     public record Command : IRequest<UserDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User PerformingUser { get; init; } = null!;
         public string Username { get; init; } = null!;
         public string Email { get; init; } = null!;
         public string? FirstName { get; init; }
@@ -99,7 +99,6 @@ public class AddUser
             var password = StringUtil.RandomPassword();
             var salt = StringUtil.RandomSalt();
             
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var entity = new User
             {
                 Username = request.Username,
@@ -114,12 +113,12 @@ public class AddUser
                 IsActive = true,
                 IsActivated = false,
                 Created = LocalDateTime.FromDateTime(DateTime.Now),
-                CreatedBy = performingUser!.Id,
+                CreatedBy = request.PerformingUser.Id,
             };
             var log = new UserLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.PerformingUser,
+                UserId = request.PerformingUser.Id,
                 Object = entity,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = UserLogMessages.Add,

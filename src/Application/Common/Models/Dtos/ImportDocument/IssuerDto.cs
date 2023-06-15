@@ -3,9 +3,8 @@ using Domain.Entities;
 
 namespace Application.Common.Models.Dtos.ImportDocument;
 
-public class IssuerDto : IMapFrom<User>
+public class IssuerDto : BaseDto, IMapFrom<User>
 {
-    public Guid Id { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
     public string FirstName { get; set; }

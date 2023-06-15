@@ -5,9 +5,8 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
 
-public class BorrowDto : IMapFrom<Borrow>
+public class BorrowDto : BaseDto, IMapFrom<Borrow>
 {
-    public Guid Id { get; set; }
     public Guid BorrowerId { get; set; }
     public Guid DocumentId { get; set; }
     public DateTime BorrowTime { get; set; }

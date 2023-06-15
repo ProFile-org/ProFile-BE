@@ -17,6 +17,7 @@ public class ApproveBorrowRequest
     {
         public Guid PerformingUserId { get; init; }
         public Guid BorrowId { get; init; }
+        public string Reason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
@@ -91,6 +92,7 @@ public class ApproveBorrowRequest
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Approve,
+                Reason = request.Reason,
             };
             var result = _context.Borrows.Update(borrowRequest);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);

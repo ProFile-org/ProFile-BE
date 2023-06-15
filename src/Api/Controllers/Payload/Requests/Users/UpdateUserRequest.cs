@@ -17,4 +17,6 @@ public class UpdateUserRequest
     /// New position of the user to be updated
     /// </summary>
     public string? Position { get; set; }
+    public string Role { get; set; } = null!;
+    public bool IsActive { get; set; }
 }

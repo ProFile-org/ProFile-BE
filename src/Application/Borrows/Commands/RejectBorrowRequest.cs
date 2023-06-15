@@ -7,6 +7,7 @@ using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 
 namespace Application.Borrows.Commands;
@@ -17,6 +18,7 @@ public class RejectBorrowRequest
     {
         public Guid PerformingUserId { get; init; }
         public Guid BorrowId { get; init; }
+        public string Reason { get; init; } = null!;
     }
     
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
@@ -53,7 +55,8 @@ public class RejectBorrowRequest
                 UserId = performingUser!.Id,
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
-                Action = DocumentLogMessages.Borrow.Approve,
+                Action = DocumentLogMessages.Borrow.Reject,
+                Reason = request.Reason,
             };
             var result = _context.Borrows.Update(borrowRequest);
             await _context.RequestLogs.AddAsync(requestLog, cancellationToken);

@@ -6,9 +6,8 @@ using Domain.Entities.Logging;
 
 namespace Application.Common.Models.Dtos.Logging;
 
-public class RequestLogDto : IMapFrom<RequestLog>
+public class RequestLogDto : BaseDto, IMapFrom<RequestLog>
 {
-    public Guid Id { get; set; }
     public string Action { get; set; } = null!;
     public DocumentDto? Object { get; set; }
     public DateTime Time { get; set; }

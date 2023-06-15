@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Identity;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,31 +33,21 @@ public class GetAllEmployeesPaginated
 
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var users = _context.Users.AsQueryable()
+            var users = _context.Users
                 .Include(x => x.Department)
-                .Where(x => x.Department!.Id == request.DepartmentId 
+                .Where(x => x.Department!.Id == request.DepartmentId
                             && x.Role.Equals(IdentityData.Roles.Employee)
                             && x.IsActive
                             && x.IsActivated);
-
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<UserDto>())
-            {
-                sortBy = nameof(UserDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
             
-            var count = await users.CountAsync(cancellationToken);
-            var list  = await users
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<UserDto>>(list);
-
-            return new PaginatedList<UserDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await users
+                .ListPaginateWithFilterAsync<User, UserDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

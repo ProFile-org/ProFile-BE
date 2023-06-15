@@ -4,7 +4,7 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
 
-public class EmptyFolderDto : IMapFrom<Folder>
+public class EmptyFolderDto : BaseDto, IMapFrom<Folder>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

@@ -5,6 +5,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,24 +46,14 @@ public class GetAllRoomsPaginated
                     x.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
             
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<RoomDto>())
-            {
-                sortBy = nameof(RoomDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-
-            var count = await rooms.CountAsync(cancellationToken);
-            var list  = await rooms
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<RoomDto>>(list);
-
-            return new PaginatedList<RoomDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await rooms
+                .ListPaginateWithFilterAsync<Room, RoomDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

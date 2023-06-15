@@ -4,9 +4,8 @@ using Domain.Entities;
 
 namespace Application.Common.Models.Dtos;
 
-public class DepartmentDto : IMapFrom<Department>
+public class DepartmentDto : BaseDto, IMapFrom<Department>
 {
-    public Guid Id { get; set; }
     public string Name { get; set; } = null!;
     public Guid? RoomId { get; set; }
     

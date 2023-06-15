@@ -1,13 +1,11 @@
 using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Documents;
-using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
-using Application.Common.Models.Operations;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
 using Application.Identity;

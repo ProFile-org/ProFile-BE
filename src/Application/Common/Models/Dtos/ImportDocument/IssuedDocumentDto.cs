@@ -4,9 +4,8 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.ImportDocument;
 
-public class IssuedDocumentDto : IMapFrom<Document>
+public class IssuedDocumentDto : BaseDto, IMapFrom<Document>
 {
-    public Guid Id { get; set; }
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
     public string DocumentType { get; set; } = null!;

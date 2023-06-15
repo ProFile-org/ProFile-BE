@@ -5,6 +5,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,25 +46,14 @@ public class GetAllStaffsPaginated
                staffs = staffs.Where(x => x.User.Username.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<StaffDto>())
-            {
-                sortBy = nameof(StaffDto.Id);
-            }
-            
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-            var count = await staffs.CountAsync(cancellationToken);
-            var list = await staffs
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value,sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-
-            var result = _mapper.Map<List<StaffDto>>(list);
-            
-            return new PaginatedList<StaffDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await staffs
+                .ListPaginateWithFilterAsync<Staff, StaffDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

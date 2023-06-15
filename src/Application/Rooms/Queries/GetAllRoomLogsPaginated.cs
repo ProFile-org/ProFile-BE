@@ -3,6 +3,8 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Logging;
 using AutoMapper;
+using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,24 +46,12 @@ public class GetAllRoomLogsPaginated
                     x.Action.ToLower().Contains(request.SearchTerm.ToLower()));
             }
             
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<RoomLogDto>())
-            {
-                sortBy = nameof(RoomLogDto.Time);
-            }
-            var sortOrder = request.SortOrder ?? "desc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-
-            var count = await logs.CountAsync(cancellationToken);
-            var list  = await logs
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<RoomLogDto>>(list);
-
-            return new PaginatedList<RoomLogDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await logs
+                .LoggingListPaginateAsync<Room, RoomLog, RoomLogDto>(
+                    request.Page,
+                    request.Size,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

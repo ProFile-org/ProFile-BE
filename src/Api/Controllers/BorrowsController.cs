@@ -187,13 +187,14 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<BorrowDto>>> ApproveRequest([FromRoute] Guid borrowId)
+    public async Task<ActionResult<Result<BorrowDto>>> ApproveRequest([FromRoute] Guid borrowId, [FromBody] ApproveRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var command = new ApproveBorrowRequest.Command()
         {
             PerformingUserId = performingUserId,
             BorrowId = borrowId,
+            Reason = request.Reason,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
@@ -210,13 +211,14 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<BorrowDto>>> RejectRequest([FromRoute] Guid borrowId)
+    public async Task<ActionResult<Result<BorrowDto>>> RejectRequest([FromRoute] Guid borrowId, [FromBody] RejectRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var command = new RejectBorrowRequest.Command()
         {
             PerformingUserId = performingUserId,
             BorrowId = borrowId,
+            Reason = request.Reason,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));

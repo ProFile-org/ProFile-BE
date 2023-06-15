@@ -95,12 +95,6 @@ public class BorrowDocument
             {
                 throw new ConflictException("User is not allowed to borrow this document.");
             }
-            
-            var isGranted = _permissionManager.IsGranted(request.DocumentId, DocumentOperation.Borrow, request.BorrowerId);
-            if (!isGranted)
-            {
-                throw new UnauthorizedAccessException("You don't have permission to borrow this document.");
-            }
 
             // getting out a request of that document which is either not due or overdue
             // if the request is in time, meaning not overdue,
@@ -133,7 +127,7 @@ public class BorrowDocument
                     throw new ConflictException("This document cannot be borrowed.");
                 }
             }
-
+            
             var entity = new Borrow()
             {
                 Borrower = user,
@@ -142,13 +136,26 @@ public class BorrowDocument
                 DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
                 Reason = request.Reason,
                 Status = BorrowRequestStatus.Pending,
+                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                CreatedBy = user.Id,
             };
+            
+            if (document.IsPrivate)
+            {
+                var isGranted = _permissionManager.IsGranted(request.DocumentId, DocumentOperation.Borrow, request.BorrowerId);
+                if (!isGranted)
+                {
+                    throw new UnauthorizedAccessException("You don't have permission to borrow this document.");
+                }
+                entity.Status = BorrowRequestStatus.Approved;
+            }
+
             var log = new DocumentLog()
             {
                 UserId = user.Id,
                 User = user,
                 Object = document,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = DocumentLogMessages.Borrow.NewBorrowRequest,
             };
 

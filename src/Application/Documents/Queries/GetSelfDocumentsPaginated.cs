@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,24 +45,14 @@ public class GetSelfDocumentsPaginated
                         x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
                 }
                 
-                var sortBy = request.SortBy;
-                if (sortBy is null || !sortBy.MatchesPropertyName<DocumentDto>())
-                {
-                    sortBy = nameof(DocumentDto.Id);
-                }
-                var sortOrder = request.SortOrder ?? "asc";
-                var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-                var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-                var count = await documents.CountAsync(cancellationToken);
-                var list  = await documents
-                    .OrderByCustom(sortBy, sortOrder)
-                    .Paginate(pageNumber.Value, sizeNumber.Value)
-                    .ToListAsync(cancellationToken);
-            
-                var result = _mapper.Map<List<DocumentDto>>(list);
-
-                return new PaginatedList<DocumentDto>(result, count, pageNumber.Value, sizeNumber.Value);
+                return await documents
+                    .ListPaginateWithFilterAsync<Document, DocumentDto>(
+                        request.Page,
+                        request.Size,
+                        request.SortBy,
+                        request.SortOrder,
+                        _mapper.ConfigurationProvider,
+                        cancellationToken);
             }
         }
     }
