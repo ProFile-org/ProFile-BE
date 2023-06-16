@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
@@ -33,7 +34,7 @@ public class UpdateRoom
     }
     public record Command : IRequest<RoomDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; }
         public Guid RoomId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -45,11 +46,13 @@ public class UpdateRoom
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
@@ -64,12 +67,7 @@ public class UpdateRoom
                 throw new KeyNotFoundException("Room does not exist.");
             }
             
-            var nameExisted = await _context.Rooms.AnyAsync(x => x.Name
-                .ToLower().Equals(request.Name.ToLower())
-                && x.Id != room.Id
-                , cancellationToken: cancellationToken);
-
-            if (nameExisted)
+            if (await DuplicatedNameRoomExistsAsync(request.Name, request.RoomId, cancellationToken))
             {
                 throw new ConflictException("Name has already exists.");
             }
@@ -79,30 +77,46 @@ public class UpdateRoom
                 throw new ConflictException("New capacity cannot be less than current number of lockers.");
             }
 
-            var performingUser = await _context.Users
-                .FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-            
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
             // update work
             room.Name = request.Name;
             room.Description = request.Description;
             room.Capacity = request.Capacity;
             room.IsAvailable = request.IsAvailable;
-            room.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
-            room.LastModifiedBy = performingUser!.Id;
+            room.LastModified = localDateTimeNow;
+            room.LastModifiedBy = request.CurrentUser.Id;
             
             var log = new RoomLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = room,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = RoomLogMessage.Update,
             };
-
             var result = _context.Rooms.Update(room);
             await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<RoomDto>(result.Entity);
         }
+        
+        private async Task<bool> DuplicatedNameRoomExistsAsync(
+            string roomName,
+            Guid roomId,
+            CancellationToken cancellationToken)
+        {
+            var room = await _context.Rooms.FirstOrDefaultAsync(
+                x => EqualsInvariant(x.Name, roomName) 
+                     && IsNotSameRoom(x.Id, roomId),
+                cancellationToken);
+            return room is not null;
+        }
+        
+        private static bool EqualsInvariant(string x, string y)
+            => x.Trim().ToLower().Equals(y.Trim().ToLower());
+
+        private static bool IsNotSameRoom(Guid roomId1, Guid roomId2)
+            => roomId1 != roomId2;
     }
 }

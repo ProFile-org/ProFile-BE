@@ -27,7 +27,7 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="roomId">Id of the room to be retrieved</param>
     /// <returns>A RoomDto of the retrieved room</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -35,8 +35,12 @@ public class RoomsController : ApiControllerBase
     public async Task<ActionResult<Result<RoomDto>>> GetById(
         [FromRoute] Guid roomId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetRoomById.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             RoomId = roomId,
         };
         var result = await Mediator.Send(query);
@@ -107,10 +111,10 @@ public class RoomsController : ApiControllerBase
     public async Task<ActionResult<Result<RoomDto>>> AddRoom(
         [FromBody] AddRoomRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new AddRoom.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -157,10 +161,10 @@ public class RoomsController : ApiControllerBase
         [FromRoute] Guid roomId,
         [FromBody] UpdateRoomRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateRoom.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             RoomId = roomId,
             Name = request.Name,
             Description = request.Description,

@@ -39,7 +39,7 @@ public class AddDepartment
 
             var entity = new Department
             {
-                Name = request.Name
+                Name = request.Name,
             };
 
             var result = await _context.Departments.AddAsync(entity, cancellationToken);

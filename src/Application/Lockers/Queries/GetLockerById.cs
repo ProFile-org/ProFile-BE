@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using AutoMapper;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +42,7 @@ public class GetLockerById
             }
 
             if (request.CurrentUserRole.IsStaff()
-                && !LockerInSameDepartment(locker.Room.DepartmentId, request.CurrentUserDepartmentId))
+                && !LockerInSameDepartment(locker, request.CurrentUserDepartmentId))
             {
                 throw new UnauthorizedAccessException();
             }
@@ -50,8 +51,8 @@ public class GetLockerById
         }
 
         private static bool LockerInSameDepartment(
-            Guid lockerDepartmentId,
-            Guid currentUserDepartmentId)
-            => lockerDepartmentId == currentUserDepartmentId;
+            Locker locker,
+            Guid departmentId)
+            => locker.Room.DepartmentId == departmentId;
     }
 }

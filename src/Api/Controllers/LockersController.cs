@@ -87,12 +87,13 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Add([FromBody] AddLockerRequest request)
+    public async Task<ActionResult<Result<LockerDto>>> Add(
+        [FromBody] AddLockerRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new AddLocker.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -107,6 +108,7 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="lockerId">Id of the locker to be removed</param>
     /// <returns>A LockerDto of the removed locker</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpDelete("{lockerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -123,66 +125,25 @@ public class LockersController : ApiControllerBase
     }
 
     /// <summary>
-    /// Enable a locker
-    /// </summary>
-    /// <param name="lockerId">Id of the locker to be enabled</param>
-    /// <returns>A LockerDto of the enabled locker</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("enable/{lockerId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Enable([FromRoute] Guid lockerId)
-    {
-        var command = new EnableLocker.Command()
-        {
-            LockerId = lockerId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<LockerDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Disable a locker
-    /// </summary>
-    /// <param name="lockerId">Id of the locker to be disabled</param>
-    /// <returns>A LockerDto of the disabled locker</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("disable/{lockerId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Disable([FromRoute] Guid lockerId)
-    {
-        var command = new DisableLocker.Command()
-        {
-            LockerId = lockerId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<LockerDto>.Succeed(result));
-    }
-
-    /// <summary>
     /// Update a locker
     /// </summary>
     /// <param name="lockerId">Id of the locker to be updated</param>
     /// <param name="request">Update locker details</param>
     /// <returns>A LockerDto of the updated locker</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPut("{lockerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<LockerDto>>> Update([FromRoute] Guid lockerId, [FromBody] UpdateLockerRequest request)
+    public async Task<ActionResult<Result<LockerDto>>> Update(
+        [FromRoute] Guid lockerId,
+        [FromBody] UpdateLockerRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateLocker.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             LockerId = lockerId,
             Name = request.Name,
             Description = request.Description,
@@ -193,10 +154,10 @@ public class LockersController : ApiControllerBase
     }
     
     /// <summary>
-    /// Get all logs related to locker.
+    /// Get all logs related to locker
     /// </summary>
     /// <param name="queryParameters">Query parameters</param>
-    /// <returns>A list of LockerLogsDtos.</returns>
+    /// <returns>A list of LockerLogsDtos</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -220,7 +181,7 @@ public class LockersController : ApiControllerBase
     /// <param name="logId">Id of the requested log</param>
     /// <returns>A LockerLogDto of the requested log.</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("log/{logId:guid}")]
+    [HttpGet("logs/{logId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -228,9 +189,8 @@ public class LockersController : ApiControllerBase
     {
         var query = new GetLockerLogById.Query()
         {
-            LogId = logId
+            LogId = logId,
         };
-
         var result = await Mediator.Send(query);
         return Ok(Result<LockerLogDto>.Succeed(result));
     }

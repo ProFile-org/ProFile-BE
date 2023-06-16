@@ -43,23 +43,20 @@ public class RemoveLocker
                 .Include(x => x.Room)
                 .ThenInclude(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
-                
+            
             if (locker is null)
             {
                 throw new KeyNotFoundException("Locker does not exist.");
             }
-            
+
             var canNotRemove = await _context.Documents
-                                    .CountAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken)
-                                > 0;
-    
+                .AnyAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken);
             if (canNotRemove)
             {
-                throw new InvalidOperationException("Locker cannot be removed because it contains documents.");
+                throw new ConflictException("Locker cannot be removed because it contains documents.");
             }
 
             var room = locker.Room;
-            
             var result = _context.Lockers.Remove(locker);
             room.NumberOfLockers -= 1;
             _context.Rooms.Update(room);

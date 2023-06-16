@@ -45,11 +45,13 @@ public class UpdateUser
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
@@ -69,19 +71,22 @@ public class UpdateUser
                 throw new KeyNotFoundException("User does not exist.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
             user.Position = request.Position;
             user.Role = request.Role;
             user.IsActive = request.IsActive;
-            user.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            user.LastModified = localDateTimeNow;
             user.LastModifiedBy = request.CurrentUser.Id;
+            
             var log = new UserLog()
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
                 Object = user,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = UserLogMessages.Update,
             };
             var result = _context.Users.Update(user);

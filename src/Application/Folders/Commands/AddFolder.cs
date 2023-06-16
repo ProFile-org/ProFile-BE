@@ -1,8 +1,10 @@
 using Application.Common.Exceptions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
@@ -39,7 +41,7 @@ public class AddFolder
 
     public record Command : IRequest<FolderDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
@@ -50,16 +52,20 @@ public class AddFolder
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var locker = await _context.Lockers.FirstOrDefaultAsync(l => l.Id == request.LockerId, cancellationToken);
+            var locker = await _context.Lockers
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(l => l.Id == request.LockerId, cancellationToken);
 
             if (locker is null)
             {
@@ -71,16 +77,19 @@ public class AddFolder
                 throw new LimitExceededException("This locker cannot accept more folders.");
             }
 
-            var folder = await _context.Folders.FirstOrDefaultAsync(x =>
-                x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower())
-                && x.Locker.Id.Equals(request.LockerId), cancellationToken);
+            if (request.CurrentUser.Role.IsStaff()
+                && !LockerExistsAndInSameDepartment(locker, request.CurrentUser.Department?.Id))
+            {
+                throw new UnauthorizedAccessException("User cannot add this resource.");
+            }
 
-            if (folder is not null)
+            if (await DuplicatedNameFolderExistsInSameLockerAsync(request.Name, locker.Id, cancellationToken))
             {
                 throw new ConflictException("Folder name already exists.");
             }
-
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             var entity = new Folder
             {
                 Name = request.Name.Trim(),
@@ -89,15 +98,16 @@ public class AddFolder
                 Capacity = request.Capacity,
                 Locker = locker,
                 IsAvailable = true,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
-                CreatedBy = performingUser!.Id,
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
+            
             var log = new FolderLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = FolderLogMessage.Add,
             };
             var result = await _context.Folders.AddAsync(entity, cancellationToken);
@@ -107,5 +117,22 @@ public class AddFolder
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<FolderDto>(result.Entity);
         }
+        
+        private async Task<bool> DuplicatedNameFolderExistsInSameLockerAsync(string folderName, Guid lockerId, CancellationToken cancellationToken)
+        {
+            var folder = await _context.Folders.FirstOrDefaultAsync(
+                x => EqualsInvariant(x.Name, folderName) 
+                     && IsSameLocker(x.Locker.Id, lockerId), cancellationToken);
+            return folder is not null;
+        }
+
+        private static bool EqualsInvariant(string x, string y)
+            => x.Trim().ToLower().Equals(y.Trim().ToLower());
+
+        private static bool IsSameLocker(Guid lockerId1, Guid lockerId2)
+            => lockerId1 == lockerId2;
+
+        private static bool LockerExistsAndInSameDepartment(Locker locker, Guid? departmentId)
+            => departmentId is not null && locker.Room.DepartmentId == departmentId;
     }
 }

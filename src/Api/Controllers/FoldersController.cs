@@ -33,8 +33,12 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<FolderDto>>> GetById([FromRoute] Guid folderId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetFolderById.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(query);
@@ -53,8 +57,12 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<FolderDto>>>> GetAllPaginated(
         [FromQuery] GetAllFoldersPaginatedQueryParameters queryParameters)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetAllFoldersPaginated.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
             SearchTerm = queryParameters.SearchTerm,
@@ -72,7 +80,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="request">Add folder details</param>
     /// <returns>A FolderDto of the added folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,10 +89,10 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new AddFolder.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -99,7 +107,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="folderId">Id of the folder to be removed</param>
     /// <returns>A FolderDto of the removed folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpDelete("{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,58 +116,18 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var command = new RemoveFolder.Command()
         {
-            FolderId = folderId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<FolderDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Enable a folder
-    /// </summary>
-    /// <param name="folderId">Id of the folder to be enabled</param>
-    /// <returns>A FolderDto of the enabled folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("enable/{folderId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> EnableFolder([FromRoute] Guid folderId)
-    {
-        var command = new EnableFolder.Command()
-        {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }
 
-    /// <summary>
-    /// Disable a folder
-    /// </summary>
-    /// <param name="folderId">Id of the disabled folder</param>
-    /// <returns>A FolderDto of the disabled folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("disable/{folderId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromRoute] Guid folderId)
-    {
-        var command = new DisableFolder.Command()
-        {
-            FolderId = folderId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<FolderDto>.Succeed(result));
-    }
-    
     /// <summary>
     /// Update a folder
     /// </summary>
@@ -173,10 +141,10 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateFolder.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             FolderId = folderId,
             Name = request.Name,
             Description = request.Description,

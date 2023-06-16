@@ -41,15 +41,15 @@ public class RemoveRoom
         {
             var room = await _context.Rooms
                 .Include(x => x.Department)
-                .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
-
+                .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken);
+            
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
             }
 
             var canNotRemove = await _context.Documents
-                .AnyAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
+                .AnyAsync(x => x.Department!.Id == room.DepartmentId, cancellationToken);
             if (canNotRemove)
             {
                 throw new ConflictException("Room cannot be removed because it contains documents.");

@@ -70,12 +70,14 @@ public class AddUser
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ISecurityService _securityService;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService)
+        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
             _securityService = securityService;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
@@ -99,6 +101,8 @@ public class AddUser
             var password = StringUtil.RandomPassword();
             var salt = StringUtil.RandomSalt();
             
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
             var entity = new User
             {
                 Username = request.Username,
@@ -112,15 +116,16 @@ public class AddUser
                 Position = request.Position,
                 IsActive = true,
                 IsActivated = false,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                Created = localDateTimeNow,
                 CreatedBy = request.PerformingUser.Id,
             };
+            
             var log = new UserLog()
             {
                 User = request.PerformingUser,
                 UserId = request.PerformingUser.Id,
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = UserLogMessages.Add,
             };
             entity.AddDomainEvent(new UserCreatedEvent(entity, password));

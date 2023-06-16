@@ -23,6 +23,7 @@ public static class ConfigureServices
         services.AddScoped<IAuthDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IPermissionManager, PermissionManager>();
+        services.AddTransient<IDateTimeProvider, DateTimeService>();
         services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);

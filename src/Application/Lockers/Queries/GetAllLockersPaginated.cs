@@ -18,7 +18,7 @@ public class GetAllLockersPaginated
     {
         public string CurrentUserRole { get; init; } = null!;
         public Guid CurrentUserDepartmentId { get; init; }
-        public Guid? RoomId { get; set; }
+        public Guid? RoomId { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -39,11 +39,6 @@ public class GetAllLockersPaginated
 
         public async Task<PaginatedList<LockerDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var lockers = _context.Lockers
-                .Include(x => x.Room)
-                .ThenInclude(y => y.Department)
-                .AsQueryable();
-
             if (request.CurrentUserRole.IsStaff())
             {
                 if (request.RoomId is null)
@@ -64,6 +59,11 @@ public class GetAllLockersPaginated
                 }
             }
             
+            var lockers = _context.Lockers
+                .Include(x => x.Room)
+                .ThenInclude(y => y.Department)
+                .AsQueryable();
+
             if (request.RoomId is not null)
             {
                 lockers = lockers.Where(x => x.Room.Id == request.RoomId);
@@ -90,7 +90,7 @@ public class GetAllLockersPaginated
                 x => x.DepartmentId == departmentId,
                 cancellationToken);
 
-        private static bool IsSameRoom(Guid currentUserRoomId, Guid roomId)
-            => currentUserRoomId == roomId;
+        private static bool IsSameRoom(Guid roomId1, Guid roomId2)
+            => roomId1 == roomId2;
     }
 }

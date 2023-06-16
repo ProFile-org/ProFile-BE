@@ -105,31 +105,7 @@ public class DepartmentsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<DepartmentDto>.Succeed(result));
     }
-    
-    /// <summary>
-    /// Update a department
-    /// </summary>
-    /// <param name="departmentId">Id of the department to be updated</param>
-    /// <param name="request">Update department details</param>
-    /// <returns>A DepartmentDto of the updated department</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpPut("{departmentId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DepartmentDto>>> Update(
-        [FromRoute] Guid departmentId,
-        [FromBody] UpdateDepartmentRequest request)
-    {
-        var command = new UpdateDepartment.Command()
-        {
-            DepartmentId = departmentId,
-            Name = request.Name,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<DepartmentDto>.Succeed(result));
-    }
-    
+
     /// <summary>
     /// Delete a department
     /// </summary>

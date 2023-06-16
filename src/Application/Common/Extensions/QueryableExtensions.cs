@@ -15,12 +15,12 @@ public static class QueryableExtensions
         var type = typeof(TEntity);
         var expression2 = Expression.Parameter(type, "t");
         var property = type.GetProperty(sortBy);
-        var expression1 = Expression.MakeMemberAccess(expression2, property);
+        var expression1 = Expression.MakeMemberAccess(expression2, property!);
         var lambda = Expression.Lambda(expression1, expression2);
         var result = Expression.Call(
             typeof(Queryable),
             sortOrder.Equals("desc") ? "OrderByDescending" : "OrderBy",
-            new Type[] { type, property.PropertyType },
+            new Type[] { type, property!.PropertyType },
             items.Expression,
             Expression.Quote(lambda));
 
@@ -43,7 +43,7 @@ public static class QueryableExtensions
         where TEntity : BaseEntity
     {
         var pageNumber = page is null or <= 0 ? 1 : page;
-        var sizeNumber = size is null or <= 0 ? 5 : size;
+        var sizeNumber = size is null or <= 0 ? 10 : size;
 
         var count = await items.CountAsync(cancellationToken);
         var list  = await items
@@ -74,7 +74,7 @@ public static class QueryableExtensions
             
         sortOrder ??= "asc";
         var pageNumber = page is null or <= 0 ? 1 : page;
-        var sizeNumber = size is null or <= 0 ? 5 : size;
+        var sizeNumber = size is null or <= 0 ? 10 : size;
             
         var count = await items.CountAsync(cancellationToken);
         var list  = await items

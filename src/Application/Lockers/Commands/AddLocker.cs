@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
@@ -10,7 +11,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
-using Org.BouncyCastle.Math.EC.Rfc8032;
 
 namespace Application.Lockers.Commands;
 
@@ -39,7 +39,7 @@ public class AddLocker
 
     public record Command : IRequest<LockerDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public Guid RoomId { get; init; }
@@ -50,11 +50,13 @@ public class AddLocker
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
@@ -68,21 +70,17 @@ public class AddLocker
 
             if (room.NumberOfLockers >= room.Capacity)
             {
-                throw new LimitExceededException(
-                    "This room cannot accept more lockers."
-                );
+                throw new LimitExceededException("This room cannot accept more lockers.");
             }
 
-            var locker = await _context.Lockers.FirstOrDefaultAsync(
-                x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) && x.Room.Id.Equals(request.RoomId),
-                cancellationToken);
-            if (locker is not null)
+            if (await DuplicatedNameLockerExistsInSameRoomAsync(request.Name, request.RoomId, cancellationToken))
             {
                 throw new ConflictException("Locker name already exists.");
             }
 
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-            var entity = new Locker
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            var entity = new Locker()
             {
                 Name = request.Name.Trim(),
                 Description = request.Description?.Trim(),
@@ -90,18 +88,18 @@ public class AddLocker
                 Capacity = request.Capacity,
                 Room = room,
                 IsAvailable = true,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
-                CreatedBy = performingUser!.Id,
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
+            
             var log = new LockerLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = LockerLogMessage.Add,
             };
-
             var result = await _context.Lockers.AddAsync(entity, cancellationToken);
             room.NumberOfLockers += 1;
             _context.Rooms.Update(room);
@@ -109,5 +107,19 @@ public class AddLocker
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<LockerDto>(result.Entity);
         }
+
+        private async Task<bool> DuplicatedNameLockerExistsInSameRoomAsync(string lockerName, Guid roomId, CancellationToken cancellationToken)
+        {
+            var locker = await _context.Lockers.FirstOrDefaultAsync(
+                x => EqualsInvariant(x.Name, lockerName) 
+                     && IsSameRoom(x.Room.Id, roomId), cancellationToken);
+            return locker is not null;
+        }
+
+        private static bool EqualsInvariant(string x, string y)
+            => x.Trim().ToLower().Equals(y.Trim().ToLower());
+
+        private static bool IsSameRoom(Guid roomId1, Guid roomId2)
+            => roomId1 == roomId2;
     }
 }

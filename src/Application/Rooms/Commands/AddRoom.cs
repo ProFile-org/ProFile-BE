@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
@@ -44,7 +45,7 @@ public class AddRoom
     
     public record Command : IRequest<RoomDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
@@ -55,10 +56,12 @@ public class AddRoom
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        private readonly IDateTimeProvider _dateTimeProvider;
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
         
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
@@ -79,7 +82,7 @@ public class AddRoom
                 throw new ConflictException("Room name already exists.");
             }
             
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
             var entity = new Room
             {
                 Name = request.Name.Trim(),
@@ -89,15 +92,16 @@ public class AddRoom
                 Department = department,
                 DepartmentId = request.DepartmentId,
                 IsAvailable = true,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
-                CreatedBy = performingUser!.Id,
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
+            
             var log = new RoomLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = RoomLogMessage.Add,
             };
             var result = await _context.Rooms.AddAsync(entity, cancellationToken);

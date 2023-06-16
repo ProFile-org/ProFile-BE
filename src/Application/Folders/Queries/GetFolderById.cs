@@ -1,6 +1,8 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,8 @@ public class GetFolderById
 {
     public record Query : IRequest<FolderDto>
     {
+        public string CurrentUserRole { get; init; } = null!;
+        public Guid CurrentUserDepartmentId { get; init; }
         public Guid FolderId { get; init; }
     }
 
@@ -36,8 +40,17 @@ public class GetFolderById
             {
                 throw new KeyNotFoundException("Folder does not exist.");
             }
+            
+            if (request.CurrentUserRole.IsStaff()
+                && !FolderInSameDepartment(folder, request.CurrentUserDepartmentId))
+            {
+                throw new UnauthorizedAccessException();
+            }
 
             return _mapper.Map<FolderDto>(folder);
         }
+        
+        private static bool FolderInSameDepartment(Folder folder, Guid departmentId)
+            => folder.Locker.Room.DepartmentId == departmentId;
     }
 }

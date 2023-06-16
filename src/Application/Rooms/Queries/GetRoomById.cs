@@ -1,3 +1,4 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -11,6 +12,8 @@ public class GetRoomById
 {
     public record Query : IRequest<RoomDto>
     {
+        public string CurrentUserRole { get; init; } = null!;
+        public Guid CurrentUserDepartmentId { get; init; }
         public Guid RoomId { get; init; }
     }
     
@@ -31,13 +34,22 @@ public class GetRoomById
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
                 .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken: cancellationToken);
-           
+            
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
             }
-
+            
+            if (request.CurrentUserRole.IsStaff()
+                && !IsSameDepartment(request.CurrentUserDepartmentId, room.DepartmentId))
+            {
+                throw new UnauthorizedAccessException("User cannot update this resource.");
+            }
+            
             return _mapper.Map<RoomDto>(room);
         }
+        
+        private static bool IsSameDepartment(Guid departmentId1, Guid departmentId2)
+            => departmentId1 == departmentId2;
     }
 }
