@@ -38,6 +38,7 @@ public class UpdateRoom
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, RoomDto>
@@ -80,37 +81,28 @@ public class UpdateRoom
 
             var performingUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-            var updatedRoom = new Room
-            {
-                Id = room.Id,
-                Name = request.Name,
-                Description = request.Description,
-                Staff = room.Staff,
-                Department = room.Department,
-                DepartmentId = room.DepartmentId,
-                Capacity = request.Capacity,
-                NumberOfLockers = room.NumberOfLockers,
-                IsAvailable = room.IsAvailable,
-                Lockers = room.Lockers,
-                LastModified = LocalDateTime.FromDateTime(DateTime.Now),
-                LastModifiedBy = performingUser!.Id,
-            };
+            
+            // update work
+            room.Name = request.Name;
+            room.Description = request.Description;
+            room.Capacity = request.Capacity;
+            room.IsAvailable = request.IsAvailable;
+            room.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            room.LastModifiedBy = performingUser!.Id;
+            
             var log = new RoomLog()
             {
                 User = performingUser,
                 UserId = performingUser.Id,
-                Object = updatedRoom,
+                Object = room,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = RoomLogMessage.Update,
             };
 
-            _context.Rooms.Entry(room).State = EntityState.Detached;
-            _context.Rooms.Entry(updatedRoom).State = EntityState.Modified;
+            var result = _context.Rooms.Update(room);
             await _context.RoomLogs.AddAsync(log, cancellationToken);
-            
             await _context.SaveChangesAsync(cancellationToken);
-            
-            return _mapper.Map<RoomDto>(updatedRoom);
+            return _mapper.Map<RoomDto>(result.Entity);
         }
     }
 }

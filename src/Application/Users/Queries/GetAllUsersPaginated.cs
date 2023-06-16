@@ -1,14 +1,10 @@
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
-using Application.Common.Mappings;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries;
 
@@ -16,7 +12,8 @@ public class GetAllUsersPaginated
 {
     public record Query : IRequest<PaginatedList<UserDto>>
     {
-        public Guid? DepartmentId { get; init; }
+        public Guid[]? DepartmentIds { get; init; }
+        public string? Role { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -37,14 +34,22 @@ public class GetAllUsersPaginated
 
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var users = _context.Users.AsQueryable()
+            var users = _context.Users
                 .Where(x => !x.Role.Equals(IdentityData.Roles.Admin));
 
-            if (request.DepartmentId is not null)
+            // Filter by department
+            if (request.DepartmentIds is not null)
             {
-                users = users.Where(x => x.Department!.Id == request.DepartmentId);
+                users = users.Where(x => request.DepartmentIds.Contains(x.Department!.Id) );
+            }
+
+            // Filter by role
+            if (request.Role is not null)
+            {
+                users = users.Where(x => x.Role.Equals(request.Role));
             }
             
+            // Search
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 users = users.Where(x =>

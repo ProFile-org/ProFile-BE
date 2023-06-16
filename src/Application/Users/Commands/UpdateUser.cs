@@ -1,5 +1,7 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
+using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
@@ -31,7 +33,7 @@ public class UpdateUser
     }
     public record Command : IRequest<UserDto>
     {
-        public User PerformingUser { get; init; } = null!;
+        public User CurrentUser { get; init; } = null!;
         public Guid UserId { get; init; }
         public string? FirstName { get; init; }
         public string? LastName { get; init; }
@@ -52,6 +54,13 @@ public class UpdateUser
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
         {
+            // save a roundtrip to db
+            if (request.CurrentUser.Role.IsAdmin()
+                && UpdateSelf(request.CurrentUser.Id, request.UserId))
+            {
+                throw new UnauthorizedAccessException("User cannot update this resource.");
+            }
+            
             var user = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.UserId), cancellationToken: cancellationToken);
 
@@ -66,11 +75,11 @@ public class UpdateUser
             user.Role = request.Role;
             user.IsActive = request.IsActive;
             user.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
-            user.LastModifiedBy = request.PerformingUser.Id;
+            user.LastModifiedBy = request.CurrentUser.Id;
             var log = new UserLog()
             {
-                User = request.PerformingUser,
-                UserId = request.PerformingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = user,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = UserLogMessages.Update,
@@ -80,5 +89,8 @@ public class UpdateUser
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
         }
+
+        private static bool UpdateSelf(Guid currentUserId, Guid updatingUserId)
+            => updatingUserId == currentUserId;
     }
 }

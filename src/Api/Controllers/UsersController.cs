@@ -26,14 +26,19 @@ public class UsersController : ApiControllerBase
     /// </summary>
     /// <param name="userId">Id of the user to be retrieved</param>
     /// <returns>A UserDto of the retrieved user</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<UserDto>>> GetById([FromRoute] Guid userId)
     {
-        var query = new GetUserById.Query
+        var role = _currentUserService.GetRole();
+        var userDepartmentId = _currentUserService.GetDepartmentId();
+        var query = new GetUserById.Query()
         {
+            UserRole = role,
+            UserDepartmentId = userDepartmentId,
             UserId = userId,
         };
         var result = await Mediator.Send(query);
@@ -45,6 +50,7 @@ public class UsersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all users query parameters</param>
     /// <returns>A paginated list of UserDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -53,7 +59,36 @@ public class UsersController : ApiControllerBase
     {
         var query = new GetAllUsersPaginated.Query()
         {
-            DepartmentId = queryParameters.DepartmentId,
+            DepartmentIds = queryParameters.DepartmentIds,
+            Role = queryParameters.Role,
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all employees in the same department
+    /// </summary>
+    /// <param name="queryParameters">Query parameters</param>
+    /// <returns>A list of UserDtos</returns>
+    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [HttpGet("employees")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllEmployeesPaginated(
+        [FromQuery] GetAllEmployeesPaginatedQueryParameters queryParameters)
+    {
+        var departmentId = _currentUserService.GetDepartmentId();
+        var query = new GetAllUsersPaginated.Query()
+        {
+            DepartmentIds = new []{ departmentId },
+            Role = IdentityData.Roles.Employee,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
@@ -69,6 +104,7 @@ public class UsersController : ApiControllerBase
     /// </summary>
     /// <param name="request">Add user details</param>
     /// <returns>A UserDto of the added user</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -99,17 +135,20 @@ public class UsersController : ApiControllerBase
     /// <param name="userId">Id of the user to be updated</param>
     /// <param name="request">Update user details</param>
     /// <returns>A UserDto of the updated user</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPut("{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<UserDto>>> Update([FromRoute] Guid userId, [FromBody] UpdateUserRequest request)
+    public async Task<ActionResult<Result<UserDto>>> Update(
+        [FromRoute] Guid userId,
+        [FromBody] UpdateUserRequest request)
     {
-        var performingUser = _currentUserService.GetCurrentUser();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateUser.Command()
         {
-            PerformingUser = performingUser,
+            CurrentUser = currentUser,
             UserId = userId,
             FirstName = request.FirstName,
             LastName = request.LastName,
@@ -120,47 +159,46 @@ public class UsersController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
     }
-
+    
     /// <summary>
-    /// Get all employees in the same department
+    /// Update a user
     /// </summary>
-    /// <param name="queryParameters">Query parameters</param>
-    /// <returns>A list of UserDtos</returns>
-    [HttpGet]
+    /// <param name="request">Update user details</param>
+    /// <returns>A UserDto of the updated user</returns>
+    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [HttpPut("self")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<PaginatedList<UserDto>>>> GetAllEmployeesPaginated(
-        [FromQuery] GetAllEmployeesPaginatedQueryParameters queryParameters)
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<Result<UserDto>>> UpdateSelf(
+        [FromBody] UpdateSelfRequest request)
     {
-        var departmentId = _currentUserService.GetDepartmentId();
-        
-        if (departmentId is null)
+        var currentUser = _currentUserService.GetCurrentUser();
+        var command = new UpdateUser.Command()
         {
-            throw new KeyNotFoundException("User does not belong to a department.");
-        }
-        
-        var query = new GetAllEmployeesPaginated.Query()
-        {
-            DepartmentId = departmentId.Value,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
+            CurrentUser = currentUser,
+            UserId = currentUser.Id,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Position = currentUser.Position,
+            Role = currentUser.Role,
+            IsActive = currentUser.IsActive,
         };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<UserDto>>.Succeed(result));
+        var result = await Mediator.Send(command);
+        return Ok(Result<UserDto>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Get all user related logs paginated
     /// </summary>
     /// <param name="queryParameters">Get all users related logs query parameters</param>
     /// <returns>A paginated list of UserLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<UserLogDto>>>> GetAllUserLogs(
+    public async Task<ActionResult<Result<PaginatedList<UserLogDto>>>> GetAllLogsPaginated(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllUserLogsPaginated.Query()
@@ -177,18 +215,19 @@ public class UsersController : ApiControllerBase
     /// Get user related log by Id
     /// </summary>
     /// <param name="logId">Id of the logged user</param>
-    /// <returns>UserLogDto of the logged user</returns>
+    /// <returns>A UserLogDto of the logged user</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("log/{logId:guid}")]
+    [HttpGet("logs/{logId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<UserLogDto>>> GetUserLogById([FromRoute] Guid logId)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<UserLogDto>>> GetLogById(
+        [FromRoute] Guid logId)
     {
         var query = new GetUserLogById.Query()
         {
-            LogId = logId
+            LogId = logId,
         };
-
         var result = await Mediator.Send(query);
         return Ok(Result<UserLogDto>.Succeed(result));
     }

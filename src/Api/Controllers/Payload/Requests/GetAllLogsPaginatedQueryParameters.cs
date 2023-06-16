@@ -5,6 +5,9 @@
 /// </summary>
 public class GetAllLogsPaginatedQueryParameters
 {
+    /// <summary>
+    /// Search term
+    /// </summary>
     public string? SearchTerm { get; set; }
     /// <summary>
     /// Page number

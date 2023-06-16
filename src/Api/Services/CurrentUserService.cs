@@ -42,12 +42,12 @@ public class CurrentUserService : ICurrentUserService
         return user.Role;
     }
 
-    public Guid? GetDepartmentId()
+    public Guid GetDepartmentId()
     {
         var claim =  _httpContextAccessor.HttpContext!.User.Claims
             .FirstOrDefault(x => x.Type.Equals("departmentId"));
         var id = claim?.Value;
-        return id is not null && Guid.TryParse(id, out _) ? Guid.Parse(id) : null;
+        return Guid.Parse(id!);
     }
 
     public User GetCurrentUser()

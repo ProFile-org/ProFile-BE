@@ -6,7 +6,7 @@ public interface ICurrentUserService
 {
     Guid GetId();
     string GetRole();
-    Guid? GetDepartmentId();
+    Guid GetDepartmentId();
     User GetCurrentUser();
     Guid? GetCurrentRoomForStaff();
     Guid? GetCurrentDepartmentForStaff();

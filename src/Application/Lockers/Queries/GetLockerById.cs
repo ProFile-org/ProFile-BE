@@ -1,5 +1,7 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,8 @@ public class GetLockerById
 {
     public record Query : IRequest<LockerDto>
     {
+        public string CurrentUserRole { get; init; } = null!;
+        public Guid CurrentUserDepartmentId { get; init; }
         public Guid LockerId { get; init; }
     }
     
@@ -36,7 +40,18 @@ public class GetLockerById
                 throw new KeyNotFoundException("Locker does not exist.");
             }
 
+            if (request.CurrentUserRole.IsStaff()
+                && !LockerInSameDepartment(locker.Room.DepartmentId, request.CurrentUserDepartmentId))
+            {
+                throw new UnauthorizedAccessException();
+            }
+            
             return _mapper.Map<LockerDto>(locker);
         }
+
+        private static bool LockerInSameDepartment(
+            Guid lockerDepartmentId,
+            Guid currentUserDepartmentId)
+            => lockerDepartmentId == currentUserDepartmentId;
     }
 }

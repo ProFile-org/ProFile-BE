@@ -26,14 +26,20 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="lockerId">Id of the locker to be retrieved</param>
     /// <returns>A LockerDto of the retrieved locker</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{lockerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<LockerDto>>> GetById([FromRoute] Guid lockerId)
+    public async Task<ActionResult<Result<LockerDto>>> GetById(
+        [FromRoute] Guid lockerId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetLockerById.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             LockerId = lockerId,
         };
         var result = await Mediator.Send(query);
@@ -45,14 +51,19 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all lockers paginated query parameters</param>
     /// <returns>A paginated list of LockerDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<PaginatedList<LockerDto>>>> GetAllPaginated(
         [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetAllLockersPaginated.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             RoomId = queryParameters.RoomId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,

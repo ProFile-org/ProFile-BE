@@ -17,4 +17,8 @@ public class UpdateRoomRequest
     /// New capacity of the room to be updated
     /// </summary>
     public int Capacity { get; set; }
+    /// <summary>
+    /// Room availability
+    /// </summary>
+    public bool IsAvailable { get; set; }
 }

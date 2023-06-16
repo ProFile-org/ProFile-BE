@@ -27,11 +27,13 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="roomId">Id of the room to be retrieved</param>
     /// <returns>A RoomDto of the retrieved room</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomDto>>> GetById([FromRoute] Guid roomId)
+    public async Task<ActionResult<Result<RoomDto>>> GetById(
+        [FromRoute] Guid roomId)
     {
         var query = new GetRoomById.Query()
         {
@@ -66,55 +68,13 @@ public class RoomsController : ApiControllerBase
     }
 
     /// <summary>
-    ///  Get a room log by id 
-    /// </summary>
-    /// <param name="logId"></param>
-    /// <returns>return a RoomLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("log/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomLogDto>>> GetLogById([FromRoute] Guid logId)
-    {
-        var query = new GetLogOfRoomById.Query()
-        {
-            LogId = logId
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<RoomLogDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all room logs paginated
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>A paginated list of RoomLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")] 
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllRoomLogsPaginated.Query()
-        {
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<RoomLogDto>>.Succeed(result));
-    }
-
-    /// <summary>
     /// Get empty containers in a room
     /// </summary>
     /// <param name="roomId"></param>
     /// <param name="queryParameters">Get empty containers paginated details</param>
     /// <returns>A paginated list of EmptyLockerDto</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("empty-containers/{roomId:guid}")]
+    [HttpPost("{roomId:guid}/empty-containers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -144,7 +104,8 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> AddRoom([FromBody] AddRoomRequest request)
+    public async Task<ActionResult<Result<RoomDto>>> AddRoom(
+        [FromBody] AddRoomRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var command = new AddRoom.Command()
@@ -170,50 +131,10 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> RemoveRoom([FromRoute] Guid roomId)
+    public async Task<ActionResult<Result<RoomDto>>> RemoveRoom(
+        [FromRoute] Guid roomId)
     {
         var command = new RemoveRoom.Command()
-        {
-            RoomId = roomId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<RoomDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Enable a room
-    /// </summary>
-    /// <param name="roomId">Id of the room to be enabled</param>
-    /// <returns>A RoomDto of the enabled room</returns>
-    [HttpPut("enable/{roomId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> EnableRoom([FromRoute] Guid roomId)
-    {
-        var command = new EnableRoom.Command()
-        {
-            RoomId = roomId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<RoomDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Disable a room
-    /// </summary>
-    /// <param name="roomId">Id of the room to be disabled</param>
-    /// <returns>A RoomDto of the disabled room</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpPut("disable/{roomId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> DisableRoom([FromRoute] Guid roomId)
-    {
-        var command = new DisableRoom.Command()
         {
             RoomId = roomId,
         };
@@ -232,7 +153,9 @@ public class RoomsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<RoomDto>>> Update([FromRoute] Guid roomId, [FromBody] UpdateRoomRequest request)
+    public async Task<ActionResult<Result<RoomDto>>> Update(
+        [FromRoute] Guid roomId,
+        [FromBody] UpdateRoomRequest request)
     {
         var performingUserId = _currentUserService.GetId();
         var command = new UpdateRoom.Command()
@@ -242,8 +165,50 @@ public class RoomsController : ApiControllerBase
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
+            IsAvailable = request.IsAvailable,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Get all room logs paginated
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns>A paginated list of RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")] 
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllRoomLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<RoomLogDto>>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Get a room log by id 
+    /// </summary>
+    /// <param name="logId"></param>
+    /// <returns>A RoomLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<RoomLogDto>>> GetLogById(
+        [FromRoute] Guid logId)
+    {
+        var query = new GetRoomLogById.Query()
+        {
+            LogId = logId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<RoomLogDto>.Succeed(result));
     }
 }

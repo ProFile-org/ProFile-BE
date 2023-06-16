@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -48,12 +49,10 @@ public class RemoveRoom
             }
 
             var canNotRemove = await _context.Documents
-                                   .CountAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken)
-                               > 0;
-        
+                .AnyAsync(x => x.Folder!.Locker.Room.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
             if (canNotRemove)
             {
-                throw new InvalidOperationException("Room cannot be removed because it contains documents.");
+                throw new ConflictException("Room cannot be removed because it contains documents.");
             }
 
             var result = _context.Rooms.Remove(room);

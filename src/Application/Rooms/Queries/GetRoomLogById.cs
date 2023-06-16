@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Rooms.Queries;
 
-public class GetLogOfRoomById
+public class GetRoomLogById
 {
     public record Query : IRequest<RoomLogDto>
     {
@@ -30,7 +30,7 @@ public class GetLogOfRoomById
                 .Include(x => x.Object)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
-                .FirstOrDefaultAsync(x => x.Id.Equals(request.LogId), cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.LogId, cancellationToken);
 
             if (log is null)
             {

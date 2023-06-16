@@ -35,13 +35,13 @@ public class GetAllUserLogsPaginated
             var logs = _context.UserLogs
                 .Include(x => x.Object)
                 .AsQueryable();
-
+            
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 logs = logs.Where(x => 
                     x.Action.Trim().ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
-
+            
             return await logs
                 .LoggingListPaginateAsync<User, UserLog, UserLogDto>(
                     request.Page,

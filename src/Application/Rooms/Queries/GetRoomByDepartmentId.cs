@@ -1,17 +1,17 @@
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using AutoMapper;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Rooms.Queries;
 
-public class GetRoomById
+public class GetRoomByDepartmentId
 {
     public record Query : IRequest<RoomDto>
     {
-        public Guid RoomId { get; init; }
+        public Guid DepartmentId { get; init; }
     }
     
     public class QueryHandler : IRequestHandler<Query, RoomDto>
@@ -30,13 +30,13 @@ public class GetRoomById
             var room = await _context.Rooms
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
-                .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken: cancellationToken);
-           
+                .FirstOrDefaultAsync(x => x.DepartmentId == request.DepartmentId, cancellationToken: cancellationToken);
+            
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
             }
-
+            
             return _mapper.Map<RoomDto>(room);
         }
     }
