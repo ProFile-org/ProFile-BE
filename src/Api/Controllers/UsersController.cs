@@ -113,10 +113,10 @@ public class UsersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<UserDto>>> Add([FromBody] AddUserRequest request)
     {
-        var performingUser = _currentUserService.GetCurrentUser();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new AddUser.Command()
         {
-            PerformingUser = performingUser,
+            CurrentUser = currentUser,
             Username = request.Username,
             Email = request.Email,
             FirstName = request.FirstName,

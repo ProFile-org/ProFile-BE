@@ -1,9 +1,12 @@
 using Application.Common.Exceptions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using Application.Common.Models.Operations;
 using Application.Identity;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,23 +16,26 @@ public class GetDocumentById
 {
     public record Query : IRequest<DocumentDto>
     {
-        public Guid DocumentId { get; init; } 
+        public User CurrentUser { get; init; } = null!;
+        public Guid DocumentId { get; init; }
     }
 
     public class QueryHandler : IRequestHandler<Query, DocumentDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly ICurrentUserService _currentUserService;
         private readonly IPermissionManager _permissionManager;
 
-        public QueryHandler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService, IPermissionManager permissionManager)
+        public QueryHandler(
+            IApplicationDbContext context,
+            IMapper mapper,
+            IPermissionManager permissionManager)
         {
             _context = context;
             _mapper = mapper;
-            _currentUserService = currentUserService;
             _permissionManager = permissionManager;
         }
+
         public async Task<DocumentDto> Handle(Query request, CancellationToken cancellationToken)
         {
             var document = await _context.Documents
@@ -42,31 +48,24 @@ public class GetDocumentById
                 throw new KeyNotFoundException("Document does not exist.");
             }
             
-            var performingUser = _currentUserService.GetCurrentUser();
-            
-            if (performingUser.Role.Equals(IdentityData.Roles.Admin))
-            {
-                return _mapper.Map<DocumentDto>(document);
-            }
-
-            if (performingUser.Role.Equals(IdentityData.Roles.Staff))
-            {
-                var departmentIdOfStaff = _currentUserService.GetCurrentDepartmentForStaff();
-
-                if (departmentIdOfStaff!.Value != document.Department!.Id)
-                {
-                    throw new ConflictException("You don't have permission to view this document.");
-                }
-                return _mapper.Map<DocumentDto>(document);
-            }
-        
-            var isGranted = _permissionManager.IsGranted(document.Id, DocumentOperation.Read, performingUser.Id);
-            if (!isGranted)
+            if (ViolateConstraints(request.CurrentUser, document))
             {
                 throw new UnauthorizedAccessException("You don't have permission to view this document.");
             }
             
             return _mapper.Map<DocumentDto>(document);
         }
+
+        private bool ViolateConstraints(User user, Document document)
+            => IsStaffAndNotInSameDepartment(user, document)
+               || IsEmployeeAndDoesNotHasReadPermission(user, document);
+
+        private static bool IsStaffAndNotInSameDepartment(User user, Document document)
+            => user.Role.IsStaff()
+               && user.Department!.Id != document.Department!.Id;
+
+        private bool IsEmployeeAndDoesNotHasReadPermission(User user, Document document)
+            => user.Role.IsEmployee()
+               && !_permissionManager.IsGranted(document.Id, DocumentOperation.Read, user.Id);
     }
 }

@@ -549,8 +549,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.HasIndex("DepartmentId")
-                        .IsUnique();
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Rooms");
                 });
@@ -921,8 +920,8 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
                 {
                     b.HasOne("Domain.Entities.Department", "Department")
-                        .WithOne("Room")
-                        .HasForeignKey("Domain.Entities.Physical.Room", "DepartmentId")
+                        .WithMany("Rooms")
+                        .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -994,7 +993,7 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Department", b =>
                 {
-                    b.Navigation("Room");
+                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Folder", b =>

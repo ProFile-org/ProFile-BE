@@ -18,12 +18,10 @@ namespace Api.Controllers;
 public class DocumentsController : ApiControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
-    private readonly IPermissionManager _permissionManager;
 
-    public DocumentsController(ICurrentUserService currentUserService, IPermissionManager permissionManager)
+    public DocumentsController(ICurrentUserService currentUserService)
     {
         _currentUserService = currentUserService;
-        _permissionManager = permissionManager;
     }
 
     /// <summary>
@@ -37,60 +35,14 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DocumentDto>>> GetById([FromRoute] Guid documentId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetDocumentById.Query()
         {
+            CurrentUser = currentUser,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all documents paginated
-    /// </summary>
-    /// <param name="queryParameters">Get all documents query parameters</param>
-    /// <returns>A paginated list of DocumentDto</returns>
-    [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpGet("issued")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<PaginatedList<IssuedDocumentDto>>>> GetAllIssuedPaginated(
-        [FromQuery] GetAllIssuedPaginatedQueryParameters queryParameters)
-    {
-        var departmentId = _currentUserService.GetCurrentDepartmentForStaff();
-        var query = new GetAllIssuedDocumentsPaginated.Query()
-        {
-            DepartmentId = departmentId!.Value,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<IssuedDocumentDto>>.Succeed(result));
-    }
-
-    /// <summary>
-    ///  Get a document log by Id 
-    /// </summary>
-    /// <param name="logId"></param>
-    /// <returns>Return a DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("log/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentLogDto>>> GetLogById([FromRoute] Guid logId)
-    {
-        var query = new GetLogOfDocumentById.Query()
-        {
-            LogId = logId
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<DocumentLogDto>.Succeed(result));
     }
     
     /// <summary>
@@ -98,17 +50,18 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all documents query parameters</param>
     /// <returns>A paginated list of DocumentDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllForAdminPaginated(
+    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllPaginated(
         [FromQuery] GetAllDocumentsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllDocumentsPaginated.Query()
         {
+            UserId = queryParameters.UserId,
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
             FolderId = queryParameters.FolderId,
@@ -117,88 +70,43 @@ public class DocumentsController : ApiControllerBase
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
             SortOrder = queryParameters.SortOrder,
+            IsPrivate = queryParameters.IsPrivate,
+            DocumentStatus = queryParameters.DocumentStatus,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
     }
 
     /// <summary>
-    /// Get documents of the employee
+    /// Get all documents paginated
     /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns></returns>
-    [HttpGet("get-self-documents")]
-    [RequiresRole(IdentityData.Roles.Employee)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetSelfPaginated(
-        [FromQuery] GetSelfDocumentsPaginatedQueryParameters queryParameters)
-    {
-        var userId = _currentUserService.GetId();
-        
-        var query = new GetSelfDocumentsPaginated.Query()
-        {
-            EmployeeId = userId,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-            SortBy = queryParameters.SortBy,
-            SearchTerm = queryParameters.SearchTerm,
-            SortOrder = queryParameters.SortOrder
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
-    }
-
-    /// Get all log of document
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllDocumentLogsPaginated.Query()
-        {
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };        
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all documents for staff paginated
-    /// </summary>
-    /// <param name="queryParameters">Get all documents for staff query parameters</param>
+    /// <param name="queryParameters">Get all documents query parameters</param>
     /// <returns>A paginated list of DocumentDto</returns>
-    [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpGet("staff")]
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllForStaffPaginated(
-        [FromQuery] GetAllDocumentsForStaffPaginatedQueryParameters queryParameters)
+    public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllForEmployeePaginated(
+        [FromQuery] GetAllDocumentsForEmployeePaginatedQueryParameters queryParameters)
     {
-        var roomId = _currentUserService.GetCurrentRoomForStaff();
-        var query = new GetAllDocumentsPaginated.Query()
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetAllDocumentsForEmployeePaginated.Query()
         {
-            RoomId = roomId,
-            LockerId = queryParameters.LockerId,
-            FolderId = queryParameters.FolderId,
+            CurrentUser = currentUser,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
             SortOrder = queryParameters.SortOrder,
+            DocumentStatus = queryParameters.DocumentStatus,
+            IsPrivate = queryParameters.IsPrivate,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentDto>>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Get all document types
     /// </summary>
@@ -494,6 +402,47 @@ public class DocumentsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<bool>.Succeed(result));
+    }
+    
+    /// <summary>
+    ///  Get a document log by Id 
+    /// </summary>
+    /// <param name="logId"></param>
+    /// <returns>Return a DocumentLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("log/{logId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<DocumentLogDto>>> GetLogById([FromRoute] Guid logId)
+    {
+        var query = new GetLogOfDocumentById.Query()
+        {
+            LogId = logId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<DocumentLogDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get all log of document
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns>Paginated list of DocumentLogDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllDocumentLogsPaginated.Query()
+        {
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };        
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
     }
     
     /// <summary>

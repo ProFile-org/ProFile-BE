@@ -57,7 +57,7 @@ public class GetAllUsersPaginated
             }
             
             return await users
-                .ListPaginateWithFilterAsync<User, UserDto>(
+                .ListPaginateWithSortAsync<User, UserDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

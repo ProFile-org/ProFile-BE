@@ -8,6 +8,7 @@ using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands;
 using Application.Rooms.Queries;
+using Application.Staffs.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -94,6 +95,26 @@ public class RoomsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<EmptyLockerDto>>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// Get a staff by room
+    /// </summary>
+    /// <param name="roomId">Id of the room to retrieve staff</param>
+    /// <returns>A StaffDto of the retrieved staff</returns>
+    [HttpGet("{roomId:guid}/staffs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<StaffDto>>> GetByRoom(
+        [FromRoute] Guid roomId)
+    {
+        var query = new GetStaffByRoomId.Query()
+        {
+            RoomId = roomId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<StaffDto>.Succeed(result));
     }
     
     /// <summary>

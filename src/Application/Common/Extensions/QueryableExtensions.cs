@@ -57,7 +57,7 @@ public static class QueryableExtensions
         return new PaginatedList<TEntityDto>(result, count, pageNumber.Value, sizeNumber.Value);
     }
 
-    public static async Task<PaginatedList<TEntityDto>> ListPaginateWithFilterAsync<TEntity, TEntityDto>(
+    public static async Task<PaginatedList<TEntityDto>> ListPaginateWithSortAsync<TEntity, TEntityDto>(
         this IQueryable<TEntity> items,
         int? page,
         int? size,

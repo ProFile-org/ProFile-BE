@@ -31,6 +31,7 @@ public class GetAllDocumentsPaginated
 
     public record Query : IRequest<PaginatedList<DocumentDto>>
     {
+        public Guid? UserId { get; init; }
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
         public Guid? FolderId { get; init; }
@@ -39,6 +40,8 @@ public class GetAllDocumentsPaginated
         public int? Size { get; init; }
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
+        public string? DocumentStatus { get; init; }
+        public bool? IsPrivate { get; init; }
     }
 
     public class QueryHandler : IRequestHandler<Query, PaginatedList<DocumentDto>>
@@ -64,10 +67,23 @@ public class GetAllDocumentsPaginated
                 .Include(x => x.Department)
                 .Include(x => x.Folder)
                 .ThenInclude(y => y.Locker)
-                .ThenInclude(z => z.Room)
-                .ThenInclude(t => t.Department)
-                .Where(x => !x.IsPrivate && x.Status != DocumentStatus.Issued);
-                
+                .ThenInclude(z => z.Room);
+
+            if (request.DocumentStatus is not null 
+                && Enum.TryParse(request.DocumentStatus, true, out DocumentStatus status))
+            {
+                documents = documents.Where(x => x.Status == status);
+            }
+            
+            if (request.IsPrivate is not null)
+            {
+                documents = documents.Where(x => x.IsPrivate == request.IsPrivate);
+            }
+
+            if (request.UserId is not null)
+            {
+                documents = documents.Where(x => x.Importer!.Id == request.UserId);
+            }
 
             if (folderExists)
             {
@@ -128,7 +144,7 @@ public class GetAllDocumentsPaginated
             }
 
             return await documents
-                .ListPaginateWithFilterAsync<Document, DocumentDto>(
+                .ListPaginateWithSortAsync<Document, DocumentDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

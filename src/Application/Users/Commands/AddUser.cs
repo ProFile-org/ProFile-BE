@@ -1,4 +1,5 @@
 using Application.Common.Exceptions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Helpers;
@@ -55,7 +56,7 @@ public class AddUser
 
     public record Command : IRequest<UserDto>
     {
-        public User PerformingUser { get; init; } = null!;
+        public User CurrentUser { get; init; } = null!;
         public string Username { get; init; } = null!;
         public string Email { get; init; } = null!;
         public string? FirstName { get; init; }
@@ -82,6 +83,11 @@ public class AddUser
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
         {
+            if (request.Role.IsAdmin())
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(
                 x => x.Username.Equals(request.Username) || x.Email.Equals(request.Email), cancellationToken);
 
@@ -117,18 +123,22 @@ public class AddUser
                 IsActive = true,
                 IsActivated = false,
                 Created = localDateTimeNow,
-                CreatedBy = request.PerformingUser.Id,
+                CreatedBy = request.CurrentUser.Id,
             };
             
             var log = new UserLog()
             {
-                User = request.PerformingUser,
-                UserId = request.PerformingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = entity,
                 Time = localDateTimeNow,
-                Action = UserLogMessages.Add,
+                Action = UserLogMessages.Add(entity.Role),
             };
             entity.AddDomainEvent(new UserCreatedEvent(entity, password));
+            if (request.Role.IsStaff())
+            {
+                entity.AddDomainEvent(new StaffCreatedEvent(entity, request.CurrentUser));
+            }
             var result = await _context.Users.AddAsync(entity, cancellationToken);
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);

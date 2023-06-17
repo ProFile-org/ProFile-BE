@@ -118,7 +118,7 @@ public class GetAllFoldersPaginated
             }
 
             return await folders
-                .ListPaginateWithFilterAsync<Folder, FolderDto>(
+                .ListPaginateWithSortAsync<Folder, FolderDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

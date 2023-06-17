@@ -49,7 +49,7 @@ public class GetDocumentsOfUserPaginated
                 .Where(x => x.Importer!.Id.Equals(request.UserId) && !x.IsPrivate);
             
             return await documents
-                .ListPaginateWithFilterAsync<Document, DocumentDto>(
+                .ListPaginateWithSortAsync<Document, DocumentDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

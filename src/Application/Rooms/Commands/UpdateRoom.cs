@@ -34,7 +34,7 @@ public class UpdateRoom
     }
     public record Command : IRequest<RoomDto>
     {
-        public User CurrentUser { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public Guid RoomId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }

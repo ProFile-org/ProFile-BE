@@ -76,7 +76,7 @@ public class GetAllLockersPaginated
             }
             
             return await lockers
-                .ListPaginateWithFilterAsync<Locker, LockerDto>(
+                .ListPaginateWithSortAsync<Locker, LockerDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

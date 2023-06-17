@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
@@ -15,8 +16,8 @@ public class AddStaff
 {
     public record Command : IRequest<StaffDto>
     {
-        public Guid PerformingUserId { get; init; }
-        public Guid UserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
+        public Guid StaffId { get; init; }
         public Guid? RoomId { get; init; }
     }
 
@@ -33,74 +34,42 @@ public class AddStaff
 
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
-            if (user is null)
+            var staff = await _context.Staffs
+                .FirstOrDefaultAsync(x => x.Id == request.StaffId, cancellationToken);
+            
+            if (staff is null)
             {
-                throw new KeyNotFoundException("User does not exist.");
+                throw new KeyNotFoundException("Staff does not exist.");
             }
-
+            
             var room = await _context.Rooms
                 .Include(x => x.Staff)
                 .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
-
+            
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
             }
-
+            
             if (room.Staff is not null)
             {
                 throw new ConflictException("Room already has a staff.");
             }
-
-            var existedStaff = await _context.Staffs
-                .Include(x => x.Room)
-                .Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.Id == user.Id, cancellationToken);
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
-            if (existedStaff is not null)
+            
+            var log = new UserLog()
             {
-                if (existedStaff.Room is not null)
-                {
-                    throw new ConflictException("This user is already a staff.");
-                }
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                Object = staff.User,
+                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Action = UserLogMessages.Staff.AssignStaff(room.Id.ToString()),
+            };
 
-                existedStaff.Room = room;
-                var log = new UserLog()
-                {
-                    User = performingUser!,
-                    UserId = performingUser!.Id,
-                    Object = user,
-                    Time = LocalDateTime.FromDateTime(DateTime.Now),
-                    Action = UserLogMessages.Staff.AddStaff(room.Id.ToString()),
-                };
-                var result = _context.Staffs.Update(existedStaff);
-                await _context.UserLogs.AddAsync(log, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-                return _mapper.Map<StaffDto>(result.Entity);
-            }
-            else
-            {
-                var staff = new Staff
-                {
-                    Id = user.Id,
-                    User = user,
-                    Room = room,
-                };
-                var log = new UserLog()
-                {
-                    User = performingUser!,
-                    UserId = performingUser!.Id,
-                    Object = user,
-                    Time = LocalDateTime.FromDateTime(DateTime.Now),
-                    Action = UserLogMessages.Staff.AddStaff(room.Id.ToString()),
-                };
-
-                var result = await _context.Staffs.AddAsync(staff, cancellationToken);
-                await _context.UserLogs.AddAsync(log, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-                return _mapper.Map<StaffDto>(result.Entity);
-            }
+            var result = await _context.Staffs.AddAsync(staff, cancellationToken);
+            await _context.UserLogs.AddAsync(log, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return _mapper.Map<StaffDto>(result.Entity);
+            
         }
     }
 }

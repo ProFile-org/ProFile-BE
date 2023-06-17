@@ -47,7 +47,7 @@ public class GetAllRoomsPaginated
             }
             
             return await rooms
-                .ListPaginateWithFilterAsync<Room, RoomDto>(
+                .ListPaginateWithSortAsync<Room, RoomDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

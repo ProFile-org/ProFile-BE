@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Staffs.Queries;
 
-public class GetStaffByRoom
+public class GetStaffByRoomId
 {
     public record Query : IRequest<StaffDto>
     {

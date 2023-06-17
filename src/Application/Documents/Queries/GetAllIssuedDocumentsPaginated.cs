@@ -52,7 +52,7 @@ public class GetAllIssuedDocumentsPaginated
             }
 
             return await documents
-                .ListPaginateWithFilterAsync<Document, IssuedDocumentDto>(
+                .ListPaginateWithSortAsync<Document, IssuedDocumentDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,

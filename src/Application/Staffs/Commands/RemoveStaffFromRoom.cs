@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ public class RemoveStaffFromRoom
 {
     public record Command : IRequest<StaffDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public Guid StaffId { get; init; }
     }
     
@@ -22,11 +23,13 @@ public class RemoveStaffFromRoom
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
@@ -46,16 +49,18 @@ public class RemoveStaffFromRoom
                 throw new ConflictException("Staff is not assigned to a room.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             staff.Room.Staff = null;
             _context.Rooms.Update(staff.Room!);
             staff.Room = null;
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            
             var log = new UserLog()
             {
-                User = performingUser!,
-                UserId = performingUser!.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = staff.User,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = UserLogMessages.Staff.RemoveFromRoom,
             };
             var result = _context.Staffs.Update(staff);

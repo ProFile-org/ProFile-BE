@@ -47,7 +47,7 @@ public class GetAllStaffsPaginated
             }
 
             return await staffs
-                .ListPaginateWithFilterAsync<Staff, StaffDto>(
+                .ListPaginateWithSortAsync<Staff, StaffDto>(
                     request.Page,
                     request.Size,
                     request.SortBy,
