@@ -6,6 +6,7 @@ using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ public class ApproveDocument
     public record Command : IRequest<DocumentDto>
     {
         public User CurrentUser { get; init; } = null!;
-        public Guid DocumentId { get; init; }
+        public Guid ImportRequestId { get; init; }
         public string Decision { get; init; } = null!;
         public string Reason { get; init; } = null!;
     }
@@ -37,16 +38,27 @@ public class ApproveDocument
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
+            var importRequest = await _context.ImportRequests
+                .Include(x => x.Document)
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == request.ImportRequestId, cancellationToken);
+
+            if (importRequest is null)
+            {
+                throw new KeyNotFoundException("Import request does not exist.");
+            }
+            
             var document = await _context.Documents
                 .Include(x => x.Department)
                 .FirstOrDefaultAsync(x =>
-                x.Id == request.DocumentId, cancellationToken);
+                x.Id == importRequest.Document.Id, cancellationToken);
             if (document is null)
             {
                 throw new ConflictException("Document does not exist.");
             }
 
-            if (document.Status is not DocumentStatus.Issued)
+            if (document.Status is not DocumentStatus.Issued 
+                && importRequest.Status is not ImportRequestStatus.Issued)
             {
                 throw new ConflictException("Request cannot be approved or rejected.");
             }
@@ -54,11 +66,13 @@ public class ApproveDocument
             if (IsApproval(request.Decision))
             {
                 document.Status = DocumentStatus.Approved;
+                importRequest.Status = ImportRequestStatus.Approved;
             }
             
             if (IsRejection(request.Decision))
             {
                 document.Status = DocumentStatus.Rejected;
+                importRequest.Status = ImportRequestStatus.Rejected;
             }
             
             var log = new DocumentLog()

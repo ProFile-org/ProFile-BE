@@ -27,6 +27,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<Locker> Lockers => Set<Locker>();
     public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<ImportRequest> ImportRequests => Set<ImportRequest>();
     public DbSet<Borrow> Borrows => Set<Borrow>();
     public DbSet<Permission> Permissions => Set<Permission>();
     

@@ -47,7 +47,14 @@ public class RequestImportDocument
                 && x.Importer!.Id == request.Issuer.Id);
             if (document is not null)
             {
-                throw new ConflictException($"Document title already exists for user {request.Issuer.LastName}.");
+                throw new ConflictException($"Document title already exists for user {request.Issuer.FirstName}.");
+            }
+
+            var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+            
+            if (room is null)
+            {
+                throw new KeyNotFoundException("Room does not exist.");
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
@@ -64,6 +71,15 @@ public class RequestImportDocument
                 Created = localDateTimeNow,
                 CreatedBy = request.Issuer.Id,
             };
+
+            var importRequest = new ImportRequest()
+            {
+                Document = entity,
+                Status = ImportRequestStatus.Issued,
+                Room = room,
+                Created = localDateTimeNow,
+                CreatedBy = request.Issuer.Id
+            };
             
             var log = new DocumentLog()
             {
@@ -74,6 +90,7 @@ public class RequestImportDocument
                 Action = DocumentLogMessages.Import.NewImportRequest,
             };
             var result = await _context.Documents.AddAsync(entity, cancellationToken);
+            await _context.ImportRequests.AddAsync(importRequest, cancellationToken);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<IssuedDocumentDto>(result.Entity);

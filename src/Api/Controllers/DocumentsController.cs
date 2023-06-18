@@ -277,7 +277,7 @@ public class DocumentsController : ApiControllerBase
     /// <summary>
     /// Approve a document request
     /// </summary>
-    /// <param name="documentId">Id of the document to be approved</param>
+    /// <param name="importRequestId">Id of the document to be approved</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the approved document</returns>    
     [RequiresRole(IdentityData.Roles.Staff)]
@@ -286,14 +286,14 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<DocumentDto>>> ApproveOrReject(
-        [FromRoute] Guid documentId,
+        [FromRoute] Guid importRequestId,
         [FromBody] ApproveOrRejectImportRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         var query = new ApproveDocument.Command()
         {
             CurrentUser = currentUser,
-            DocumentId = documentId,
+            ImportRequestId = importRequestId,
             Reason = request.Reason,
             Decision = request.Decision,
         };

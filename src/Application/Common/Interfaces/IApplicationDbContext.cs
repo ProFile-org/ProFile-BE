@@ -16,6 +16,7 @@ public interface IApplicationDbContext
     public DbSet<Locker> Lockers { get; }
     public DbSet<Folder> Folders { get; }
     public DbSet<Document> Documents { get; }
+    public DbSet<ImportRequest> ImportRequests { get; }
     public DbSet<Borrow> Borrows { get; }
     public DbSet<Permission> Permissions { get; }
     
