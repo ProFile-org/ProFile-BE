@@ -29,7 +29,7 @@ public class GetAllFoldersPaginated
     public record Query : IRequest<PaginatedList<FolderDto>>
     {
         public string CurrentUserRole { get; init; } = null!;
-        public Guid CurrentUserDepartmentId { get; init; }
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
         public string? SearchTerm { get; init; }
@@ -52,24 +52,11 @@ public class GetAllFoldersPaginated
 
         public async Task<PaginatedList<FolderDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            if (request.CurrentUserRole.IsStaff())
+            if (request.CurrentUserRole.IsStaff() 
+                && (request.CurrentStaffRoomId is null || request.RoomId is null
+                    || !IsSameRoom(request.RoomId.Value, request.CurrentStaffRoomId.Value)))
             {
-                if (request.RoomId is null)
-                {
-                    throw new UnauthorizedAccessException("User cannot access this resource.");
-                }
-                
-                var currentUserRoom = await GetRoomByDepartmentIdAsync(request.CurrentUserDepartmentId, cancellationToken);
-                
-                if (currentUserRoom is null)
-                {
-                    throw new UnauthorizedAccessException("User cannot access this resource.");
-                }
-                
-                if (!IsSameRoom(currentUserRoom.Id, request.RoomId.Value))
-                {
-                    throw new UnauthorizedAccessException("User cannot access this resource.");
-                }
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
             
             var folders = _context.Folders
@@ -127,11 +114,6 @@ public class GetAllFoldersPaginated
                     cancellationToken);
         }
         
-        private async Task<Room?> GetRoomByDepartmentIdAsync(Guid departmentId, CancellationToken cancellationToken) 
-            => await _context.Rooms.FirstOrDefaultAsync(
-                x => x.DepartmentId == departmentId,
-                cancellationToken);
-
         private static bool IsSameRoom(Guid roomId1, Guid roomId2)
             => roomId1 == roomId2;
     }

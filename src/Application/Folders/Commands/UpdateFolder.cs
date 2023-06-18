@@ -38,6 +38,7 @@ public class UpdateFolder
     public record Command : IRequest<FolderDto>
     {
         public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid FolderId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -69,7 +70,7 @@ public class UpdateFolder
             }
             
             if (request.CurrentUser.Role.IsStaff()
-                && !FolderIsInDepartment(folder, request.CurrentUser.Department!.Id))
+                && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentUser.Department!.Id)))
             {
                 throw new UnauthorizedAccessException("User cannot remove this resource.");
             }
@@ -126,7 +127,7 @@ public class UpdateFolder
         private static bool IsNotSameFolder(Guid folderId1, Guid folderId2)
             => folderId1 != folderId2;
         
-        private static bool FolderIsInDepartment(Folder folder, Guid departmentId)
-            => folder.Locker.Room.DepartmentId == departmentId;
+        private static bool FolderIsInRoom(Folder folder, Guid roomId)
+            => folder.Locker.Room.Id == roomId;
     }
 }

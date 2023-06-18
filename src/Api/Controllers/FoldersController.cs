@@ -34,11 +34,11 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<FolderDto>>> GetById([FromRoute] Guid folderId)
     {
         var currentUserRole = _currentUserService.GetRole();
-        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetFolderById.Query()
         {
             CurrentUserRole = currentUserRole,
-            CurrentUserDepartmentId = currentUserDepartmentId,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(query);
@@ -58,11 +58,11 @@ public class FoldersController : ApiControllerBase
         [FromQuery] GetAllFoldersPaginatedQueryParameters queryParameters)
     {
         var currentUserRole = _currentUserService.GetRole();
-        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetAllFoldersPaginated.Query()
         {
             CurrentUserRole = currentUserRole,
-            CurrentUserDepartmentId = currentUserDepartmentId,
+            CurrentStaffRoomId = staffRoomId,
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
             SearchTerm = queryParameters.SearchTerm,
@@ -90,9 +90,11 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var command = new AddFolder.Command()
         {
             CurrentUser = currentUser,
+            CurrentStaffRoomId = staffRoomId,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -117,11 +119,11 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
         var currentUserRole = _currentUserService.GetRole();
-        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var command = new RemoveFolder.Command()
         {
             CurrentUserRole = currentUserRole,
-            CurrentUserDepartmentId = currentUserDepartmentId,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(command);
@@ -142,9 +144,11 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var command = new UpdateFolder.Command()
         {
             CurrentUser = currentUser,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
             Name = request.Name,
             Description = request.Description,

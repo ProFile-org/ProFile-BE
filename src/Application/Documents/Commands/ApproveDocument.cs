@@ -4,6 +4,7 @@ using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
@@ -17,8 +18,9 @@ public class ApproveDocument
 {
     public record Command : IRequest<DocumentDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public Guid DocumentId { get; init; }
+        public string Decision { get; init; } = null!;
         public string Reason { get; init; } = null!;
     }
 
@@ -46,25 +48,33 @@ public class ApproveDocument
 
             if (document.Status is not DocumentStatus.Issued)
             {
-                throw new ConflictException("Request cannot be approved.");
+                throw new ConflictException("Request cannot be approved or rejected.");
             }
 
-            document.Status = DocumentStatus.Approved;
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            if (IsApproval(request.Decision))
+            {
+                document.Status = DocumentStatus.Approved;
+            }
+            
+            if (IsRejection(request.Decision))
+            {
+                document.Status = DocumentStatus.Rejected;
+            }
+            
             var log = new DocumentLog()
             {
                 Object = document,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
-                User = performingUser!,
-                UserId = performingUser!.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Action = DocumentLogMessages.Import.Approve,
             };
             var requestLog = new RequestLog()
             {
                 Object = document,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Action = RequestLogMessages.ApproveImport,
                 Reason = request.Reason,
             };
@@ -74,5 +84,11 @@ public class ApproveDocument
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(result.Entity);
         }
+
+        private static bool IsApproval(string decision)
+            => decision.ToLower().Trim().Equals("approve");
+        
+        private static bool IsRejection(string decision)
+            => decision.ToLower().Trim().Equals("reject");
     }
 }

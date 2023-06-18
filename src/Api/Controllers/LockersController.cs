@@ -35,11 +35,11 @@ public class LockersController : ApiControllerBase
         [FromRoute] Guid lockerId)
     {
         var currentUserRole = _currentUserService.GetRole();
-        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetLockerById.Query()
         {
             CurrentUserRole = currentUserRole,
-            CurrentUserDepartmentId = currentUserDepartmentId,
+            CurrentStaffRoomId = staffRoomId,
             LockerId = lockerId,
         };
         var result = await Mediator.Send(query);

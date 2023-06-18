@@ -23,5 +23,6 @@ public class GetAllDocumentsPaginatedQueryParameters : PaginatedQueryParameters
     /// </summary>
     public string? SearchTerm { get; set; }
     public string? DocumentStatus { get; set; }
+    public string? UserRole { get; set; }
     public bool? IsPrivate { get; set; }
 }

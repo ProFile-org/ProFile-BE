@@ -53,15 +53,18 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all rooms paginated details</param>
     /// <returns>A paginated list of rooms</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<Result<PaginatedList<RoomDto>>>> GetAllPaginated(
         [FromQuery] GetAllRoomsPaginatedQueryParameters queryParameters)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetAllRoomsPaginated.Query()
         {
+            CurrentUser = currentUser,
+            DepartmentId = queryParameters.DepartmentId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,

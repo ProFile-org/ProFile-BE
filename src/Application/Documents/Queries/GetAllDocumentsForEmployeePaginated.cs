@@ -18,7 +18,9 @@ public class GetAllDocumentsForEmployeePaginated
 {
     public record Query : IRequest<PaginatedList<DocumentDto>>
     {
-        public User CurrentUser { get; init; } = null!;
+        public Guid CurrentUserId { get; init; }
+        public Guid CurrentUserDepartmentId { get; init; }
+        public Guid? UserId { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -53,25 +55,30 @@ public class GetAllDocumentsForEmployeePaginated
             if (request.IsPrivate)
             {
                 var permissions = _context.Permissions.Where(x =>
-                    IsSameUser(x.EmployeeId, request.CurrentUser.Id)
-                    && InSameDepartmentAsUser(x.Document, request.CurrentUser)
+                    IsSameUser(x.EmployeeId, request.CurrentUserId)
+                    && InSameDepartmentAsUser(x.Document, request.CurrentUserDepartmentId)
                     && HasReadPermission(x.AllowedOperations))
                     .Select(x => x.DocumentId);
 
                 documents = documents.Where(x =>
-                    InSameDepartmentAsUser(x, request.CurrentUser)
+                    InSameDepartmentAsUser(x, request.CurrentUserDepartmentId)
                     && x.IsPrivate
-                    && (CanRead(permissions, x.Id) || IsImporter(x, request.CurrentUser)));
+                    && (CanRead(permissions, x.Id) || IsImporter(x, request.CurrentUserId)));
             }
             else
             {
                 documents = documents.Where(x => 
-                    InSameDepartmentAsUser(x, request.CurrentUser)
+                    InSameDepartmentAsUser(x, request.CurrentUserDepartmentId)
                      && !x.IsPrivate);
+            }
+
+            if (request.UserId is not null)
+            {
+                documents = documents.Where(x => x.Importer!.Id == request.UserId);
             }
             
             if (request.DocumentStatus is not null 
-                && Enum.TryParse(request.DocumentStatus, true, out DocumentStatus status))
+                 && Enum.TryParse(request.DocumentStatus, true, out DocumentStatus status))
             {
                 documents = documents.Where(x => x.Status == status);
             }
@@ -95,8 +102,8 @@ public class GetAllDocumentsForEmployeePaginated
         private static bool IsSameUser(Guid userId1, Guid userId2)
             => userId1 == userId2;
 
-        private static bool InSameDepartmentAsUser(Document document, User user)
-            => document.Department!.Id == user.Department!.Id;
+        private static bool InSameDepartmentAsUser(Document document, Guid userDepartmentId)
+            => document.Department!.Id == userDepartmentId;
 
         private static bool HasReadPermission(string allowedPermissions)
             => allowedPermissions.Contains(DocumentOperation.Read.ToString());
@@ -104,7 +111,7 @@ public class GetAllDocumentsForEmployeePaginated
         private static bool CanRead(IEnumerable<Guid> documentIds, Guid documentId)
             => documentIds.Contains(documentId);
         
-        private static bool IsImporter(Document document, User currentUser)
-            => document.ImporterId == currentUser.Id;
+        private static bool IsImporter(Document document, Guid userId)
+            => document.ImporterId == userId;
     }
 }

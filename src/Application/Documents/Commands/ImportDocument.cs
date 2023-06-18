@@ -4,6 +4,7 @@ using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
@@ -17,7 +18,7 @@ public class ImportDocument
 {
     public record Command : IRequest<DocumentDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public string Title { get; init; } = null!;
         public string? Description { get; init; }
         public string DocumentType { get; init; } = null!;
@@ -30,11 +31,13 @@ public class ImportDocument
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
@@ -45,6 +48,16 @@ public class ImportDocument
             if (importer is null)
             {
                 throw new KeyNotFoundException("User does not exist.");
+            }
+
+            if (importer.Department is null)
+            {
+                throw new ConflictException("User does not have a department.");
+            }
+
+            if (importer.Department.Id != request.CurrentUser.Department!.Id)
+            {
+                throw new ConflictException("User is in another department as staff.");
             }
 
             var document = _context.Documents.FirstOrDefault(x =>
@@ -68,7 +81,8 @@ public class ImportDocument
                 throw new ConflictException("This folder cannot accept more documents.");
             }
 
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             var entity = new Document()
             {
                 Title = request.Title.Trim(),
@@ -79,15 +93,15 @@ public class ImportDocument
                 Folder = folder,
                 Status = DocumentStatus.Available,
                 IsPrivate = request.IsPrivate,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
-                CreatedBy = performingUser!.Id,
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
             var log = new DocumentLog()
             {
-                User = performingUser,
-                UserId = performingUser.Id,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
                 Object = entity,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = DocumentLogMessages.Import.NewImport,
             };
 

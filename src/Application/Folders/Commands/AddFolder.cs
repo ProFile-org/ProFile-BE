@@ -42,6 +42,7 @@ public class AddFolder
     public record Command : IRequest<FolderDto>
     {
         public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
@@ -78,9 +79,10 @@ public class AddFolder
             }
 
             if (request.CurrentUser.Role.IsStaff()
-                && !LockerExistsAndInSameDepartment(locker, request.CurrentUser.Department?.Id))
+                && (locker.Room.Id != request.CurrentStaffRoomId
+                    || !LockerIsInRoom(locker, request.CurrentStaffRoomId)))
             {
-                throw new UnauthorizedAccessException("User cannot add this resource.");
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
 
             if (await DuplicatedNameFolderExistsInSameLockerAsync(request.Name, locker.Id, cancellationToken))
@@ -132,7 +134,7 @@ public class AddFolder
         private static bool IsSameLocker(Guid lockerId1, Guid lockerId2)
             => lockerId1 == lockerId2;
 
-        private static bool LockerExistsAndInSameDepartment(Locker locker, Guid? departmentId)
-            => departmentId is not null && locker.Room.DepartmentId == departmentId;
+        private static bool LockerIsInRoom(Locker locker, Guid? roomId)
+            => roomId is not null && locker.Room.Id == roomId;
     }
 }

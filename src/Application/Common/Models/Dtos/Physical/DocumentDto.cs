@@ -15,6 +15,7 @@ public class DocumentDto : BaseDto, IMapFrom<Document>
     public UserDto? Importer { get; set; }
     public FolderDto? Folder { get; set; }
     public string Status { get; set; } = null!;
+    public bool IsPrivate { get; set; }
     public EntryDto? Entry { get; set; }
 
     public void Mapping(Profile profile)

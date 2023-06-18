@@ -41,6 +41,7 @@ public class GetAllDocumentsPaginated
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
         public string? DocumentStatus { get; init; }
+        public string? Role { get; init; }
         public bool? IsPrivate { get; init; }
     }
 
@@ -83,6 +84,11 @@ public class GetAllDocumentsPaginated
             if (request.UserId is not null)
             {
                 documents = documents.Where(x => x.Importer!.Id == request.UserId);
+            }
+            
+            if (request.Role is not null)
+            {
+                documents = documents.Where(x => x.Importer!.Role.Equals(request.Role));
             }
 
             if (folderExists)

@@ -73,9 +73,9 @@ public class CurrentUserService : ICurrentUserService
 
     public Guid? GetCurrentRoomForStaff()
     {
-        var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub))!.Value;
-        if (userName is null)
+        var userIdString = _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.NameId));
+        if (userIdString is null || !Guid.TryParse(userIdString.Value, out var userId))
         {
             throw new UnauthorizedAccessException();
         }
@@ -83,14 +83,9 @@ public class CurrentUserService : ICurrentUserService
         var staff = _context.Staffs
             .Include(x => x.User)
             .Include(x => x.Room)
-            .FirstOrDefault(x => x.User.Username.Equals(userName));
-
-        if (staff is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
+            .FirstOrDefault(x => x.Id == userId);
         
-        return staff.Room!.Id;
+        return staff?.Room?.Id;
     }
     
     public Guid? GetCurrentDepartmentForStaff()

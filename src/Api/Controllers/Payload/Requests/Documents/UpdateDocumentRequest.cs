@@ -17,4 +17,5 @@ public class UpdateDocumentRequest
     /// New document type of the document to be updated
     /// </summary>
     public string DocumentType { get; set; } = null!; 
+    public bool IsPrivate { get; set; } 
 }

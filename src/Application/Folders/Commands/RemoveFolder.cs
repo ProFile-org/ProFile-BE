@@ -14,7 +14,7 @@ public class RemoveFolder
     public record Command : IRequest<FolderDto>
     {
         public string CurrentUserRole { get; init; } = null!;
-        public Guid CurrentUserDepartmentId { get; init; }
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid FolderId { get; init; }
     }
     
@@ -43,7 +43,7 @@ public class RemoveFolder
             }
 
             if (request.CurrentUserRole.IsStaff()
-                && !FolderIsInDepartment(folder, request.CurrentUserDepartmentId))
+                && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentStaffRoomId.Value)))
             {
                 throw new UnauthorizedAccessException("User cannot remove this resource.");
             }
@@ -62,7 +62,7 @@ public class RemoveFolder
             return _mapper.Map<FolderDto>(result.Entity);
         }
 
-        private static bool FolderIsInDepartment(Folder folder, Guid departmentId)
-            => folder.Locker.Room.DepartmentId == departmentId;
+        private static bool FolderIsInRoom(Folder folder, Guid roomId)
+            => folder.Locker.Room.Id == roomId;
     }
 }

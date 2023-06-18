@@ -16,7 +16,7 @@ public class GetDocumentReason
 {
     public record Query : IRequest<ReasonDto>
     {
-        public User User { get; set; }
+        public User CurrentUser { get; init; }
         public Guid DocumentId { get; init; }
         public RequestType Type { get; init; }
     }
@@ -25,13 +25,11 @@ public class GetDocumentReason
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly ICurrentUserService _currentUserService;
 
-        public QueryHandler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService)
+        public QueryHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _currentUserService = currentUserService;
         }
 
         public async Task<ReasonDto> Handle(Query request, CancellationToken cancellationToken)
@@ -46,10 +44,10 @@ public class GetDocumentReason
 
             if (log is null)
             {
-                throw new KeyNotFoundException("Document does not have a request.");
+                throw new KeyNotFoundException("Import request does not exist.");
             }
 
-            await EnforceRoleConstraintsAsync(_currentUserService.GetCurrentUser(), log);
+            await EnforceRoleConstraintsAsync(request.CurrentUser, log);
             
             return _mapper.Map<ReasonDto>(log);
         }

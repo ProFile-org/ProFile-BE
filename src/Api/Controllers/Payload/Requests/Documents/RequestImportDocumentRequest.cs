@@ -17,5 +17,6 @@ public class RequestImportDocumentRequest
     /// Document type of the document to be imported
     /// </summary>
     public string DocumentType { get; set; } = null!;
+    public Guid RoomId { get; set; }
     public bool IsPrivate { get; set; }
 }

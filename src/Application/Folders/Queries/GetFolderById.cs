@@ -13,7 +13,7 @@ public class GetFolderById
     public record Query : IRequest<FolderDto>
     {
         public string CurrentUserRole { get; init; } = null!;
-        public Guid CurrentUserDepartmentId { get; init; }
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid FolderId { get; init; }
     }
 
@@ -42,15 +42,15 @@ public class GetFolderById
             }
             
             if (request.CurrentUserRole.IsStaff()
-                && !FolderInSameDepartment(folder, request.CurrentUserDepartmentId))
+                && (request.CurrentStaffRoomId is null || !FolderInSameRoom(folder, request.CurrentStaffRoomId.Value)))
             {
-                throw new UnauthorizedAccessException();
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
 
             return _mapper.Map<FolderDto>(folder);
         }
         
-        private static bool FolderInSameDepartment(Folder folder, Guid departmentId)
-            => folder.Locker.Room.DepartmentId == departmentId;
+        private static bool FolderInSameRoom(Folder folder, Guid roomId)
+            => folder.Locker.Room.Id == roomId;
     }
 }

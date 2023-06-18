@@ -5,6 +5,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,8 @@ public class GetAllRoomsPaginated
 {
     public record Query : IRequest<PaginatedList<RoomDto>>
     {
+        public User CurrentUser { get; init; } = null!;
+        public Guid? DepartmentId { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -39,6 +42,14 @@ public class GetAllRoomsPaginated
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
                 .AsQueryable();
+
+            if (request.CurrentUser.Role.IsEmployee()
+                && request.CurrentUser.Department?.Id != request.DepartmentId)
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
+            }
+            
+            rooms = rooms.Where(x => x.Department.Id == request.DepartmentId);
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
