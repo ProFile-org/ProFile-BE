@@ -14,11 +14,10 @@ public class GetAllRoomLogsPaginated
 {
     public record Query : IRequest<PaginatedList<RoomLogDto>>
     {
+        public Guid? RoomId { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
-        public string? SortBy { get; init; }
-        public string? SortOrder { get; init; }
     }
 
     public class QueryHandler : IRequestHandler<Query, PaginatedList<RoomLogDto>>
@@ -39,6 +38,11 @@ public class GetAllRoomLogsPaginated
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
+            
+            if (request.RoomId is not null)
+            {
+                logs = logs.Where(x => x.Object!.Id == request.RoomId);
+            }
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {

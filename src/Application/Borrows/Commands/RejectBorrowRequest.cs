@@ -56,7 +56,6 @@ public class RejectBorrowRequest
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Reject,
-                Reason = request.Reason,
             };
             var result = _context.Borrows.Update(borrowRequest);
             await _context.RequestLogs.AddAsync(requestLog, cancellationToken);

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230616101721_DepartmentHasManyRooms")]
+    partial class DepartmentHasManyRooms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,9 +117,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("BaseFolderId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("ObjectId")
                         .HasColumnType("uuid");
 
@@ -127,8 +127,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BaseFolderId");
 
                     b.HasIndex("ObjectId");
 
@@ -147,9 +145,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("BaseLockerId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("ObjectId")
                         .HasColumnType("uuid");
 
@@ -160,8 +155,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BaseLockerId");
 
                     b.HasIndex("ObjectId");
 
@@ -180,9 +173,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("BaseRoomId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("ObjectId")
                         .HasColumnType("uuid");
 
@@ -193,8 +183,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BaseRoomId");
 
                     b.HasIndex("ObjectId");
 
@@ -215,6 +203,10 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("ObjectId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<LocalDateTime>("Time")
                         .HasColumnType("timestamp without time zone");
@@ -447,47 +439,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("LockerId");
 
                     b.ToTable("Folders");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Physical.ImportRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Created")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime?>("LastModified")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid?>("LastModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DocumentId")
-                        .IsUnique();
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("ImportRequests");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>
@@ -780,10 +731,6 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
                 {
-                    b.HasOne("Domain.Entities.Physical.Folder", "BaseFolder")
-                        .WithMany()
-                        .HasForeignKey("BaseFolderId");
-
                     b.HasOne("Domain.Entities.Physical.Document", "Object")
                         .WithMany()
                         .HasForeignKey("ObjectId");
@@ -794,8 +741,6 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BaseFolder");
-
                     b.Navigation("Object");
 
                     b.Navigation("User");
@@ -803,10 +748,6 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Logging.FolderLog", b =>
                 {
-                    b.HasOne("Domain.Entities.Physical.Locker", "BaseLocker")
-                        .WithMany()
-                        .HasForeignKey("BaseLockerId");
-
                     b.HasOne("Domain.Entities.Physical.Folder", "Object")
                         .WithMany()
                         .HasForeignKey("ObjectId");
@@ -817,8 +758,6 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("BaseLocker");
-
                     b.Navigation("Object");
 
                     b.Navigation("User");
@@ -826,10 +765,6 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Logging.LockerLog", b =>
                 {
-                    b.HasOne("Domain.Entities.Physical.Room", "BaseRoom")
-                        .WithMany()
-                        .HasForeignKey("BaseRoomId");
-
                     b.HasOne("Domain.Entities.Physical.Locker", "Object")
                         .WithMany()
                         .HasForeignKey("ObjectId");
@@ -839,8 +774,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("BaseRoom");
 
                     b.Navigation("Object");
 
@@ -955,25 +888,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Locker");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Physical.ImportRequest", b =>
-                {
-                    b.HasOne("Domain.Entities.Physical.Document", "Document")
-                        .WithOne()
-                        .HasForeignKey("Domain.Entities.Physical.ImportRequest", "DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Physical.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Document");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>

@@ -23,4 +23,8 @@ public static class DocumentLogMessages
     }
     public const string Delete = "Delete document";
     public const string Update = "Updated document information";
+    public static string GrantRead(string userName) => $"Share Read Permission to user {userName}";
+    public static string GrantBorrow(string userName) => $"Share Borrow Permission to user {userName}";
+    public static string RevokeRead(string userName) => $"Remove Read Permission to user {userName}";
+    public static string RevokeBorrow(string userName) => $"Remove Borrow Permission to user {userName}";
 }

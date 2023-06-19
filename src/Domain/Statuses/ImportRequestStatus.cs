@@ -2,7 +2,7 @@
 
 public enum ImportRequestStatus
 {
-    Issued,
+    Pending,
     Approved,
     Rejected,
     CheckedIn,

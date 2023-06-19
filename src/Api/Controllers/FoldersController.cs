@@ -167,7 +167,7 @@ public class FoldersController : ApiControllerBase
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<FolderLogDto>>>> GetAllFolderLogs(
+    public async Task<ActionResult<Result<PaginatedList<FolderLogDto>>>> GetAllLogsPaginated(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllFolderLogsPaginated.Query()
@@ -185,12 +185,12 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="logId"></param>
     /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("log/{logId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<FolderLogDto>>> GetFolderLogById([FromRoute] Guid logId)
+    public async Task<ActionResult<Result<FolderLogDto>>> GetLogById([FromRoute] Guid logId)
     {
         var query = new GetFolderLogById.Query()
         {

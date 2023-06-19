@@ -3,14 +3,11 @@ using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos;
-using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
 using Application.Identity;
-using Domain.Enums;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -157,60 +154,6 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
-    /// <summary>
-    /// Request to import a document
-    /// </summary>
-    /// <param name="request">Import document request details</param>
-    /// <returns>A DocumentDto of the imported document</returns>
-    [RequiresRole(IdentityData.Roles.Employee)]
-    [HttpPost("import-requests")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<IssuedDocumentDto>>> RequestImport(
-        [FromBody] RequestImportDocumentRequest request)
-    {
-        var currentUser = _currentUserService.GetCurrentUser();
-        var command = new RequestImportDocument.Command()
-        {
-            Title = request.Title,
-            Description = request.Description,
-            DocumentType = request.DocumentType,
-            IsPrivate = request.IsPrivate,
-            Issuer = currentUser,
-            RoomId = request.RoomId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<IssuedDocumentDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Checkin a document
-    /// </summary>
-    /// <param name="documentId"></param>
-    /// <returns>A DocumentDto of the imported document</returns>
-    [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("checkin{documentId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<DocumentDto>>> Checkin(
-        [FromRoute] Guid documentId)
-    {
-        var performingUserId = _currentUserService.GetId();
-        var command = new CheckinDocument.Command()
-        {
-            PerformingUserId = performingUserId,
-            DocumentId = documentId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<DocumentDto>.Succeed(result));
-    }
 
     /// <summary>
     /// Update a document
@@ -273,82 +216,28 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
-    /// <summary>
-    /// Approve a document request
-    /// </summary>
-    /// <param name="importRequestId">Id of the document to be approved</param>
-    /// <param name="request"></param>
-    /// <returns>A DocumentDto of the approved document</returns>    
-    [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPut("import-requests/{documentId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> ApproveOrReject(
-        [FromRoute] Guid importRequestId,
-        [FromBody] ApproveOrRejectImportRequest request)
-    {
-        var currentUser = _currentUserService.GetCurrentUser();
-        var query = new ApproveDocument.Command()
-        {
-            CurrentUser = currentUser,
-            ImportRequestId = importRequestId,
-            Reason = request.Reason,
-            Decision = request.Decision,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<DocumentDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Get a document request reason
-    /// </summary>
-    /// <param name="documentId">Id of the document to be rejected</param>
-    /// <returns>A DocumentDto of the rejected document</returns>    
-    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
-    [HttpPost("import-requests/{documentId:guid}/reasons")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<ReasonDto>>> Reason(
-        [FromRoute] Guid documentId)
-    {
-        var currentUser = _currentUserService.GetCurrentUser();
-        var query = new GetDocumentReason.Query()
-        {
-            CurrentUser = currentUser,
-            DocumentId = documentId,
-            Type = RequestType.Import,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<ReasonDto>.Succeed(result));
-    }
 
     /// <summary>
-    /// Assign a document to 
+    /// Get permissions for an employee of a specific document
     /// </summary>
-    /// <param name="documentId">Id of the document to be rejected</param>
-    /// <param name="request"></param>
-    /// <returns>A DocumentDto of the rejected document</returns>    
-    [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPost("assign/{documentId:guid}")]
+    /// <param name="documentId">Id of the document to be getting permissions from</param>
+    /// <returns>A DocumentDto of the rejected document</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{documentId:guid}/permissions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> Assign(
-        [FromRoute] Guid documentId, 
-        [FromBody] AssignDocumentToFolderRequest request)
+    public async Task<ActionResult<Result<PermissionDto>>> GetPermissions(
+        [FromRoute] Guid documentId)
     {
-        var performingUserId = _currentUserService.GetId();
-        var query = new AssignDocument.Command()
+        var performingUser = _currentUserService.GetCurrentUser();
+        var query = new GetPermissions.Query()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = performingUser,
             DocumentId = documentId,
-            FolderId = request.FolderId,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<DocumentDto>.Succeed(result));
+        return Ok(Result<PermissionDto>.Succeed(result));
     }
 
     /// <summary>
@@ -362,22 +251,22 @@ public class DocumentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<bool>>> SharePermissions(
+    public async Task<ActionResult<Result<DocumentDto>>> SharePermissions(
         [FromRoute] Guid documentId,
         [FromBody] SharePermissionsRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new ShareDocument.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUser = currentUser,
             DocumentId = documentId,
-            UserIds = request.UserIds,
+            UserId = request.UserId,
             CanRead = request.CanRead,
             CanBorrow = request.CanBorrow,
             ExpiryDate = request.ExpiryDate,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<bool>.Succeed(result));
+        return Ok(Result<DocumentDto>.Succeed(result));
     }
     
     /// <summary>
@@ -385,7 +274,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="logId"></param>
     /// <returns>Return a DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("log/{logId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -405,7 +294,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters"></param>
     /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
@@ -419,28 +308,5 @@ public class DocumentsController : ApiControllerBase
         };        
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Get permissions for an employee of a specific document
-    /// </summary>
-    /// <param name="documentId">Id of the document to be getting permissions from</param>
-    /// <returns>A DocumentDto of the rejected document</returns>    
-    [RequiresRole(IdentityData.Roles.Employee)]
-    [HttpGet("{documentId:guid}/permissions")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<PermissionDto>>> GetPermissions(
-        [FromRoute] Guid documentId)
-    {
-        var performingUser = _currentUserService.GetCurrentUser();
-        var query = new GetPermissions.Query()
-        {
-            PerformingUser = performingUser,
-            DocumentId = documentId,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PermissionDto>.Succeed(result));
     }
 }

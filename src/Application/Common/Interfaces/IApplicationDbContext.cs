@@ -18,7 +18,7 @@ public interface IApplicationDbContext
     public DbSet<Document> Documents { get; }
     public DbSet<ImportRequest> ImportRequests { get; }
     public DbSet<Borrow> Borrows { get; }
-    public DbSet<Permission> Permissions { get; }
+    public DbSet<Permission?> Permissions { get; }
     
     public DbSet<UserGroup> UserGroups { get; }
     public DbSet<FileEntity> Files { get; }

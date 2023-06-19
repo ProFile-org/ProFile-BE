@@ -17,4 +17,9 @@ public class GetAllLogsPaginatedQueryParameters
     /// Size number
     /// </summary>
     public int? Size { get; set; }
+
+    /// <summary>
+    /// User Id
+    /// </summary>
+    public Guid? UserId { get; set; }
 }

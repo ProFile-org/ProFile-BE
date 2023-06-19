@@ -158,18 +158,23 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Query parameters</param>
     /// <returns>A list of LockerLogsDtos</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllLockerLogs(
+    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllLogsPaginated(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetAllLockerLogsPaginated.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
+            RoomId = queryParameters.UserId
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<LockerLogDto>>.Succeed(result));    
@@ -180,12 +185,12 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="logId">Id of the requested log</param>
     /// <returns>A LockerLogDto of the requested log.</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("logs/{logId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<LockerLogDto>>> GetLockerLogById([FromRoute] Guid logId)
+    public async Task<ActionResult<Result<LockerLogDto>>> GetLogById([FromRoute] Guid logId)
     {
         var query = new GetLockerLogById.Query()
         {

@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Domain.Entities.Physical;
 using NodaTime;
 
 namespace Api.Services;

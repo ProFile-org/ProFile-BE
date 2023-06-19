@@ -206,6 +206,7 @@ public class UsersController : ApiControllerBase
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
+            UserId = queryParameters.UserId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserLogDto>>.Succeed(result));

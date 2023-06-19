@@ -92,7 +92,6 @@ public class ApproveBorrowRequest
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Approve,
-                Reason = request.Reason,
             };
             var result = _context.Borrows.Update(borrowRequest);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
