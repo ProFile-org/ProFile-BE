@@ -126,6 +126,14 @@ public class AddUser
                 CreatedBy = request.CurrentUser.Id,
             };
             
+           
+            entity.AddDomainEvent(new UserCreatedEvent(entity, password));
+            if (request.Role.IsStaff())
+            {
+                entity.AddDomainEvent(new StaffCreatedEvent(entity, request.CurrentUser));
+            }
+            var result = await _context.Users.AddAsync(entity, cancellationToken);
+           
             var log = new UserLog()
             {
                 User = request.CurrentUser,
@@ -134,12 +142,6 @@ public class AddUser
                 Time = localDateTimeNow,
                 Action = UserLogMessages.Add(entity.Role),
             };
-            entity.AddDomainEvent(new UserCreatedEvent(entity, password));
-            if (request.Role.IsStaff())
-            {
-                entity.AddDomainEvent(new StaffCreatedEvent(entity, request.CurrentUser));
-            }
-            var result = await _context.Users.AddAsync(entity, cancellationToken);
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
