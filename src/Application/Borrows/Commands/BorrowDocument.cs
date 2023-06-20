@@ -49,12 +49,14 @@ public class BorrowDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IPermissionManager _permissionManager;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IPermissionManager permissionManager)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IPermissionManager permissionManager, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
             _permissionManager = permissionManager;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -100,43 +102,51 @@ public class BorrowDocument
             // if the request is in time, meaning not overdue,
             // then check if its due date is less than the borrow request date, if not then check
             // if it's already been approved, checked out or lost, meaning 
-            var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
-            var existedBorrow = await _context.Borrows
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            var borrowFromTime = LocalDateTime.FromDateTime(request.BorrowFrom);
+            var borrowToTime = LocalDateTime.FromDateTime(request.BorrowTo);
+            var existedBorrows =  _context.Borrows
                 .Include(x => x.Borrower)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                     x.Document.Id == request.DocumentId
                     && ((x.DueTime > localDateTimeNow)
-                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
-            
-            if (existedBorrow is not null)
-            {
-                // Does not make sense if the same person go up and want to borrow the same document again
-                // even if the borrow day will be after the due day
-                if (existedBorrow.Borrower.Id == request.BorrowerId
-                    && existedBorrow.Status is BorrowRequestStatus.Pending 
-                        or BorrowRequestStatus.Approved)
-                {
-                    throw new ConflictException("This document is already requested borrow from the same user.");
-                }
+                        || x.Status == BorrowRequestStatus.Overdue));
 
-                if (existedBorrow.Status 
-                    is BorrowRequestStatus.Approved 
-                    or BorrowRequestStatus.CheckedOut
-                    && LocalDateTime.FromDateTime(request.BorrowFrom) < existedBorrow.DueTime)
-                {
-                    throw new ConflictException("This document cannot be borrowed.");
-                }
+
+            // Does not make sense if the same person go up and want to borrow the same document again
+            // even if the borrow day will be after the due day
+            foreach (var borrow in existedBorrows)
+            {
+                    if (borrow.Borrower.Id == request.BorrowerId
+                    && borrow.Status is BorrowRequestStatus.Pending 
+                        or BorrowRequestStatus.Approved)
+                    {
+                        throw new ConflictException("This document is already requested borrow from the same user.");
+                    }
+
+                    if (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime)
+                    {
+                        throw new ConflictException("Overlapping time");
+                    }
+                
+                    if (borrow.Status 
+                            is BorrowRequestStatus.Approved 
+                            or BorrowRequestStatus.CheckedOut
+                        && borrowFromTime < borrow.DueTime)
+                    {
+                        throw new ConflictException("This document cannot be borrowed.");
+                    }
             }
-            
+
             var entity = new Borrow()
             {
                 Borrower = user,
                 Document = document,
-                BorrowTime = LocalDateTime.FromDateTime(request.BorrowFrom),
-                DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
+                BorrowTime = borrowFromTime,
+                DueTime = borrowToTime,
                 Reason = request.Reason,
                 Status = BorrowRequestStatus.Pending,
-                Created = LocalDateTime.FromDateTime(DateTime.Now),
+                Created = localDateTimeNow,
                 CreatedBy = user.Id,
             };
             

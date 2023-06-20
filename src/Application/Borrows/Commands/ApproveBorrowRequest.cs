@@ -15,7 +15,7 @@ public class ApproveBorrowRequest
 {
     public record Command : IRequest<BorrowDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public Guid CurrentUserId { get; init; }
         public Guid BorrowId { get; init; }
         public string Reason { get; init; } = null!;
     }
@@ -57,39 +57,39 @@ public class ApproveBorrowRequest
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
-            var existedBorrow = await _context.Borrows
-                .FirstOrDefaultAsync(x =>
+            var existedBorrows =  _context.Borrows
+                .Where(x =>
                     x.Document.Id == borrowRequest.Document.Id
                     && x.Id != borrowRequest.Id
                     && ((x.DueTime > localDateTimeNow)
-                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
+                        || x.Status == BorrowRequestStatus.Overdue));
 
-            if (existedBorrow is not null)
+            foreach (var borrow in existedBorrows)
             {
-                if (existedBorrow?.Status
+                if (borrow?.Status
                         is BorrowRequestStatus.Approved
                         or BorrowRequestStatus.CheckedOut
-                    && borrowRequest.BorrowTime < existedBorrow.DueTime)
+                    && borrowRequest.BorrowTime < borrow.DueTime)
                 {
                     throw new ConflictException("This document cannot be borrowed.");
                 }
             }
-            
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+
+            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
             borrowRequest.Status = BorrowRequestStatus.Approved;
             var log = new DocumentLog()
             {
                 Object = borrowRequest.Document,
-                UserId = performingUser!.Id,
-                User = performingUser,
+                UserId = currentUser!.Id,
+                User = currentUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Approve,
             };
             var requestLog = new RequestLog()
             {
                 Object = borrowRequest.Document,
-                UserId = performingUser.Id,
-                User = performingUser,
+                UserId = currentUser.Id,
+                User = currentUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.Approve,
             };

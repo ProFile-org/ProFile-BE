@@ -211,25 +211,4 @@ public class UsersController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserLogDto>>.Succeed(result));
     }
-
-    /// <summary>
-    /// Get user related log by Id
-    /// </summary>
-    /// <param name="logId">Id of the logged user</param>
-    /// <returns>A UserLogDto of the logged user</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<UserLogDto>>> GetLogById(
-        [FromRoute] Guid logId)
-    {
-        var query = new GetUserLogById.Query()
-        {
-            LogId = logId,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<UserLogDto>.Succeed(result));
-    }
 }

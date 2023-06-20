@@ -87,7 +87,7 @@ public class StaffsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Add a staff
+    /// Assign a staff
     /// </summary>
     /// <param name="request">Add staff details</param>
     /// <returns>A StaffDto of the added staff</returns>

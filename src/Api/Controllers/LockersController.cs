@@ -179,24 +179,4 @@ public class LockersController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<LockerLogDto>>.Succeed(result));    
     }
-
-    /// <summary>
-    /// Get a log related to locker by Id.
-    /// </summary>
-    /// <param name="logId">Id of the requested log</param>
-    /// <returns>A LockerLogDto of the requested log.</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpGet("logs/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<LockerLogDto>>> GetLogById([FromRoute] Guid logId)
-    {
-        var query = new GetLockerLogById.Query()
-        {
-            LogId = logId,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<LockerLogDto>.Succeed(result));
-    }
 }

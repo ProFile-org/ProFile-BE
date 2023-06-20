@@ -111,8 +111,8 @@ public class AddLocker
         private async Task<bool> DuplicatedNameLockerExistsInSameRoomAsync(string lockerName, Guid roomId, CancellationToken cancellationToken)
         {
             var locker = await _context.Lockers.FirstOrDefaultAsync(
-                x => EqualsInvariant(x.Name, lockerName) 
-                     && IsSameRoom(x.Room.Id, roomId), cancellationToken);
+                x => x.Name.ToLower().Equals(lockerName.ToLower())
+                     && x.Room.Id == roomId, cancellationToken);
             return locker is not null;
         }
 

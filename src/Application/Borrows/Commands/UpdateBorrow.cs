@@ -73,27 +73,28 @@ public class UpdateBorrow
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
-            var existedBorrow = await _context.Borrows
+            var existedBorrows = _context.Borrows
                 .Include(x => x.Borrower)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                     x.Document.Id == borrowRequest.Document.Id
                     && x.Id != borrowRequest.Id
                     && ((x.DueTime > localDateTimeNow)
-                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
-            
-            if (existedBorrow is not null)
+                        || x.Status == BorrowRequestStatus.Overdue));
+
+            var borrowFromTime = LocalDateTime.FromDateTime(request.BorrowFrom);
+            var borrowToTime = LocalDateTime.FromDateTime(request.BorrowTo);
+            foreach (var borrow in existedBorrows)
             {
-                if (existedBorrow.Status 
-                    is BorrowRequestStatus.Approved 
-                    or BorrowRequestStatus.CheckedOut
-                    && LocalDateTime.FromDateTime(request.BorrowFrom) < existedBorrow.DueTime)
+                if (borrow.Status 
+                        is BorrowRequestStatus.Approved 
+                        or BorrowRequestStatus.CheckedOut
+                    && (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
-                    throw new ConflictException("This document cannot be borrowed.");
+                    throw new ConflictException("This document cannot be updated.");
                 }
             }
-
-            borrowRequest.BorrowTime = LocalDateTime.FromDateTime(request.BorrowFrom);
-            borrowRequest.DueTime = LocalDateTime.FromDateTime(request.BorrowTo);
+            borrowRequest.BorrowTime = borrowFromTime;
+            borrowRequest.DueTime = borrowToTime;
             borrowRequest.Reason = request.Reason;
 
             var result = _context.Borrows.Update(borrowRequest);

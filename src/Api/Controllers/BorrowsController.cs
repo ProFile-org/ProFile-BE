@@ -192,7 +192,7 @@ public class BorrowsController : ApiControllerBase
         var performingUserId = _currentUserService.GetId();
         var command = new ApproveBorrowRequest.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUserId = performingUserId,
             BorrowId = borrowId,
             Reason = request.Reason,
         };
@@ -342,26 +342,5 @@ public class BorrowsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<RequestLogDto>>.Succeed(result));    
-    }
-
-    /// <summary>
-    /// Get a log related to request by Id.
-    /// </summary>
-    /// <param name="logId">Id of the requested log</param>
-    /// <returns>A LockerLogDto of the requested log.</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("log/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RequestLogDto>>> GetRequestLogById([FromRoute] Guid logId)
-    {
-        var query = new GetRequestLogById.Query()
-        {
-            LogId = logId
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<RequestLogDto>.Succeed(result));
     }
 }

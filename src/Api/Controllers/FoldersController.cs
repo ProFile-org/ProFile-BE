@@ -179,25 +179,4 @@ public class FoldersController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<FolderLogDto>>.Succeed(result));    
     }
-    
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="logId"></param>
-    /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpGet("log/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<FolderLogDto>>> GetLogById([FromRoute] Guid logId)
-    {
-        var query = new GetFolderLogById.Query()
-        {
-            LogId = logId
-        };
-
-        var result = await Mediator.Send(query);
-        return Ok(Result<FolderLogDto>.Succeed(result));
-    }
 }

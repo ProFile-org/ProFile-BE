@@ -268,27 +268,7 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
-    /// <summary>
-    ///  Get a document log by Id 
-    /// </summary>
-    /// <param name="logId"></param>
-    /// <returns>Return a DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpGet("log/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentLogDto>>> GetLogById([FromRoute] Guid logId)
-    {
-        var query = new GetLogOfDocumentById.Query()
-        {
-            LogId = logId
-        };
 
-        var result = await Mediator.Send(query);
-        return Ok(Result<DocumentLogDto>.Succeed(result));
-    }
-    
     /// <summary>
     /// Get all log of document
     /// </summary>

@@ -123,8 +123,8 @@ public class AddFolder
         private async Task<bool> DuplicatedNameFolderExistsInSameLockerAsync(string folderName, Guid lockerId, CancellationToken cancellationToken)
         {
             var folder = await _context.Folders.FirstOrDefaultAsync(
-                x => EqualsInvariant(x.Name, folderName) 
-                     && IsSameLocker(x.Locker.Id, lockerId), cancellationToken);
+                x => x.Name.ToLower().Equals(folderName.ToLower())
+                     && x.Locker.Id == lockerId, cancellationToken);
             return folder is not null;
         }
 
