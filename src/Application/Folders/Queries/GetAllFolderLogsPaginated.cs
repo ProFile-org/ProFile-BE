@@ -14,6 +14,7 @@ public class GetAllFolderLogsPaginated
 {
     public record Query : IRequest<PaginatedList<FolderLogDto>>
     {
+        public Guid? FolderId { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -36,12 +37,18 @@ public class GetAllFolderLogsPaginated
                 .Include(x => x.Object)
                 .AsQueryable();
             
+            if (request.FolderId is not null)
+            {
+                logs = logs.Where(x => x.Object!.Id == request.FolderId);
+            }
+
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 logs = logs.Where(x => 
                     x.Action.Trim().ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
-            
+
+
             return await logs
                 .LoggingListPaginateAsync<Folder, FolderLog, FolderLogDto>(
                     request.Page,

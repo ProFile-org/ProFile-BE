@@ -1,6 +1,6 @@
 namespace Api.Controllers.Payload.Requests.Borrows;
 
-public class ApproveRequest
+public class ApproveOrRejectBorrowRequestRequest
 {
     public string Reason { get; set; }
 }

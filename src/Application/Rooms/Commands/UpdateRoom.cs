@@ -107,16 +107,10 @@ public class UpdateRoom
             CancellationToken cancellationToken)
         {
             var room = await _context.Rooms.FirstOrDefaultAsync(
-                x => EqualsInvariant(x.Name, roomName) 
-                     && IsNotSameRoom(x.Id, roomId),
+                x => x.Name.Trim().ToLower().Equals(roomName.Trim().ToLower())
+                     && x.Id != roomId,
                 cancellationToken);
             return room is not null;
         }
-        
-        private static bool EqualsInvariant(string x, string y)
-            => x.Trim().ToLower().Equals(y.Trim().ToLower());
-
-        private static bool IsNotSameRoom(Guid roomId1, Guid roomId2)
-            => roomId1 != roomId2;
     }
 }

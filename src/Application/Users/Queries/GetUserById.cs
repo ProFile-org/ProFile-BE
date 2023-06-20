@@ -49,9 +49,6 @@ public class GetUserById
 
         private static bool ViolateConstraints(string userRole, Guid userDepartmentId, User foundUser)
             => (userRole.IsStaff() || userRole.IsEmployee()) 
-               && GetUserInOtherDepartment(userDepartmentId, foundUser);
-
-        private static bool GetUserInOtherDepartment(Guid userDepartmentId, User foundUser)
-            => foundUser.Department?.Id != userDepartmentId;
+               && userDepartmentId != foundUser.Department?.Id;
     }
 }

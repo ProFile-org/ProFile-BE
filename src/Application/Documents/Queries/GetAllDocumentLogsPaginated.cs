@@ -14,6 +14,7 @@ public class GetAllDocumentLogsPaginated
 {
     public record Query : IRequest<PaginatedList<DocumentLogDto>>
     {
+        public Guid? DocumentId { get; set; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -38,11 +39,17 @@ public class GetAllDocumentLogsPaginated
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
 
+            if (request.DocumentId is not null)
+            {
+                logs = logs.Where(x => x.Object!.Id == request.DocumentId);
+            }
+
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 logs = logs.Where(x =>
                     x.Action.ToLower().Contains(request.SearchTerm.ToLower()));
             }
+
 
             return await logs
                 .LoggingListPaginateAsync<Document, DocumentLog, DocumentLogDto>(

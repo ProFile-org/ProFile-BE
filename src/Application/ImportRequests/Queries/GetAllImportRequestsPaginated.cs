@@ -34,17 +34,33 @@ public class GetAllImportRequestsPaginated
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<ImportRequestDto>> Handle(Query request,
-            CancellationToken cancellationToken)
+        public async Task<PaginatedList<ImportRequestDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            if (request.CurrentUser.Role.IsStaff()
-                && request.RoomId is null)
+            if (request.CurrentUser.Role.IsStaff())
             {
-                throw new UnauthorizedAccessException("User can not access this resource.");
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+
+                var room = await _context.Rooms
+                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                var roomDoesNotExist = room is null;
+
+                if (roomDoesNotExist
+                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
             }
             
             if (request.CurrentUser.Role.IsEmployee())
             {
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+
                 var room = await _context.Rooms
                     .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
                 var roomDoesNotExist = room is null;
@@ -83,7 +99,6 @@ public class GetAllImportRequestsPaginated
                 _mapper.ConfigurationProvider,
                 cancellationToken);
         }
-        
         
         private static bool RoomIsNotInSameDepartment(User user, Room room)
             => user.Department?.Id != room.DepartmentId;

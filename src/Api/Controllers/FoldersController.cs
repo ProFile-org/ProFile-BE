@@ -172,6 +172,7 @@ public class FoldersController : ApiControllerBase
     {
         var query = new GetAllFolderLogsPaginated.Query()
         {
+            FolderId = queryParameters.ObjectId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,

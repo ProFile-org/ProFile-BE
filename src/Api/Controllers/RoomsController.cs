@@ -212,31 +212,12 @@ public class RoomsController : ApiControllerBase
     {
         var query = new GetAllRoomLogsPaginated.Query()
         {
+            RoomId = queryParameters.ObjectId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<RoomLogDto>>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get a room log by id 
-    /// </summary>
-    /// <param name="logId"></param>
-    /// <returns>A RoomLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs/{logId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomLogDto>>> GetLogById(
-        [FromRoute] Guid logId)
-    {
-        var query = new GetRoomLogById.Query()
-        {
-            LogId = logId,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<RoomLogDto>.Succeed(result));
     }
 }

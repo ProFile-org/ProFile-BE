@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Messages;
@@ -109,33 +110,27 @@ public class BorrowDocument
                 .Include(x => x.Borrower)
                 .Where(x =>
                     x.Document.Id == request.DocumentId
-                    && ((x.DueTime > localDateTimeNow)
+                    && (x.DueTime > localDateTimeNow
                         || x.Status == BorrowRequestStatus.Overdue));
 
-
-            // Does not make sense if the same person go up and want to borrow the same document again
-            // even if the borrow day will be after the due day
             foreach (var borrow in existedBorrows)
             {
-                    if (borrow.Borrower.Id == request.BorrowerId
-                    && borrow.Status is BorrowRequestStatus.Pending 
-                        or BorrowRequestStatus.Approved)
-                    {
-                        throw new ConflictException("This document is already requested borrow from the same user.");
-                    }
+                // Does not make sense if the same person go up and want to borrow the same document again
+                // even if the borrow day will be after the due day
+                if (borrow.Borrower.Id == request.BorrowerId
+                && borrow.Status is BorrowRequestStatus.Pending
+                    or BorrowRequestStatus.Approved)
+                {
+                    throw new ConflictException("This document is already requested borrow from the same user.");
+                }
 
-                    if (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime)
-                    {
-                        throw new ConflictException("Overlapping time");
-                    }
-                
-                    if (borrow.Status 
-                            is BorrowRequestStatus.Approved 
-                            or BorrowRequestStatus.CheckedOut
-                        && borrowFromTime < borrow.DueTime)
-                    {
-                        throw new ConflictException("This document cannot be borrowed.");
-                    }
+                if (borrow.Status
+                    is BorrowRequestStatus.Approved
+                    or BorrowRequestStatus.CheckedOut
+                    && borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime)
+                {
+                    throw new ConflictException("This document cannot be borrowed.");
+                }
             }
 
             var entity = new Borrow()

@@ -21,5 +21,5 @@ public class GetAllLogsPaginatedQueryParameters
     /// <summary>
     /// User Id
     /// </summary>
-    public Guid? UserId { get; set; }
+    public Guid? ObjectId { get; set; }
 }

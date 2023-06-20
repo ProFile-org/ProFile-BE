@@ -115,11 +115,5 @@ public class AddLocker
                      && x.Room.Id == roomId, cancellationToken);
             return locker is not null;
         }
-
-        private static bool EqualsInvariant(string x, string y)
-            => x.Trim().ToLower().Equals(y.Trim().ToLower());
-
-        private static bool IsSameRoom(Guid roomId1, Guid roomId2)
-            => roomId1 == roomId2;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Common.Extensions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Logging;
@@ -18,7 +18,7 @@ public class GetAllLockerLogsPaginated
         public string CurrentUserRole { get; init; } = null!;
         public Guid CurrentUserDepartmentId { get; init; }
         public string? SearchTerm { get; init; }
-        public Guid? RoomId { get; init; }
+        public Guid? LockerId { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
     }
@@ -39,7 +39,7 @@ public class GetAllLockerLogsPaginated
 
             if (request.CurrentUserRole.IsStaff())
             {
-                if (request.RoomId is null)
+                if (request.LockerId is null)
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }
@@ -51,7 +51,7 @@ public class GetAllLockerLogsPaginated
                     throw new UnauthorizedAccessException("User cannot access this resource");
                 }
 
-                if (!IsSameRoom(currentRoom.Id, request.RoomId.Value))
+                if (!IsSameRoom(currentRoom.Id, request.LockerId.Value))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource");
                 }
@@ -63,9 +63,9 @@ public class GetAllLockerLogsPaginated
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
 
-            if (request.RoomId is not null)
+            if (request.LockerId is not null)
             {
-                logs = logs.Where(x => x.Object == null || x.Object.Room.Id == request.RoomId);
+                logs = logs.Where(x => x.Object!.Id == request.LockerId);
             }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

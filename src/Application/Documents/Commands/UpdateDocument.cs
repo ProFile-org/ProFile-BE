@@ -115,11 +115,8 @@ public class UpdateDocument
 
         private static bool ViolateConstraints(User currentUser, Document document)
             => (currentUser.Role.IsStaff()
-                && NotInSameDepartment(currentUser, document))
+                && currentUser.Department!.Id != document.Department!.Id)
             || (currentUser.Role.IsEmployee()
                 && document.ImporterId != currentUser.Id);
-
-        private static bool NotInSameDepartment(User currentUser, Document document)
-            => currentUser.Department!.Id != document.Department!.Id;
     }
 }

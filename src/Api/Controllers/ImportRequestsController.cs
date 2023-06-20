@@ -105,9 +105,9 @@ public class ImportRequestsController : ApiControllerBase
     /// </summary>
     /// <param name="importRequestId">Id of the document to be approved</param>
     /// <param name="request"></param>
-    /// <returns>A DocumentDto of the approved document</returns>    
+    /// <returns>A DocumentDto of the approved document</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPut]
+    [HttpPut("{importRequestId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -134,7 +134,7 @@ public class ImportRequestsController : ApiControllerBase
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPut("{importRequestId:guid}")]
+    [HttpPut("assign/{importRequestId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -176,7 +176,6 @@ public class ImportRequestsController : ApiControllerBase
             CurrentUser = currentUser,
             DocumentId = documentId,
         };
-
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
     }

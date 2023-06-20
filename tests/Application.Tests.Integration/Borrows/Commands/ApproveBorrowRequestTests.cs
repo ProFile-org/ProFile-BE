@@ -1,4 +1,4 @@
-﻿using Application.Borrows.Commands;
+using Application.Borrows.Commands;
 using Application.Common.Exceptions;
 using Application.Identity;
 using Domain.Entities.Physical;
@@ -30,7 +30,7 @@ public class ApproveBorrowRequestTests : BaseClassFixture
 
         await AddAsync(request);
         
-        var command = new ApproveBorrowRequest.Command()
+        var command = new ApproveOrRejectBorrowRequest.Command()
         {
             BorrowId = request.Id,
         };
@@ -51,7 +51,7 @@ public class ApproveBorrowRequestTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenRequestDoesNotExist()
     {
         // Arrange
-        var command = new ApproveBorrowRequest.Command()
+        var command = new ApproveOrRejectBorrowRequest.Command()
         {
             BorrowId = Guid.NewGuid(),
         };
@@ -78,7 +78,7 @@ public class ApproveBorrowRequestTests : BaseClassFixture
 
         await AddAsync(request);
         
-        var command = new ApproveBorrowRequest.Command()
+        var command = new ApproveOrRejectBorrowRequest.Command()
         {
             BorrowId = request.Id,
         };
@@ -108,7 +108,7 @@ public class ApproveBorrowRequestTests : BaseClassFixture
 
         await AddAsync(request);
         
-        var command = new ApproveBorrowRequest.Command()
+        var command = new ApproveOrRejectBorrowRequest.Command()
         {
             BorrowId = request.Id,
         };
@@ -146,7 +146,7 @@ public class ApproveBorrowRequestTests : BaseClassFixture
         await context.AddAsync(request2);
         await context.SaveChangesAsync();
         
-        var command = new ApproveBorrowRequest.Command()
+        var command = new ApproveOrRejectBorrowRequest.Command()
         {
             BorrowId = request2.Id,
         };

@@ -1,11 +1,11 @@
-using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Physical;
 using Domain.Statuses;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +13,10 @@ namespace Application.Borrows.Queries;
 
 public class GetAllBorrowRequestsPaginated
 {
-    public class Validator : AbstractValidator<Query>
-    {
-        public Validator()
-        {
-            RuleLevelCascadeMode = CascadeMode.Stop;
-        }
-    }
-    
     public record Query : IRequest<PaginatedList<BorrowDto>>
     {
-        public Guid? DepartmentId { get; init; }
+        public User CurrentUser { get; init; } = null!;
+        public Guid? RoomId { get; init; }
         public Guid? DocumentId { get; init; }
         public Guid? EmployeeId { get; init; }
         public int? Page { get; init; }
@@ -47,6 +40,47 @@ public class GetAllBorrowRequestsPaginated
         public async Task<PaginatedList<BorrowDto>> Handle(Query request,
             CancellationToken cancellationToken)
         {
+            if (request.CurrentUser.Role.IsStaff())
+            {
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+
+                var room = await _context.Rooms
+                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                var roomDoesNotExist = room is null;
+
+                if (roomDoesNotExist
+                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+            }
+
+            if (request.CurrentUser.Role.IsEmployee())
+            {
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+
+                if (request.EmployeeId != request.CurrentUser.Id)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource");
+                }
+
+                var room = await _context.Rooms
+                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                var roomDoesNotExist = room is null;
+
+                if (roomDoesNotExist
+                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource.");
+                }
+            }
+
             var borrows = _context.Borrows.AsQueryable();
 
             borrows = borrows
@@ -59,9 +93,9 @@ public class GetAllBorrowRequestsPaginated
                 .ThenInclude(t => t.Room)
                 .ThenInclude(s => s.Department);
 
-            if (request.DepartmentId is not null)
+            if (request.RoomId is not null)
             {
-                borrows = borrows.Where(x => x.Document.Department!.Id == request.DepartmentId);
+                borrows = borrows.Where(x => x.Document.Folder!.Locker.Room.Id == request.RoomId);
             }
             
             if (request.EmployeeId is not null)
@@ -108,5 +142,8 @@ public class GetAllBorrowRequestsPaginated
 
             return new PaginatedList<BorrowDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
+
+        private static bool RoomIsNotInSameDepartment(User user, Room room)
+            => user.Department?.Id != room.DepartmentId;
     }
 }

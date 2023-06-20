@@ -274,7 +274,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters"></param>
     /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
@@ -282,6 +282,7 @@ public class DocumentsController : ApiControllerBase
     {
         var query = new GetAllDocumentLogsPaginated.Query()
         {
+            DocumentId = queryParameters.ObjectId,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,

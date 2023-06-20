@@ -158,7 +158,7 @@ public class LockersController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Query parameters</param>
     /// <returns>A list of LockerLogsDtos</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -174,7 +174,7 @@ public class LockersController : ApiControllerBase
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
-            RoomId = queryParameters.UserId
+            LockerId = queryParameters.ObjectId
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<LockerLogDto>>.Succeed(result));    

@@ -107,20 +107,11 @@ public class UpdateLocker
             CancellationToken cancellationToken)
         {
             var locker = await _context.Lockers.FirstOrDefaultAsync(
-                x => EqualsInvariant(x.Name, lockerName) 
-                     && IsNotSameLocker(x.Id, lockerId)
-                     && IsSameRoom(x.Room.Id, roomId),
+                x => x.Name.Trim().ToLower().Equals(lockerName.ToLower()) 
+                     && x.Id != lockerId
+                     && x.Room.Id == roomId,
                 cancellationToken);
             return locker is not null;
         }
-        
-        private static bool EqualsInvariant(string x, string y)
-            => x.Trim().ToLower().Equals(y.Trim().ToLower());
-
-        private static bool IsSameRoom(Guid roomId1, Guid roomId2)
-            => roomId1 == roomId2;
-
-        private static bool IsNotSameLocker(Guid lockerId1, Guid lockerId2)
-            => lockerId1 != lockerId2;
     }
 }
