@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230620122747_LoggingNowHasObjectId")]
+    [Migration("20230620131154_LoggingNowHasObjectId")]
     partial class LoggingNowHasObjectId
     {
         /// <inheritdoc />
