@@ -27,11 +27,13 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="documentId">Id of the document to be retrieved</param>
     /// <returns>A DocumentDto of the retrieved document</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Staff)]
     [HttpGet("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<DocumentDto>>> GetById([FromRoute] Guid documentId)
+    public async Task<ActionResult<Result<DocumentDto>>> GetById(
+        [FromRoute] Guid documentId)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetDocumentById.Query()
@@ -42,7 +44,7 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-    
+
     /// <summary>
     /// Get all documents paginated
     /// </summary>
@@ -57,8 +59,16 @@ public class DocumentsController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<DocumentDto>>>> GetAllPaginated(
         [FromQuery] GetAllDocumentsPaginatedQueryParameters queryParameters)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
+        Guid? currentStaffRoomId = null;
+        if (currentUser.Role.IsStaff())
+        {
+            currentStaffRoomId = _currentUserService.GetCurrentRoomForStaff();
+        }
         var query = new GetAllDocumentsPaginated.Query()
         {
+            CurrentUser = currentUser,
+            CurrentStaffRoomId = currentStaffRoomId,
             UserId = queryParameters.UserId,
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
@@ -138,6 +148,7 @@ public class DocumentsController : ApiControllerBase
         [FromBody] ImportDocumentRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
+        var currentStaffRoomId = _currentUserService.GetCurrentRoomForStaff();
         if (currentUser.Department is null)
         {
             return Forbid();
@@ -145,6 +156,7 @@ public class DocumentsController : ApiControllerBase
         var command = new ImportDocument.Command()
         {
             CurrentUser = currentUser,
+            CurrentStaffRoomId = currentStaffRoomId,
             Title = request.Title,
             Description = request.Description,
             DocumentType = request.DocumentType,

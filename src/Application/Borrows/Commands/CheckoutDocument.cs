@@ -58,7 +58,7 @@ public class CheckoutDocument
             borrowRequest.Document.LastModifiedBy = performingUser!.Id;
             var log = new DocumentLog()
             {
-                Object = borrowRequest.Document,
+                ObjectId = borrowRequest.Document.Id,
                 UserId = performingUser.Id,
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),

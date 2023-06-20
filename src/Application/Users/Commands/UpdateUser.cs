@@ -85,7 +85,7 @@ public class UpdateUser
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = user,
+                ObjectId = user.Id,
                 Time = localDateTimeNow,
                 Action = UserLogMessages.Update,
             };

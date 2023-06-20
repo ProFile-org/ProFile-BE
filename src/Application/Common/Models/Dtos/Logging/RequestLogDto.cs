@@ -21,7 +21,7 @@ public class RequestLogDto : BaseDto, IMapFrom<RequestLog>
             .ForMember(dest => dest.Time,
                 opt => opt.MapFrom(src => src.Time.ToDateTimeUnspecified()))
             .ForMember(dest => dest.Object,
-                opt => opt.MapFrom(src => src.Object))
+                opt => opt.MapFrom(src => src.ObjectId))
             .ForMember(dest => dest.Type,
                 opt => opt.MapFrom(src => src.Type.ToString()));
     }

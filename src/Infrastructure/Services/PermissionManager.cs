@@ -18,9 +18,10 @@ public class PermissionManager : IPermissionManager
 
     public bool IsGranted(Guid documentId, DocumentOperation operation, params Guid[] userIds)
     {
-        return Array.TrueForAll(userIds, id => !_context.Permissions.Any(x =>
-            x.DocumentId == documentId && x.EmployeeId == id &&
-            !x.AllowedOperations.Contains(operation.ToString())));
+        return Array.TrueForAll(userIds, id => _context.Permissions.Any(x =>
+            x.DocumentId == documentId
+            && x.EmployeeId == id
+            && x.AllowedOperations.Contains(operation.ToString())));
     }
 
     public async Task GrantAsync(Document document, DocumentOperation operation, User[] users, DateTime expiryDate, CancellationToken cancellationToken)

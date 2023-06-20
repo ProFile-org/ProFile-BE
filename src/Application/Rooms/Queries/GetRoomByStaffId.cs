@@ -26,6 +26,14 @@ public class GetRoomByStaffId
 
         public async Task<RoomDto> Handle(Query request, CancellationToken cancellationToken)
         {
+            var staff = await _context.Staffs
+                    .FirstOrDefaultAsync(x => x.Id == request.StaffId, cancellationToken);
+
+            if (staff is null)
+            {
+                throw new KeyNotFoundException("Staff does not exists.");
+            }
+            
             var room = await _context.Rooms
                 .Include(x => x.Staff)
                 .ThenInclude(y => y!.User)

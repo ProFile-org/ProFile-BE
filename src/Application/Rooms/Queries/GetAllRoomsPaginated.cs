@@ -43,13 +43,16 @@ public class GetAllRoomsPaginated
                 .Include(x => x.Staff)
                 .AsQueryable();
 
-            if (request.CurrentUser.Role.IsEmployee()
+            if ((request.CurrentUser.Role.IsStaff() || request.CurrentUser.Role.IsEmployee())
                 && request.CurrentUser.Department?.Id != request.DepartmentId)
             {
                 throw new UnauthorizedAccessException("User cannot access this resource.");
             }
-            
-            rooms = rooms.Where(x => x.Department.Id == request.DepartmentId);
+
+            if (request.DepartmentId is not null)
+            {
+                rooms = rooms.Where(x => x.Department.Id == request.DepartmentId);
+            }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {

@@ -28,7 +28,7 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="roomId">Id of the room to be retrieved</param>
     /// <returns>A RoomDto of the retrieved room</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -105,15 +105,18 @@ public class RoomsController : ApiControllerBase
     /// </summary>
     /// <param name="roomId">Id of the room to retrieve staff</param>
     /// <returns>A StaffDto of the retrieved staff</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{roomId:guid}/staffs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> GetByRoom(
+    public async Task<ActionResult<Result<StaffDto>>> GetStaffByRoom(
         [FromRoute] Guid roomId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetStaffByRoomId.Query()
         {
+            CurrentUser = currentUser,
             RoomId = roomId,
         };
         var result = await Mediator.Send(query);
@@ -176,6 +179,7 @@ public class RoomsController : ApiControllerBase
     /// <param name="roomId">Id of the room to be updated</param>
     /// <param name="request">Update room details</param>
     /// <returns>A RoomDto of the updated room</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPut("{roomId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -34,14 +34,14 @@ public class GetAllUserLogsPaginated
         public async Task<PaginatedList<UserLogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var logs = _context.UserLogs
-                .Include(x => x.Object)
+                .Include(x => x.ObjectId)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
 
             if (request.UserId is not null)
             {
-                logs = logs.Where(x => x.Object!.Id == request.UserId);
+                logs = logs.Where(x => x.ObjectId! == request.UserId);
             }
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

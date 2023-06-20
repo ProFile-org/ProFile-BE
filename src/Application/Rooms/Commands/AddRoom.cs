@@ -100,7 +100,7 @@ public class AddRoom
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 Action = RoomLogMessage.Add,
             };

@@ -7,6 +7,7 @@ using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Shared;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

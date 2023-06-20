@@ -130,8 +130,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BaseFolderId");
 
-                    b.HasIndex("ObjectId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("DocumentLogs");
@@ -162,8 +160,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BaseLockerId");
-
-                    b.HasIndex("ObjectId");
 
                     b.HasIndex("UserId");
 
@@ -196,8 +192,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BaseRoomId");
 
-                    b.HasIndex("ObjectId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("LockerLogs");
@@ -227,8 +221,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ObjectId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("RequestLogs");
@@ -255,8 +247,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ObjectId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("RoomLogs");
@@ -272,7 +262,7 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ObjectId")
+                    b.Property<Guid?>("ObjectId")
                         .HasColumnType("uuid");
 
                     b.Property<LocalDateTime>("Time")
@@ -282,8 +272,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ObjectId");
 
                     b.HasIndex("UserId");
 
@@ -784,10 +772,6 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("BaseFolderId");
 
-                    b.HasOne("Domain.Entities.Physical.Document", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -795,8 +779,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("BaseFolder");
-
-                    b.Navigation("Object");
 
                     b.Navigation("User");
                 });
@@ -807,10 +789,6 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("BaseLockerId");
 
-                    b.HasOne("Domain.Entities.Physical.Folder", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -818,8 +796,6 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("BaseLocker");
-
-                    b.Navigation("Object");
 
                     b.Navigation("User");
                 });
@@ -830,10 +806,6 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("BaseRoomId");
 
-                    b.HasOne("Domain.Entities.Physical.Locker", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -842,60 +814,38 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Navigation("BaseRoom");
 
-                    b.Navigation("Object");
-
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.RequestLog", b =>
                 {
-                    b.HasOne("Domain.Entities.Physical.Document", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Object");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.RoomLog", b =>
                 {
-                    b.HasOne("Domain.Entities.Physical.Room", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId");
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Object");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.UserLog", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "Object")
-                        .WithMany()
-                        .HasForeignKey("ObjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Object");
 
                     b.Navigation("User");
                 });

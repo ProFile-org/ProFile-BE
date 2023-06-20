@@ -16,10 +16,5 @@ public class UserLogConfiguration : IEntityTypeConfiguration<UserLog>
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .IsRequired();
-
-        builder.HasOne(x => x.Object)
-            .WithMany()
-            .HasForeignKey("ObjectId")
-            .IsRequired();
     }
 }

@@ -58,14 +58,14 @@ public class GetAllLockerLogsPaginated
             }
 
             var logs = _context.LockerLogs
-                .Include(x => x.Object)
+                .Include(x => x.ObjectId)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
 
             if (request.LockerId is not null)
             {
-                logs = logs.Where(x => x.Object!.Id == request.LockerId);
+                logs = logs.Where(x => x.ObjectId! == request.LockerId);
             }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

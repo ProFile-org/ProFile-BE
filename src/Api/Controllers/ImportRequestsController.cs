@@ -37,11 +37,14 @@ public class ImportRequestsController : ApiControllerBase
     public async Task<ActionResult<PaginatedList<ImportRequestDto>>> GetImportRequestById(
         [FromRoute] Guid importRequestId)
     {
+        var currentUserId = _currentUserService.GetId();
         var currentUserRole = _currentUserService.GetRole();
         var currentStaffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetImportRequestById.Query()
         {
+            CurrentUserId = currentUserId,
             CurrentUserRole = currentUserRole,
+            CurrentStaffRoomId = currentStaffRoomId,
             RequestId = importRequestId,
         };
         var result = await Mediator.Send(query);

@@ -130,7 +130,7 @@ public class AddUser
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 Action = UserLogMessages.Add(entity.Role),
             };

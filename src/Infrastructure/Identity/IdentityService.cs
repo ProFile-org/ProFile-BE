@@ -195,7 +195,7 @@ public class IdentityService : IIdentityService
     {
         var user = _applicationDbContext.Users
             .Include(x => x.Department)
-            .FirstOrDefault(x => x.Email!.Equals(email));
+            .FirstOrDefault(x => x.Email.ToLower().Equals(email.Trim().ToLower()));
 
         if (user is null || !user.PasswordHash.Equals(password.HashPasswordWith(user.PasswordSalt, _securitySettings.Pepper)))
         {

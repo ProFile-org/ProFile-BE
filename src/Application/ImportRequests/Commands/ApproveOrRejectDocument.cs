@@ -74,7 +74,7 @@ public class ApproveOrRejectDocument
 
             var log = new DocumentLog()
             {
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
@@ -83,7 +83,7 @@ public class ApproveOrRejectDocument
 
             var requestLog = new RequestLog()
             {
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,

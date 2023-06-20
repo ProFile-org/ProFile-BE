@@ -3,6 +3,6 @@ using Domain.Entities.Physical;
 
 namespace Domain.Entities.Logging;
 
-public class RoomLog : BaseLoggingEntity<Room>
+public class RoomLog : BaseLoggingEntity
 {
 }

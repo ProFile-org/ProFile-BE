@@ -34,14 +34,14 @@ public class GetAllRoomLogsPaginated
         public async Task<PaginatedList<RoomLogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var logs = _context.RoomLogs
-                .Include(x => x.Object)
+                .Include(x => x.ObjectId)
                 .Include(x => x.User)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
             
             if (request.RoomId is not null)
             {
-                logs = logs.Where(x => x.Object!.Id == request.RoomId);
+                logs = logs.Where(x => x.ObjectId! == request.RoomId);
             }
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

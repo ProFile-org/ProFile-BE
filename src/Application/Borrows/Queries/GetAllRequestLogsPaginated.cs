@@ -32,7 +32,7 @@ public class GetAllRequestLogsPaginated
         public async Task<PaginatedList<RequestLogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var logs = _context.RequestLogs
-                .Include(x => x.Object)
+                .Include(x => x.ObjectId)
                 .AsQueryable();
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

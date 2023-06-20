@@ -52,7 +52,7 @@ public class DeleteDocument
             
             var log = new DocumentLog()
             {
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,

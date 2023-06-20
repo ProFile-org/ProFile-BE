@@ -19,6 +19,6 @@ public class FolderLogDto : BaseDto, IMapFrom<FolderLog>
             .ForMember( dest => dest.Time, 
                 opt => opt.MapFrom( src => src.Time.ToDateTimeUnspecified()))
             .ForMember(dest => dest.Object, 
-                opt => opt.MapFrom( src => src.Object));
+                opt => opt.MapFrom( src => src.ObjectId));
     }
 }

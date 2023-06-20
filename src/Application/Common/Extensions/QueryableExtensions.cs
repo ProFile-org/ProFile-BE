@@ -39,7 +39,7 @@ public static class QueryableExtensions
         IConfigurationProvider mapperConfiguration,
         CancellationToken cancellationToken)
         where TEntityDto : BaseDto, IMapFrom<TLoggingEntity>
-        where TLoggingEntity : BaseLoggingEntity<TEntity>
+        where TLoggingEntity : BaseLoggingEntity
         where TEntity : BaseEntity
     {
         var pageNumber = page is null or <= 0 ? 1 : page;

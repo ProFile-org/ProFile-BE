@@ -82,7 +82,7 @@ public class RequestImportDocument
             
             var log = new DocumentLog()
             {
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 User = request.Issuer,
                 UserId = request.Issuer.Id,

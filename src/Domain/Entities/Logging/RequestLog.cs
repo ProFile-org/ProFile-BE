@@ -4,7 +4,7 @@ using Domain.Enums;
 
 namespace Domain.Entities.Logging;
 
-public class RequestLog : BaseLoggingEntity<Document>
+public class RequestLog : BaseLoggingEntity
 {
     public RequestType Type { get; set; }
 }

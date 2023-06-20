@@ -108,7 +108,7 @@ public class BorrowsController : ApiControllerBase
     /// <param name="request"></param>
     /// <returns>A BorrowDto of the approved borrow request</returns>
     [RequiresRole(IdentityData.Roles.Staff)]
-    [HttpPut("{borrowId:guid}")]
+    [HttpPut("staffs/{borrowId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -48,11 +48,15 @@ public class RemoveRoom
                 throw new KeyNotFoundException("Room does not exist.");
             }
 
-            var canNotRemove = await _context.Documents
-                .AnyAsync(x => x.Department!.Id == room.DepartmentId, cancellationToken);
-            if (canNotRemove)
+            var containsDocuments = await _context.Documents
+                .AnyAsync(x => x.Folder!.Locker.Room.Id == room.Id, cancellationToken);
+            var containsFolders = await _context.Folders
+                .AnyAsync(x => x.Locker.Room.Id == room.Id, cancellationToken);
+            var containsLockers = await _context.Lockers
+                .AnyAsync(x => x.Room.Id == room.Id, cancellationToken);
+            if (containsDocuments || containsFolders || containsLockers)
             {
-                throw new ConflictException("Room cannot be removed because it contains documents.");
+                throw new ConflictException("Room cannot be removed because it contains something.");
             }
 
             var result = _context.Rooms.Remove(room);

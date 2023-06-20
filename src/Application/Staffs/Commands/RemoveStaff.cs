@@ -46,7 +46,7 @@ public class RemoveStaff
             {
                 User = performingUser!,
                 UserId = performingUser!.Id,
-                Object = staff.User,
+                ObjectId = staff.User.Id,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = UserLogMessages.Staff.Remove,
             };

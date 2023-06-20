@@ -59,7 +59,7 @@ public class RemoveStaffFromRoom
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = staff.User,
+                ObjectId = staff.User.Id,
                 Time = localDateTimeNow,
                 Action = UserLogMessages.Staff.RemoveFromRoom,
             };

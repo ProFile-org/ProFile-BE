@@ -81,7 +81,7 @@ public class ApproveOrRejectBorrowRequest
 
             var log = new DocumentLog()
             {
-                Object = borrowRequest.Document,
+                ObjectId = borrowRequest.Document.Id,
                 UserId = currentUser!.Id,
                 User = currentUser,
                 Time = localDateTimeNow,
@@ -89,7 +89,7 @@ public class ApproveOrRejectBorrowRequest
             };
             var requestLog = new RequestLog()
             {
-                Object = borrowRequest.Document,
+                ObjectId = borrowRequest.Document.Id,
                 Type = RequestType.Borrow,
                 UserId = currentUser.Id,
                 User = currentUser,

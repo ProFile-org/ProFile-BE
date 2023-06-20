@@ -90,7 +90,7 @@ public class UpdateLocker
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = locker,
+                ObjectId = locker.Id,
                 Time = localDateTimeNow,
                 Action = LockerLogMessage.Update,
             };

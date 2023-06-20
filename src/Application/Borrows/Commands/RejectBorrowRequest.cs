@@ -51,7 +51,7 @@ public class RejectBorrowRequest
             borrowRequest.Status = BorrowRequestStatus.Rejected;
             var requestLog = new RequestLog()
             {
-                Object = borrowRequest.Document,
+                ObjectId = borrowRequest.Document.Id,
                 UserId = performingUser!.Id,
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),

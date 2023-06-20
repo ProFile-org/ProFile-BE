@@ -40,7 +40,7 @@ public class GetRoomById
                 throw new KeyNotFoundException("Room does not exist.");
             }
             
-            if (request.CurrentUserRole.IsStaff()
+            if ((request.CurrentUserRole.IsStaff() || request.CurrentUserRole.IsEmployee())
                 && !IsSameDepartment(request.CurrentUserDepartmentId, room.DepartmentId))
             {
                 throw new UnauthorizedAccessException("User cannot update this resource.");

@@ -12,7 +12,7 @@ using NodaTime;
 
 namespace Application.Staffs.Commands;
 
-public class AddStaff
+public class AssignStaff
 {
     public record Command : IRequest<StaffDto>
     {
@@ -25,16 +25,19 @@ public class AddStaff
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var staff = await _context.Staffs
+                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == request.StaffId, cancellationToken);
             
             if (staff is null)
@@ -51,21 +54,33 @@ public class AddStaff
                 throw new KeyNotFoundException("Room does not exist.");
             }
             
+            if (!room.IsAvailable)
+            {
+                throw new ConflictException("Room is not available.");
+            }
+            
             if (room.Staff is not null)
             {
                 throw new ConflictException("Room already has a staff.");
             }
+
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            staff.Room = room;
+            room.Staff = staff;
+            room.LastModified = localDateTimeNow;
+            room.LastModifiedBy = request.CurrentUser.Id;
             
             var log = new UserLog()
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = staff.User,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                ObjectId = staff.User.Id,
+                Time = localDateTimeNow,
                 Action = UserLogMessages.Staff.AssignStaff(room.Id.ToString()),
             };
-
-            var result = await _context.Staffs.AddAsync(staff, cancellationToken);
+            _context.Rooms.Update(room);
+            var result = _context.Staffs.Update(staff);
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<StaffDto>(result.Entity);

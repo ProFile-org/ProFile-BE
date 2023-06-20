@@ -159,7 +159,7 @@ public class BorrowDocument
             {
                 UserId = user.Id,
                 User = user,
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 Action = DocumentLogMessages.Borrow.NewBorrowRequest,
             };

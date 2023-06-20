@@ -66,6 +66,7 @@ public class GetDocumentById
 
         private bool IsEmployeeAndDoesNotHasReadPermission(User user, Document document)
             => user.Role.IsEmployee()
+               && document.ImporterId != user.Id
                && !_permissionManager.IsGranted(document.Id, DocumentOperation.Read, user.Id);
     }
 }

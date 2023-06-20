@@ -49,11 +49,13 @@ public class UpdateFolder
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
@@ -70,9 +72,9 @@ public class UpdateFolder
             }
             
             if (request.CurrentUser.Role.IsStaff()
-                && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentUser.Department!.Id)))
+                && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentStaffRoomId!.Value)))
             {
-                throw new UnauthorizedAccessException("User cannot remove this resource.");
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
             
             if (await DuplicatedNameFolderExistsInSameLockerAsync(request.Name, folder.Id, folder.Locker.Id, cancellationToken))
@@ -85,18 +87,20 @@ public class UpdateFolder
                 throw new ConflictException("New capacity cannot be less than current number of documents.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             folder.Name = request.Name;
             folder.Description = request.Description;
             folder.Capacity = request.Capacity;
-            folder.LastModified = LocalDateTime.FromDateTime(DateTime.Now);
+            folder.LastModified = localDateTimeNow;
             folder.LastModifiedBy = request.CurrentUser.Id;
             
             var log = new FolderLog()
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = folder,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                ObjectId = folder.Id,
+                Time = localDateTimeNow,
                 Action = FolderLogMessage.Update,
             };
             var result = _context.Folders.Update(folder);
@@ -110,22 +114,13 @@ public class UpdateFolder
             Guid folderId,
             CancellationToken cancellationToken)
         {
-            var folder = await _context.Lockers.FirstOrDefaultAsync(
-                x => EqualsInvariant(x.Name, folderName) 
-                     && IsNotSameFolder(x.Id, folderId)
-                     && IsSameLocker(x.Room.Id, lockerId),
+            var folder = await _context.Folders.FirstOrDefaultAsync(
+                x => x.Name.Trim().ToLower().Equals(folderName.Trim().ToLower())
+                                    && x.Id != folderId
+                                    && x.Locker.Id == lockerId,
                 cancellationToken);
             return folder is not null;
         }
-        
-        private static bool EqualsInvariant(string x, string y)
-            => x.Trim().ToLower().Equals(y.Trim().ToLower());
-
-        private static bool IsSameLocker(Guid lockerId1, Guid lockerId2)
-            => lockerId1 == lockerId2;
-
-        private static bool IsNotSameFolder(Guid folderId1, Guid folderId2)
-            => folderId1 != folderId2;
         
         private static bool FolderIsInRoom(Folder folder, Guid roomId)
             => folder.Locker.Room.Id == roomId;

@@ -60,6 +60,7 @@ public class UpdateRoom
             var room = await _context.Rooms
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
           
             if (room is null)
@@ -91,14 +92,14 @@ public class UpdateRoom
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = room,
+                ObjectId = room.Id,
                 Time = localDateTimeNow,
                 Action = RoomLogMessage.Update,
             };
-            var result = _context.Rooms.Update(room);
+            _context.Rooms.Entry(room).State = EntityState.Modified;
             await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<RoomDto>(result.Entity);
+            return _mapper.Map<RoomDto>(room);
         }
         
         private async Task<bool> DuplicatedNameRoomExistsAsync(

@@ -27,4 +27,5 @@ public static class StringExtensions
 
     public static bool IsRejection(this string decision)
         => decision.ToLower().Trim().Equals("reject");
+    
 }

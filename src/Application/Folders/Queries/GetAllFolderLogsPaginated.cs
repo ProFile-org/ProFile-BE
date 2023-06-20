@@ -34,12 +34,12 @@ public class GetAllFolderLogsPaginated
         public async Task<PaginatedList<FolderLogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var logs = _context.FolderLogs
-                .Include(x => x.Object)
+                .Include(x => x.ObjectId)
                 .AsQueryable();
             
             if (request.FolderId is not null)
             {
-                logs = logs.Where(x => x.Object!.Id == request.FolderId);
+                logs = logs.Where(x => x.ObjectId! == request.FolderId);
             }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

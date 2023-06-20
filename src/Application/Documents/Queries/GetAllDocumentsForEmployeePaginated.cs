@@ -55,20 +55,20 @@ public class GetAllDocumentsForEmployeePaginated
             if (request.IsPrivate)
             {
                 var permissions = _context.Permissions.Where(x =>
-                    IsSameUser(x.EmployeeId, request.CurrentUserId)
-                    && InSameDepartmentAsUser(x.Document, request.CurrentUserDepartmentId)
-                    && HasReadPermission(x.AllowedOperations))
+                        x!.EmployeeId == request.CurrentUserId
+                        && x.Document.Department!.Id == request.CurrentUserDepartmentId
+                        && x.AllowedOperations.Contains(DocumentOperation.Read.ToString()))
                     .Select(x => x.DocumentId);
 
                 documents = documents.Where(x =>
-                    InSameDepartmentAsUser(x, request.CurrentUserDepartmentId)
+                    x.Department!.Id == request.CurrentUserDepartmentId
                     && x.IsPrivate
-                    && (CanRead(permissions, x.Id) || IsImporter(x, request.CurrentUserId)));
+                    && (permissions.Contains(x.Id) || x.ImporterId == request.CurrentUserId));
             }
             else
             {
                 documents = documents.Where(x => 
-                    InSameDepartmentAsUser(x, request.CurrentUserDepartmentId)
+                    x.Department!.Id == request.CurrentUserDepartmentId
                      && !x.IsPrivate);
             }
 
@@ -98,20 +98,5 @@ public class GetAllDocumentsForEmployeePaginated
                     _mapper.ConfigurationProvider,
                     cancellationToken);
         }
-
-        private static bool IsSameUser(Guid userId1, Guid userId2)
-            => userId1 == userId2;
-
-        private static bool InSameDepartmentAsUser(Document document, Guid userDepartmentId)
-            => document.Department!.Id == userDepartmentId;
-
-        private static bool HasReadPermission(string allowedPermissions)
-            => allowedPermissions.Contains(DocumentOperation.Read.ToString());
-
-        private static bool CanRead(IEnumerable<Guid> documentIds, Guid documentId)
-            => documentIds.Contains(documentId);
-        
-        private static bool IsImporter(Document document, Guid userId)
-            => document.ImporterId == userId;
     }
 }

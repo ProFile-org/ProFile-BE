@@ -49,7 +49,7 @@ public class CancelBorrowRequest
             var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
             var log = new DocumentLog()
             {
-                Object = borrowRequest.Document,
+                ObjectId = borrowRequest.Document.Id,
                 UserId = performingUser!.Id,
                 User = performingUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),

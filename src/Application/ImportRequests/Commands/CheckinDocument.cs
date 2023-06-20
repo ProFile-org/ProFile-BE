@@ -78,7 +78,7 @@ public class CheckinDocument
             {
                 User =  request.CurrentUser,
                 UserId =  request.CurrentUser.Id,
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 Action = DocumentLogMessages.Import.Checkin,
             };
@@ -86,7 +86,7 @@ public class CheckinDocument
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = document,
+                ObjectId = document.Id,
                 Time = localDateTimeNow,
                 Action = RequestLogMessages.CheckInImport,
             };

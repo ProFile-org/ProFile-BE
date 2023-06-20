@@ -46,7 +46,7 @@ public class GetAllUsersPaginated
             // Filter by role
             if (request.Role is not null)
             {
-                users = users.Where(x => x.Role.Equals(request.Role));
+                users = users.Where(x => x.Role.ToLower().Equals(request.Role.Trim().ToLower()));
             }
             
             // Search

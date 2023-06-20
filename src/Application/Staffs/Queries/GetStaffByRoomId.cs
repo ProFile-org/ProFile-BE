@@ -1,6 +1,8 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,7 @@ public class GetStaffByRoomId
 {
     public record Query : IRequest<StaffDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid RoomId { get; init; }
     }
     
@@ -35,6 +38,12 @@ public class GetStaffByRoomId
             if (room is null)
             {
                 throw new KeyNotFoundException("Room does not exist.");
+            }
+
+            if (request.CurrentUser.Role.IsStaff()
+                && room.DepartmentId != request.CurrentUser.Department!.Id)
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
 
             if (room.Staff is null)

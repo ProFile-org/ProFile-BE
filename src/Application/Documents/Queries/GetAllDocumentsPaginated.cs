@@ -6,6 +6,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
@@ -31,6 +32,8 @@ public class GetAllDocumentsPaginated
 
     public record Query : IRequest<PaginatedList<DocumentDto>>
     {
+        public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid? UserId { get; init; }
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
@@ -56,9 +59,21 @@ public class GetAllDocumentsPaginated
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<DocumentDto>> Handle(Query request,
-            CancellationToken cancellationToken)
+        public async Task<PaginatedList<DocumentDto>> Handle(Query request, CancellationToken cancellationToken)
         {
+            if (request.CurrentUser.Role.IsStaff())
+            {
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
+
+                if (request.RoomId != request.CurrentStaffRoomId)
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
+            }
+            
             var documents = _context.Documents.AsQueryable();
             var roomExists = request.RoomId is not null;
             var lockerExists = request.LockerId is not null;
@@ -67,7 +82,7 @@ public class GetAllDocumentsPaginated
             documents = documents
                 .Include(x => x.Department)
                 .Include(x => x.Folder)
-                .ThenInclude(y => y.Locker)
+                .ThenInclude(y => y!.Locker)
                 .ThenInclude(z => z.Room);
 
             if (request.DocumentStatus is not null 
@@ -88,7 +103,7 @@ public class GetAllDocumentsPaginated
             
             if (request.Role is not null)
             {
-                documents = documents.Where(x => x.Importer!.Role.Equals(request.Role));
+                documents = documents.Where(x => x.Importer!.Role.ToLower().Equals(request.Role.Trim().ToLower()));
             }
 
             if (folderExists)

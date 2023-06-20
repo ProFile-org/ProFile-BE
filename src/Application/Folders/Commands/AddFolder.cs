@@ -108,7 +108,7 @@ public class AddFolder
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 Action = FolderLogMessage.Add,
             };
@@ -127,12 +127,6 @@ public class AddFolder
                      && x.Locker.Id == lockerId, cancellationToken);
             return folder is not null;
         }
-
-        private static bool EqualsInvariant(string x, string y)
-            => x.Trim().ToLower().Equals(y.Trim().ToLower());
-
-        private static bool IsSameLocker(Guid lockerId1, Guid lockerId2)
-            => lockerId1 == lockerId2;
 
         private static bool LockerIsInRoom(Locker locker, Guid? roomId)
             => roomId is not null && locker.Room.Id == roomId;

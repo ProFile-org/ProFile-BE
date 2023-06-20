@@ -2,6 +2,6 @@ using Domain.Common;
 
 namespace Domain.Entities.Logging;
 
-public class UserLog : BaseLoggingEntity<User>
+public class UserLog : BaseLoggingEntity
 {
 }

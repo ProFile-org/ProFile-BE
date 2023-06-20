@@ -141,7 +141,9 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
+    public async Task<ActionResult<Result<FolderDto>>> Update(
+        [FromRoute] Guid folderId,
+        [FromBody] UpdateFolderRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         var staffRoomId = _currentUserService.GetCurrentRoomForStaff();

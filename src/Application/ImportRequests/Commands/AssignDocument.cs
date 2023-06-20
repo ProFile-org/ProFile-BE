@@ -80,7 +80,7 @@ public class AssignDocument
 
             var log = new DocumentLog()
             {
-                Object = importRequest.Document,
+                ObjectId = importRequest.Document.Id,
                 Time = localDateTimeNow,
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
@@ -88,7 +88,7 @@ public class AssignDocument
             };
             var folderLog = new FolderLog()
             {
-                Object = folder,
+                ObjectId = folder.Id,
                 Time = localDateTimeNow,
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,

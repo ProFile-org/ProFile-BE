@@ -96,7 +96,7 @@ public class AddLocker
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 Action = LockerLogMessage.Add,
             };

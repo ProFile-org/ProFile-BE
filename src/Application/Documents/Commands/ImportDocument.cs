@@ -19,6 +19,7 @@ public class ImportDocument
     public record Command : IRequest<DocumentDto>
     {
         public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public string Title { get; init; } = null!;
         public string? Description { get; init; }
         public string DocumentType { get; init; } = null!;
@@ -42,6 +43,11 @@ public class ImportDocument
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
+            if (request.CurrentStaffRoomId is null)
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
+            }
+            
             var importer = await _context.Users
                 .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id == request.ImporterId, cancellationToken);
@@ -70,6 +76,8 @@ public class ImportDocument
             }
 
             var folder = await _context.Folders
+                .Include(x => x.Locker)
+                .ThenInclude(y => y.Room)
                 .FirstOrDefaultAsync(x => x.Id == request.FolderId, cancellationToken);
             if (folder is null)
             {
@@ -79,6 +87,11 @@ public class ImportDocument
             if (folder.Capacity == folder.NumberOfDocuments)
             {
                 throw new ConflictException("This folder cannot accept more documents.");
+            }
+
+            if (folder.Locker.Room.Id != request.CurrentStaffRoomId)
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
@@ -100,7 +113,7 @@ public class ImportDocument
             {
                 User = request.CurrentUser,
                 UserId = request.CurrentUser.Id,
-                Object = entity,
+                ObjectId = entity.Id,
                 Time = localDateTimeNow,
                 Action = DocumentLogMessages.Import.NewImport,
             };

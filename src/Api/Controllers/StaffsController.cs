@@ -44,8 +44,8 @@ public class StaffsController : ApiControllerBase
     /// <summary>
     /// Get room by staff id
     /// </summary>
-    /// <param name="staffId">Id of the room to retrieve staff</param>
-    /// <returns>A StaffDto of the retrieved staff</returns>
+    /// <param name="staffId">Id of the staff to retrieve room</param>
+    /// <returns>A RoomDto of the retrieved room</returns>
     [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{staffId:guid}/rooms")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -100,7 +100,7 @@ public class StaffsController : ApiControllerBase
         [FromBody] AddStaffRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
-        var command = new AddStaff.Command()
+        var command = new AssignStaff.Command()
         {
             CurrentUser = currentUser,
             RoomId = request.RoomId,

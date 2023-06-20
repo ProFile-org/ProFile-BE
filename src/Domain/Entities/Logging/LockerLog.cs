@@ -3,7 +3,7 @@ using Domain.Entities.Physical;
 
 namespace Domain.Entities.Logging;
 
-public class LockerLog : BaseLoggingEntity<Locker>
+public class LockerLog : BaseLoggingEntity
 {
     public Room? BaseRoom { get; set; }
 }
