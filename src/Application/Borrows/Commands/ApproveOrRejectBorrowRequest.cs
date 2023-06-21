@@ -41,6 +41,9 @@ public class ApproveOrRejectBorrowRequest
             var borrowRequest = await _context.Borrows
                 .Include(x => x.Borrower)
                 .Include(x => x.Document)
+                .ThenInclude(x => x.Folder!)
+                .ThenInclude(x => x.Locker)
+                .ThenInclude(x => x.Room)
                 .FirstOrDefaultAsync(x => x.Id == request.BorrowId, cancellationToken);
             if (borrowRequest is null)
             {
@@ -70,6 +73,25 @@ public class ApproveOrRejectBorrowRequest
             var currentUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
 
+            var staff = await _context.Staffs
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
+
+            if (staff is null)
+            {
+                throw new KeyNotFoundException("Staff does not exist.");
+            }
+
+            if (staff.Room is null)
+            {
+                throw new ConflictException("Staff does not manage a room.");
+            }
+
+            if (staff.Room.Id != borrowRequest.Document.Folder!.Locker.Room.Id)
+            {
+                throw new ConflictException("Request cannot be checked out due to different room.");
+            }
+            
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
             var existedBorrows =  _context.Borrows
@@ -101,10 +123,10 @@ public class ApproveOrRejectBorrowRequest
             {
                 foreach (var existedBorrow in existedBorrows)
                 {
-                    if (existedBorrow.Status
+                    if ((existedBorrow.Status
                         is BorrowRequestStatus.Approved
-                        or BorrowRequestStatus.CheckedOut
-                        && borrowRequest.BorrowTime <= existedBorrow.DueTime && borrowRequest.DueTime >= existedBorrow.BorrowTime)
+                        or BorrowRequestStatus.CheckedOut)
+                        || borrowRequest.BorrowTime <= existedBorrow.DueTime && borrowRequest.DueTime >= existedBorrow.BorrowTime)
                     {
                         throw new ConflictException("Request cannot be approved.");
                     }

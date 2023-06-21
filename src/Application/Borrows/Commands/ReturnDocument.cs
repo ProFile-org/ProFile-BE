@@ -13,7 +13,7 @@ public class ReturnDocument
 {
     public record Command : IRequest<BorrowDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public Guid CurrentUserId { get; init; }
         public Guid DocumentId { get; init; }
     }
 
@@ -33,6 +33,9 @@ public class ReturnDocument
             var borrowRequest = await _context.Borrows
                 .Include(x => x.Borrower)
                 .Include(x => x.Document)
+                .ThenInclude(x => x.Folder!)
+                .ThenInclude(x => x.Locker)
+                .ThenInclude(x => x.Room)
                 .FirstOrDefaultAsync(x => x.Document.Id == request.DocumentId
                     && x.Status == BorrowRequestStatus.CheckedOut, cancellationToken);
             if (borrowRequest is null)
@@ -48,6 +51,25 @@ public class ReturnDocument
             if (borrowRequest.Status is not BorrowRequestStatus.CheckedOut)
             {
                 throw new ConflictException("Request cannot be made.");
+            }
+            
+            var staff = await _context.Staffs
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
+
+            if (staff is null)
+            {
+                throw new KeyNotFoundException("Staff does not exist.");
+            }
+
+            if (staff.Room is null)
+            {
+                throw new ConflictException("Staff does not have a room.");
+            }
+
+            if (staff.Room.Id != borrowRequest.Document.Folder!.Locker.Room.Id)
+            {
+                throw new ConflictException("Request cannot be checked out due to different room.");
             }
 
             borrowRequest.Status = BorrowRequestStatus.Returned;

@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
@@ -33,7 +34,7 @@ public class UpdateBorrow
 
     public record Command : IRequest<BorrowDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public Guid CurrentUserId { get; init; }
         public Guid BorrowId { get; init; }
         public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }
@@ -72,6 +73,11 @@ public class UpdateBorrow
                 throw new ConflictException("Document is lost.");
             }
 
+            if (borrowRequest.Borrower.Id != request.CurrentUserId)
+            {
+                throw new ConflictException("Can not update other borrow request.");
+            }
+
             var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
             var existedBorrows = _context.Borrows
                 .Include(x => x.Borrower)
@@ -85,10 +91,10 @@ public class UpdateBorrow
             var borrowToTime = LocalDateTime.FromDateTime(request.BorrowTo);
             foreach (var borrow in existedBorrows)
             {
-                if (borrow.Status 
+                if ((borrow.Status 
                         is BorrowRequestStatus.Approved 
-                        or BorrowRequestStatus.CheckedOut
-                    && (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
+                        or BorrowRequestStatus.CheckedOut)
+                    || (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
                     throw new ConflictException("This document cannot be updated.");
                 }

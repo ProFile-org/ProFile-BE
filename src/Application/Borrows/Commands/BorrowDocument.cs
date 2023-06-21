@@ -124,10 +124,10 @@ public class BorrowDocument
                     throw new ConflictException("This document is already requested borrow from the same user.");
                 }
 
-                if (borrow.Status
+                if ((borrow.Status
                     is BorrowRequestStatus.Approved
-                    or BorrowRequestStatus.CheckedOut
-                    && borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime)
+                    or BorrowRequestStatus.CheckedOut)
+                    || (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
                     throw new ConflictException("This document cannot be borrowed.");
                 }

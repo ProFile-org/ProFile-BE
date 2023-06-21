@@ -15,7 +15,7 @@ public class CancelBorrowRequest
 {
     public record Command : IRequest<BorrowDto>
     {
-        public Guid PerformingUserId { get; init; }
+        public Guid CurrentUserId { get; init; }
         public Guid BorrowId { get; init; }
     }
 
@@ -41,17 +41,23 @@ public class CancelBorrowRequest
                 throw new KeyNotFoundException("Borrow request does not exist.");
             }
 
-            if (borrowRequest.Status is not (BorrowRequestStatus.Approved or BorrowRequestStatus.Pending))
+            if (borrowRequest.Status is not BorrowRequestStatus.Pending)
             {
                 throw new ConflictException("Request cannot be cancelled.");
             }
 
-            var performingUser = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.PerformingUserId, cancellationToken);
+            if (borrowRequest.Borrower.Id != request.CurrentUserId)
+            {
+                throw new ConflictException("Can not cancel other borrow request");
+            }
+
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
             var log = new DocumentLog()
             {
                 ObjectId = borrowRequest.Document.Id,
-                UserId = performingUser!.Id,
-                User = performingUser,
+                UserId = currentUser!.Id,
+                User = currentUser,
                 Time = LocalDateTime.FromDateTime(DateTime.Now),
                 Action = DocumentLogMessages.Borrow.CanCel,
             };

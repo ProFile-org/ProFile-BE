@@ -102,7 +102,7 @@ public class BorrowsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Approve a borrow request
+    /// Approve or Reject a borrow request
     /// </summary>
     /// <param name="borrowId">Id of the borrow request to be approved</param>
     /// <param name="request"></param>
@@ -123,6 +123,7 @@ public class BorrowsController : ApiControllerBase
             CurrentUserId = performingUserId,
             BorrowId = borrowId,
             Reason = request.Reason,
+            Decision = request.Decision
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
@@ -142,10 +143,10 @@ public class BorrowsController : ApiControllerBase
     public async Task<ActionResult<Result<BorrowDto>>> Checkout(
         [FromRoute] Guid borrowId)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentStaff = _currentUserService.GetCurrentUser();
         var command = new CheckoutDocument.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentStaff = currentStaff,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
@@ -169,7 +170,7 @@ public class BorrowsController : ApiControllerBase
         var performingUserId = _currentUserService.GetId();
         var command = new ReturnDocument.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUserId = performingUserId,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(command);
@@ -192,10 +193,10 @@ public class BorrowsController : ApiControllerBase
         [FromRoute] Guid borrowId,
         [FromBody] UpdateBorrowRequest request)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUserId = _currentUserService.GetId();
         var command = new UpdateBorrow.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUserId = currentUserId,
             BorrowId = borrowId,
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,
@@ -219,10 +220,10 @@ public class BorrowsController : ApiControllerBase
     public async Task<ActionResult<Result<BorrowDto>>> Cancel(
         [FromRoute] Guid borrowId)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUserId = _currentUserService.GetId();
         var command = new CancelBorrowRequest.Command()
         {
-            PerformingUserId = performingUserId,
+            CurrentUserId = currentUserId,
             BorrowId = borrowId,
         };
         var result = await Mediator.Send(command);
