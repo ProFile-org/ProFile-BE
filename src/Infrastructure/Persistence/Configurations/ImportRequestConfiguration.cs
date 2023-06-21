@@ -22,7 +22,7 @@ public class ImportRequestConfiguration : IEntityTypeConfiguration<ImportRequest
             .HasForeignKey(x => x.RoomId)
             .IsRequired();
 
-        builder.Property(x => x.Reason)
+        builder.Property(x => x.ImportReason)
             .IsRequired();
 
         builder.Property(x => x.Status)

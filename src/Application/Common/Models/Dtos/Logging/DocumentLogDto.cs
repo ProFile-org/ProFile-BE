@@ -10,7 +10,7 @@ public class DocumentLogDto : BaseDto, IMapFrom<DocumentLog>
 {
     public Guid UserId { get; set; } 
     public string Action { get; set; }
-    public DocumentDto? Object { get; set; }
+    public Guid? ObjectId { get; set; }
     public DateTime Time { get; set; }
     public UserDto User { get; set; }
 
@@ -19,9 +19,7 @@ public class DocumentLogDto : BaseDto, IMapFrom<DocumentLog>
 
         profile.CreateMap<DocumentLog, DocumentLogDto>()
             .ForMember(dest => dest.Time,
-                opt => opt.MapFrom(src => src.Time.ToDateTimeUnspecified()))
-            .ForMember(dest => dest.Object,
-                opt => opt.MapFrom(src => src.ObjectId));
+                opt => opt.MapFrom(src => src.Time.ToDateTimeUnspecified()));
 
     }
 }

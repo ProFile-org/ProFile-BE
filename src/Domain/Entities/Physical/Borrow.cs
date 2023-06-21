@@ -11,6 +11,7 @@ public class Borrow : BaseAuditableEntity
     public LocalDateTime BorrowTime { get; set; }
     public LocalDateTime DueTime { get; set; }
     public LocalDateTime ActualReturnTime { get; set; }
-    public string Reason { get; set; } = null!;
+    public string BorrowReason { get; set; } = null!;
+    public string StaffReason { get; set; } = null!;
     public BorrowRequestStatus Status { get; set; }
 }

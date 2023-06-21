@@ -96,17 +96,17 @@ public class ImportRequestsController : ApiControllerBase
             Title = request.Title,
             Description = request.Description,
             DocumentType = request.DocumentType,
+            ImportReason = request.ImportReason,
             IsPrivate = request.IsPrivate,
             Issuer = currentUser,
             RoomId = request.RoomId,
-            Reason = request.Reason
         };
         var result = await Mediator.Send(command);
         return Ok(Result<ImportRequestDto>.Succeed(result));
     }
 
     /// <summary>
-    /// Approve a document request
+    /// Approve or reject a document request
     /// </summary>
     /// <param name="importRequestId">Id of the document to be approved</param>
     /// <param name="request"></param>
@@ -125,7 +125,7 @@ public class ImportRequestsController : ApiControllerBase
         {
             CurrentUser = currentUser,
             ImportRequestId = importRequestId,
-            Reason = request.Reason,
+            StaffReason = request.StaffReason,
             Decision = request.Decision,
         };
         var result = await Mediator.Send(query);

@@ -9,7 +9,7 @@ namespace Application.Common.Models.Dtos.Logging;
 public class LockerLogDto : BaseDto, IMapFrom<LockerLog>
 {
     public string Action { get; set; } = null!;
-    public LockerDto? Object { get; set; }
+    public Guid? ObjectId { get; set; }
     public DateTime Time { get; set; }
     public UserDto User { get; set; } = null!;
     
@@ -17,8 +17,6 @@ public class LockerLogDto : BaseDto, IMapFrom<LockerLog>
     {
         profile.CreateMap<LockerLog, LockerLogDto>()
             .ForMember( dest => dest.Time, 
-                opt => opt.MapFrom( src => src.Time.ToDateTimeUnspecified()))
-            .ForMember(dest => dest.Object, 
-                opt => opt.MapFrom( src => src.ObjectId));
+                opt => opt.MapFrom( src => src.Time.ToDateTimeUnspecified()));
     }
 }

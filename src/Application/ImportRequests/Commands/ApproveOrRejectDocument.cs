@@ -32,7 +32,7 @@ public class ApproveOrRejectDocument
         public User CurrentUser { get; init; } = null!;
         public Guid ImportRequestId { get; init; }
         public string Decision { get; init; } = null!;
-        public string Reason { get; init; } = null!;
+        public string StaffReason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, ImportRequestDto>
@@ -123,7 +123,7 @@ public class ApproveOrRejectDocument
                 requestLog.Action = RequestLogMessages.RejectImport;
             }
 
-            importRequest.Reason = request.Reason;
+            importRequest.StaffReason = request.StaffReason;
             importRequest.LastModified = localDateTimeNow;
             importRequest.LastModifiedBy = request.CurrentUser.Id;
 

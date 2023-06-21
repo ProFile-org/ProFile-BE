@@ -8,7 +8,8 @@ public class ImportRequestDto : BaseDto, IMapFrom<ImportRequest>
 {
     public IssuedRequestRoomDto Room { get; set; } = null!;
     public IssuedDocumentDto Document { get; set; } = null!;
-    public string Reason { get; set; } = null!;
+    public string ImportReason { get; set; } = null!;
+    public string StaffReason { get; set; } = null!;
     public string Status { get; set; } = null!;
 
     public void Mapping(Profile profile)

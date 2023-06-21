@@ -42,7 +42,7 @@ public class BorrowsController : ApiControllerBase
             DocumentId = request.DocumentId,
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,
-            Reason = request.Reason,
+            BorrowReason = request.Reason,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
@@ -122,7 +122,7 @@ public class BorrowsController : ApiControllerBase
         {
             CurrentUserId = performingUserId,
             BorrowId = borrowId,
-            Reason = request.Reason,
+            StaffReason = request.StaffReason,
             Decision = request.Decision
         };
         var result = await Mediator.Send(command);
@@ -200,7 +200,7 @@ public class BorrowsController : ApiControllerBase
             BorrowId = borrowId,
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,
-            Reason = request.Reason,
+            BorrowReason = request.Reason,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));

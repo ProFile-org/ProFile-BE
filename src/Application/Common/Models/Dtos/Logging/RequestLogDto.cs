@@ -9,10 +9,9 @@ namespace Application.Common.Models.Dtos.Logging;
 public class RequestLogDto : BaseDto, IMapFrom<RequestLog>
 {
     public string Action { get; set; } = null!;
-    public DocumentDto? Object { get; set; }
+    public Guid? ObjectId { get; set; }
     public DateTime Time { get; set; }
     public UserDto User { get; set; } = null!;
-    public string Reason { get; set; } = null!;
     public string Type { get; set; } = null!;
 
     public void Mapping(Profile profile)
@@ -20,8 +19,6 @@ public class RequestLogDto : BaseDto, IMapFrom<RequestLog>
         profile.CreateMap<RequestLog, RequestLogDto>()
             .ForMember(dest => dest.Time,
                 opt => opt.MapFrom(src => src.Time.ToDateTimeUnspecified()))
-            .ForMember(dest => dest.Object,
-                opt => opt.MapFrom(src => src.ObjectId))
             .ForMember(dest => dest.Type,
                 opt => opt.MapFrom(src => src.Type.ToString()));
     }

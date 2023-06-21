@@ -242,7 +242,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Borrower = borrower,
             Document = document,
-            Reason = "something something",
+            BorrowReason = "something something",
             Status = status,
             BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
             DueTime = LocalDateTime.FromDateTime(DateTime.Now + TimeSpan.FromDays(1))

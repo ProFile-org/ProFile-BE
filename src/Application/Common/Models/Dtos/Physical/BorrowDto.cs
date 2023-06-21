@@ -12,7 +12,8 @@ public class BorrowDto : BaseDto, IMapFrom<Borrow>
     public DateTime BorrowTime { get; set; }
     public DateTime DueTime { get; set; }
     public DateTime ActualReturnTime { get; set; }
-    public string Reason { get; set; } = null!;
+    public string BorrowReason { get; set; } = null!;
+    public string StaffReason { get; set; } = null!;
     public string Status { get; set; } = null!;
 
     public void Mapping(Profile profile)

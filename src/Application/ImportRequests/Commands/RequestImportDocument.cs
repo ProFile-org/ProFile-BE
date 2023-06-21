@@ -20,10 +20,10 @@ public class RequestImportDocument
         public string Title { get; init; } = null!;
         public string? Description { get; init; }
         public string DocumentType { get; init; } = null!;
+        public string ImportReason { get; init; } = null!;
         public User Issuer { get; init; } = null!;
         public Guid RoomId { get; init; }
         public bool IsPrivate { get; init; }
-        public string Reason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, ImportRequestDto>
@@ -80,7 +80,8 @@ public class RequestImportDocument
                 Room = room,
                 Created = localDateTimeNow,
                 CreatedBy = request.Issuer.Id,
-                Reason = request.Reason
+                ImportReason = request.ImportReason,
+                StaffReason = string.Empty,
             };
             
             var log = new DocumentLog()

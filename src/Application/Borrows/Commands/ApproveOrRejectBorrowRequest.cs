@@ -20,7 +20,7 @@ public class ApproveOrRejectBorrowRequest
         public Guid CurrentUserId { get; init; }
         public Guid BorrowId { get; init; }
         public string Decision { get; init; } = null!;
-        public string Reason { get; init; } = null!;
+        public string StaffReason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
@@ -142,7 +142,7 @@ public class ApproveOrRejectBorrowRequest
                 requestLog.Action = RequestLogMessages.RejectBorrow;
             }
 
-            borrowRequest.Reason = request.Reason;
+            borrowRequest.StaffReason = request.StaffReason;
             borrowRequest.LastModified = localDateTimeNow;
             borrowRequest.LastModifiedBy = currentUser.Id;
             

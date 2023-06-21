@@ -24,7 +24,7 @@ public class BorrowDocument
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
 
-            RuleFor(x => x.Reason)
+            RuleFor(x => x.BorrowReason)
                 .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
 
             RuleFor(x => x.BorrowFrom)
@@ -42,7 +42,7 @@ public class BorrowDocument
         public Guid BorrowerId { get; init; }
         public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }
-        public string Reason { get; init; } = null!;
+        public string BorrowReason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
@@ -139,7 +139,8 @@ public class BorrowDocument
                 Document = document,
                 BorrowTime = borrowFromTime,
                 DueTime = borrowToTime,
-                Reason = request.Reason,
+                BorrowReason = request.BorrowReason,
+                StaffReason = string.Empty,
                 Status = BorrowRequestStatus.Pending,
                 Created = localDateTimeNow,
                 CreatedBy = user.Id,
