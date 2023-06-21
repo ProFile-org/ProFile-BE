@@ -126,7 +126,7 @@ public class ApproveOrRejectBorrowRequest
                     if ((existedBorrow.Status
                         is BorrowRequestStatus.Approved
                         or BorrowRequestStatus.CheckedOut)
-                        || borrowRequest.BorrowTime <= existedBorrow.DueTime && borrowRequest.DueTime >= existedBorrow.BorrowTime)
+                        && (borrowRequest.BorrowTime <= existedBorrow.DueTime && borrowRequest.DueTime >= existedBorrow.BorrowTime))
                     {
                         throw new ConflictException("Request cannot be approved.");
                     }

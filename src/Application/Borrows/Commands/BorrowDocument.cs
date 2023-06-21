@@ -127,7 +127,7 @@ public class BorrowDocument
                 if ((borrow.Status
                     is BorrowRequestStatus.Approved
                     or BorrowRequestStatus.CheckedOut)
-                    || (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
+                    && (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
                     throw new ConflictException("This document cannot be borrowed.");
                 }

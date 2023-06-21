@@ -1,5 +1,6 @@
 using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Folders;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Logging;
@@ -118,11 +119,15 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
-        var currentUserRole = _currentUserService.GetRole();
-        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
+        var currentUser = _currentUserService.GetCurrentUser();
+        Guid? staffRoomId = null;
+        if (currentUser.Role.IsStaff())
+        {
+            staffRoomId = _currentUserService.GetCurrentRoomForStaff();
+        }
         var command = new RemoveFolder.Command()
         {
-            CurrentUserRole = currentUserRole,
+            CurrentUser = currentUser,
             CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
         };

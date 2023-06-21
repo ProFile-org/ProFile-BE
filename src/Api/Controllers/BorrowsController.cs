@@ -167,10 +167,10 @@ public class BorrowsController : ApiControllerBase
     public async Task<ActionResult<Result<BorrowDto>>> Return(
         [FromRoute] Guid documentId)
     {
-        var performingUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new ReturnDocument.Command()
         {
-            CurrentUserId = performingUserId,
+            CurrentUser = currentUser,
             DocumentId = documentId,
         };
         var result = await Mediator.Send(command);
@@ -193,10 +193,10 @@ public class BorrowsController : ApiControllerBase
         [FromRoute] Guid borrowId,
         [FromBody] UpdateBorrowRequest request)
     {
-        var currentUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateBorrow.Command()
         {
-            CurrentUserId = currentUserId,
+            CurrentUser = currentUser,
             BorrowId = borrowId,
             BorrowFrom = request.BorrowFrom,
             BorrowTo = request.BorrowTo,

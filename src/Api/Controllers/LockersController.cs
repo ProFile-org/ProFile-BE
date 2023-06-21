@@ -116,8 +116,10 @@ public class LockersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<LockerDto>>> Remove([FromRoute] Guid lockerId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new RemoveLocker.Command()
         {
+            CurrentUser = currentUser,
             LockerId = lockerId,
         };
         var result = await Mediator.Send(command);

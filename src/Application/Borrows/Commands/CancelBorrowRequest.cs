@@ -23,11 +23,13 @@ public class CancelBorrowRequest
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-        
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        private readonly IDateTimeProvider _dateTimeProvider;
+
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -50,6 +52,8 @@ public class CancelBorrowRequest
             {
                 throw new ConflictException("Can not cancel other borrow request");
             }
+            
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
             var currentUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
@@ -58,7 +62,7 @@ public class CancelBorrowRequest
                 ObjectId = borrowRequest.Document.Id,
                 UserId = currentUser!.Id,
                 User = currentUser,
-                Time = LocalDateTime.FromDateTime(DateTime.Now),
+                Time = localDateTimeNow,
                 Action = DocumentLogMessages.Borrow.CanCel,
             };
 

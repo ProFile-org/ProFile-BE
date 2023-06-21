@@ -1,11 +1,15 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Folders.Commands;
 
@@ -13,7 +17,7 @@ public class RemoveFolder
 {
     public record Command : IRequest<FolderDto>
     {
-        public string CurrentUserRole { get; init; } = null!;
+        public User CurrentUser { get; init; } = null!;
         public Guid? CurrentStaffRoomId { get; init; }
         public Guid FolderId { get; init; }
     }
@@ -22,11 +26,13 @@ public class RemoveFolder
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
@@ -42,7 +48,7 @@ public class RemoveFolder
                 throw new KeyNotFoundException("Folder does not exist.");
             }
 
-            if (request.CurrentUserRole.IsStaff()
+            if (request.CurrentUser.Role.IsStaff()
                 && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentStaffRoomId.Value)))
             {
                 throw new UnauthorizedAccessException("User cannot remove this resource.");
@@ -55,9 +61,21 @@ public class RemoveFolder
                 throw new ConflictException("Folder cannot be removed because it contains documents.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             var locker = folder.Locker;
+
+            var log = new FolderLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = folder.Id,
+                Time = localDateTimeNow,
+                Action = FolderLogMessage.Remove,
+            };
             var result = _context.Folders.Remove(folder);
             locker.NumberOfFolders -= 1;
+            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<FolderDto>(result.Entity);
         }

@@ -165,8 +165,10 @@ public class RoomsController : ApiControllerBase
     public async Task<ActionResult<Result<RoomDto>>> RemoveRoom(
         [FromRoute] Guid roomId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new RemoveRoom.Command()
         {
+            CurrentUser = currentUser,
             RoomId = roomId,
         };
         var result = await Mediator.Send(command);

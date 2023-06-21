@@ -23,7 +23,7 @@ public class RequestImportDocument
         public User Issuer { get; init; } = null!;
         public Guid RoomId { get; init; }
         public bool IsPrivate { get; init; }
-        public string Reason { get; set; } = null!;
+        public string Reason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, ImportRequestDto>

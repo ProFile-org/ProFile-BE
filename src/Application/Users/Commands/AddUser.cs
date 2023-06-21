@@ -133,7 +133,7 @@ public class AddUser
                 entity.AddDomainEvent(new StaffCreatedEvent(entity, request.CurrentUser));
             }
             var result = await _context.Users.AddAsync(entity, cancellationToken);
-           
+            
             var log = new UserLog()
             {
                 User = request.CurrentUser,
