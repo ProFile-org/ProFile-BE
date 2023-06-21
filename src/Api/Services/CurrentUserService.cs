@@ -7,25 +7,32 @@ namespace Api.Services;
 
 public class CurrentUserService : ICurrentUserService
 {
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContext _dbContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public CurrentUserService(IHttpContextAccessor httpContextAccessor, IApplicationDbContext context)
     {
         _httpContextAccessor = httpContextAccessor;
-        _context = context;
+        _dbContext = context;
+    }
+
+    public Guid GetId()
+    {
+        var id =  _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.NameId))!.Value;
+        return Guid.Parse(id);
     }
 
     public string GetRole()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var user = _context.Users.FirstOrDefault(x => x.Username.Equals(userName));
+        var user = _dbContext.Users.FirstOrDefault(x => x.Username.Equals(userName));
 
         if (user is null)
         {
@@ -35,37 +42,24 @@ public class CurrentUserService : ICurrentUserService
         return user.Role;
     }
 
-    public string? GetDepartment()
+    public Guid GetDepartmentId()
     {
-        var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
-        if (userName is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var user = _context.Users
-            .Include(x => x.Department)
-            .FirstOrDefault(x => x.Username.Equals(userName));
-
-        if (user is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-        
-        return user.Department?.Name;
+        var claim =  _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals("departmentId"));
+        var id = claim?.Value;
+        return Guid.Parse(id!);
     }
 
     public User GetCurrentUser()
     {
         var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.Sub))!.Value;
         if (userName is null)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var user = _context.Users
+        var user = _dbContext.Users
             .Include(x => x.Department)
             .FirstOrDefault(x => x.Username.Equals(userName));
 
@@ -79,50 +73,35 @@ public class CurrentUserService : ICurrentUserService
 
     public Guid? GetCurrentRoomForStaff()
     {
-        var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
-        if (userName is null)
+        var userIdString = _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.NameId));
+        if (userIdString is null || !Guid.TryParse(userIdString.Value, out var userId))
         {
             throw new UnauthorizedAccessException();
         }
 
-        var staff = _context.Staffs
+        var staff = _dbContext.Staffs
             .Include(x => x.User)
             .Include(x => x.Room)
-            .FirstOrDefault(x => x.User.Username.Equals(userName));
-
-        if (staff is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
+            .FirstOrDefault(x => x.Id == userId);
         
-        return staff.Room!.Id;
+        return staff?.Room?.Id;
     }
     
     public Guid? GetCurrentDepartmentForStaff()
     {
-        var userName = _httpContextAccessor.HttpContext!.User.Claims
-            .FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"))!.Value;
-        if (userName is null)
+        var userIdString = _httpContextAccessor.HttpContext!.User.Claims
+            .FirstOrDefault(x => x.Type.Equals(JwtRegisteredClaimNames.NameId));
+        if (userIdString is null || !Guid.TryParse(userIdString.Value, out var userId))
         {
             throw new UnauthorizedAccessException();
         }
 
-        var staff = _context.Staffs
+        var staff = _dbContext.Staffs
             .Include(x => x.User)
             .Include(x => x.Room)
-            .FirstOrDefault(x => x.User.Username.Equals(userName));
-
-        if (staff is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        if (staff.Room is null)
-        {
-            throw new UnauthorizedAccessException();
-        }
+            .FirstOrDefault(x => x.Id == userId);
         
-        return staff.Room!.DepartmentId;
+        return staff?.Room?.DepartmentId;
     }
 }

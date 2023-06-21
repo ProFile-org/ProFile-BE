@@ -36,7 +36,7 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
 
         builder.HasOne(x => x.Importer)
             .WithMany()
-            .HasForeignKey("ImporterId")
+            .HasForeignKey(x => x.ImporterId)
             .IsRequired(false);
 
         builder.Property(x => x.Status)
@@ -46,5 +46,8 @@ public class DocumentConfiguration : IEntityTypeConfiguration<Document>
             .WithOne()
             .HasForeignKey<Document>(x => x.EntryId)
             .IsRequired(false);
+
+        builder.Property(x => x.IsPrivate)
+            .IsRequired();
     }
 }

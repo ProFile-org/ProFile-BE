@@ -28,6 +28,8 @@ public class GetAllFoldersPaginated
     
     public record Query : IRequest<PaginatedList<FolderDto>>
     {
+        public string CurrentUserRole { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
         public string? SearchTerm { get; init; }
@@ -50,15 +52,22 @@ public class GetAllFoldersPaginated
 
         public async Task<PaginatedList<FolderDto>> Handle(Query request, CancellationToken cancellationToken)
         {
+            if (request.CurrentUserRole.IsStaff() 
+                && (request.CurrentStaffRoomId is null || request.RoomId is null
+                    || !IsSameRoom(request.RoomId.Value, request.CurrentStaffRoomId.Value)))
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
+            }
+            
             var folders = _context.Folders
                 .Include(x => x.Locker)
                 .ThenInclude(y => y.Room)
                 .ThenInclude(z => z.Department)
                 .AsQueryable();
-            var roomExists = request.RoomId is not null;
-            var lockerExists = request.LockerId is not null;
+            var roomIdProvided = request.RoomId is not null;
+            var lockerIdProvided = request.LockerId is not null;
 
-            if (lockerExists)
+            if (lockerIdProvided)
             {
                 var locker = await _context.Lockers
                     .Include(x => x.Room)
@@ -76,7 +85,7 @@ public class GetAllFoldersPaginated
 
                 folders = folders.Where(x => x.Locker.Id == request.LockerId);
             }
-            else if (roomExists)
+            else if (roomIdProvided)
             {
                 var room = await _context.Rooms
                     .FirstOrDefaultAsync(x => x.Id == request.RoomId
@@ -95,24 +104,17 @@ public class GetAllFoldersPaginated
                     x.Name.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<LockerDto>())
-            {
-                sortBy = nameof(LockerDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-
-            var count = await folders.CountAsync(cancellationToken);
-            var list  = await folders
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<FolderDto>>(list);
-
-            return new PaginatedList<FolderDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await folders
+                .ListPaginateWithSortAsync<Folder, FolderDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
+        
+        private static bool IsSameRoom(Guid roomId1, Guid roomId2)
+            => roomId1 == roomId2;
     }
 }

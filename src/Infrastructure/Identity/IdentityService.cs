@@ -60,9 +60,7 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
-        
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
         var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
@@ -118,12 +116,12 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
         
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
-        var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users
+            .Include(x => x.Department)
+            .FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -197,7 +195,7 @@ public class IdentityService : IIdentityService
     {
         var user = _applicationDbContext.Users
             .Include(x => x.Department)
-            .FirstOrDefault(x => x.Email!.Equals(email));
+            .FirstOrDefault(x => x.Email.ToLower().Equals(email.Trim().ToLower()));
 
         if (user is null || !user.PasswordHash.Equals(password.HashPasswordWith(user.PasswordSalt, _securitySettings.Pepper)))
         {
@@ -260,7 +258,7 @@ public class IdentityService : IIdentityService
         }
         var salt = StringUtil.RandomSalt();
         user.PasswordSalt = salt;
-        user.PasswordHash = newPassword.HashPasswordWith(salt, newPassword);
+        user.PasswordHash = newPassword.HashPasswordWith(salt, _securitySettings.Pepper);
         resetPasswordToken.IsInvalidated = true;
         await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
         await _authDbContext.SaveChangesAsync(CancellationToken.None);
@@ -293,10 +291,13 @@ public class IdentityService : IIdentityService
         var utcNow = DateTime.UtcNow;
         var authClaims = new List<Claim>
         {
+            new(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Sub, user.Username),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, utcNow.ToString(CultureInfo.InvariantCulture)),
+            new("departmentId", user.Department is not null ? user.Department.Id.ToString() : Guid.Empty.ToString()),
+            new("isActive", user.IsActive.ToString()),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
         var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};

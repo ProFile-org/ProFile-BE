@@ -1,10 +1,14 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Lockers.Commands;
 
@@ -23,6 +27,7 @@ public class RemoveLocker
 
     public record Command : IRequest<LockerDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid LockerId { get; init; }
     }
     
@@ -30,11 +35,13 @@ public class RemoveLocker
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
-    
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        private readonly IDateTimeProvider _dateTimeProvider;
+
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
     
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
@@ -43,26 +50,34 @@ public class RemoveLocker
                 .Include(x => x.Room)
                 .ThenInclude(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.LockerId), cancellationToken);
-                
+            
             if (locker is null)
             {
                 throw new KeyNotFoundException("Locker does not exist.");
             }
-            
+
             var canNotRemove = await _context.Documents
-                                    .CountAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken)
-                                > 0;
-    
+                .AnyAsync(x => x.Folder!.Locker.Id.Equals(request.LockerId), cancellationToken);
             if (canNotRemove)
             {
-                throw new InvalidOperationException("Locker cannot be removed because it contains documents.");
+                throw new ConflictException("Locker cannot be removed because it contains documents.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            var log = new LockerLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = locker.Id,
+                Time = localDateTimeNow,
+                Action = LockerLogMessage.Remove,
+            };
             var room = locker.Room;
-            
             var result = _context.Lockers.Remove(locker);
             room.NumberOfLockers -= 1;
             _context.Rooms.Update(room);
+            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<LockerDto>(result.Entity);
         }

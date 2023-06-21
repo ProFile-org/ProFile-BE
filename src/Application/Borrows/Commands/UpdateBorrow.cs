@@ -1,7 +1,10 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
@@ -19,7 +22,7 @@ public class UpdateBorrow
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
-            RuleFor(x => x.Reason)
+            RuleFor(x => x.BorrowReason)
                 .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
 
             RuleFor(x => x.BorrowFrom)
@@ -33,21 +36,24 @@ public class UpdateBorrow
 
     public record Command : IRequest<BorrowDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid BorrowId { get; init; }
         public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }
-        public string Reason { get; init; } = null!;
+        public string BorrowReason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -71,31 +77,48 @@ public class UpdateBorrow
                 throw new ConflictException("Document is lost.");
             }
 
-            var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
-            var existedBorrow = await _context.Borrows
+            if (borrowRequest.Borrower.Id != request.CurrentUser.Id)
+            {
+                throw new ConflictException("Can not update other borrow request.");
+            }
+
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            var existedBorrows = _context.Borrows
                 .Include(x => x.Borrower)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                     x.Document.Id == borrowRequest.Document.Id
                     && x.Id != borrowRequest.Id
                     && ((x.DueTime > localDateTimeNow)
-                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
-            
-            if (existedBorrow is not null)
+                        || x.Status == BorrowRequestStatus.Overdue));
+
+            var borrowFromTime = LocalDateTime.FromDateTime(request.BorrowFrom);
+            var borrowToTime = LocalDateTime.FromDateTime(request.BorrowTo);
+            foreach (var borrow in existedBorrows)
             {
-                if (existedBorrow.Status 
-                    is BorrowRequestStatus.Approved 
-                    or BorrowRequestStatus.CheckedOut
-                    && LocalDateTime.FromDateTime(request.BorrowFrom) < existedBorrow.DueTime)
+                if ((borrow.Status 
+                        is BorrowRequestStatus.Approved 
+                        or BorrowRequestStatus.CheckedOut)
+                    && (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
-                    throw new ConflictException("This document cannot be borrowed.");
+                    throw new ConflictException("This document cannot be updated.");
                 }
             }
-
-            borrowRequest.BorrowTime = LocalDateTime.FromDateTime(request.BorrowFrom);
-            borrowRequest.DueTime = LocalDateTime.FromDateTime(request.BorrowTo);
-            borrowRequest.Reason = request.Reason;
-
+            borrowRequest.BorrowTime = borrowFromTime;
+            borrowRequest.DueTime = borrowToTime;
+            borrowRequest.BorrowReason = request.BorrowReason;
+            borrowRequest.LastModified = localDateTimeNow;
+            borrowRequest.LastModifiedBy = request.CurrentUser.Id;
+            
+            var log = new DocumentLog()
+            {
+                UserId = request.CurrentUser.Id,
+                User = request.CurrentUser,
+                ObjectId = borrowRequest.Document.Id,
+                Time = localDateTimeNow,
+                Action = DocumentLogMessages.Borrow.Update,
+            };
             var result = _context.Borrows.Update(borrowRequest);
+            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return _mapper.Map<BorrowDto>(result.Entity);

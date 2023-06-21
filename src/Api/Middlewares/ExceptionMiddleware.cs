@@ -100,7 +100,7 @@ public class ExceptionMiddleware : IMiddleware
 
     private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
         await WriteExceptionMessageAsync(context, ex);
     }
 

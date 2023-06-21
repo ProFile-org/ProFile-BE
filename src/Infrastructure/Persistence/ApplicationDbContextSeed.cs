@@ -86,11 +86,6 @@ public class ApplicationDbContextSeed
                 admin.Department = department;
                 await context.Users.AddAsync(admin);
             }
-            if (context.Users.All(u => u.Username != staff.Username))
-            {
-                staff.Department = department;
-                await context.Users.AddAsync(staff);
-            }
         }
         else
         {
@@ -99,11 +94,6 @@ public class ApplicationDbContextSeed
             {
                 admin.Department = departmentEntity;
                 await context.Users.AddAsync(admin);
-            }
-            if (context.Users.All(u => u.Username != staff.Username))
-            {
-                staff.Department = departmentEntity;
-                await context.Users.AddAsync(staff);
             }
         }
         
@@ -115,6 +105,11 @@ public class ApplicationDbContextSeed
                 employee.Department = itDepartment;
                 await context.Users.AddAsync(employee);
             }
+            if (context.Users.All(u => u.Username != staff.Username))
+            {
+                staff.Department = department;
+                await context.Users.AddAsync(staff);
+            }
         }
         else
         {
@@ -123,6 +118,11 @@ public class ApplicationDbContextSeed
             {
                 employee.Department = departmentEntity;
                 await context.Users.AddAsync(employee);
+            }
+            if (context.Users.All(u => u.Username != staff.Username))
+            {
+                staff.Department = departmentEntity;
+                await context.Users.AddAsync(staff);
             }
         }
 

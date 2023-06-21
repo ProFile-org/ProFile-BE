@@ -44,7 +44,7 @@ public class GetEmptyContainersPaginated
                 .ProjectTo<EmptyLockerDto>(_mapper.ConfigurationProvider)
                 .AsEnumerable()
                 .ToList();
-        
+            
             lockers.ForEach(x => x.Folders = x.Folders.Where(y => y.Slot > 0));
 
             var result = new PaginatedList<EmptyLockerDto>(lockers.ToList(), lockers.Count, pageNumber, sizeNumber);

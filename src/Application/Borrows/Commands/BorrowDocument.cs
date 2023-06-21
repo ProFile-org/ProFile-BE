@@ -1,8 +1,13 @@
+using System.Runtime.InteropServices;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
+using Application.Common.Models.Operations;
 using AutoMapper;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
+using Domain.Events;
 using Domain.Statuses;
 using FluentValidation;
 using MediatR;
@@ -19,7 +24,7 @@ public class BorrowDocument
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
 
-            RuleFor(x => x.Reason)
+            RuleFor(x => x.BorrowReason)
                 .MaximumLength(512).WithMessage("Reason cannot exceed 512 characters.");
 
             RuleFor(x => x.BorrowFrom)
@@ -37,18 +42,22 @@ public class BorrowDocument
         public Guid BorrowerId { get; init; }
         public DateTime BorrowFrom { get; init; }
         public DateTime BorrowTo { get; init; }
-        public string Reason { get; init; } = null!;
+        public string BorrowReason { get; init; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, BorrowDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IPermissionManager _permissionManager;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IPermissionManager permissionManager, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _permissionManager = permissionManager;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -73,6 +82,7 @@ public class BorrowDocument
             
             var document = await _context.Documents
                 .Include(x => x.Department)
+                .Include(x => x.Importer)
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             if (document is null)
             {
@@ -93,29 +103,31 @@ public class BorrowDocument
             // if the request is in time, meaning not overdue,
             // then check if its due date is less than the borrow request date, if not then check
             // if it's already been approved, checked out or lost, meaning 
-            var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
-            var existedBorrow = await _context.Borrows
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            var borrowFromTime = LocalDateTime.FromDateTime(request.BorrowFrom);
+            var borrowToTime = LocalDateTime.FromDateTime(request.BorrowTo);
+            var existedBorrows =  _context.Borrows
                 .Include(x => x.Borrower)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                     x.Document.Id == request.DocumentId
-                    && ((x.DueTime > localDateTimeNow)
-                        || x.Status == BorrowRequestStatus.Overdue), cancellationToken);
-            
-            if (existedBorrow is not null)
+                    && (x.DueTime > localDateTimeNow
+                        || x.Status == BorrowRequestStatus.Overdue));
+
+            foreach (var borrow in existedBorrows)
             {
                 // Does not make sense if the same person go up and want to borrow the same document again
                 // even if the borrow day will be after the due day
-                if (existedBorrow.Borrower.Id == request.BorrowerId
-                    && existedBorrow.Status is BorrowRequestStatus.Pending 
-                        or BorrowRequestStatus.Approved)
+                if (borrow.Borrower.Id == request.BorrowerId
+                && borrow.Status is BorrowRequestStatus.Pending
+                    or BorrowRequestStatus.Approved)
                 {
                     throw new ConflictException("This document is already requested borrow from the same user.");
                 }
 
-                if (existedBorrow.Status 
-                    is BorrowRequestStatus.Approved 
-                    or BorrowRequestStatus.CheckedOut
-                    && LocalDateTime.FromDateTime(request.BorrowFrom) < existedBorrow.DueTime)
+                if ((borrow.Status
+                    is BorrowRequestStatus.Approved
+                    or BorrowRequestStatus.CheckedOut)
+                    && (borrowFromTime <= borrow.DueTime && borrowToTime >= borrow.BorrowTime))
                 {
                     throw new ConflictException("This document cannot be borrowed.");
                 }
@@ -125,13 +137,36 @@ public class BorrowDocument
             {
                 Borrower = user,
                 Document = document,
-                BorrowTime = LocalDateTime.FromDateTime(request.BorrowFrom),
-                DueTime = LocalDateTime.FromDateTime(request.BorrowTo),
-                Reason = request.Reason,
+                BorrowTime = borrowFromTime,
+                DueTime = borrowToTime,
+                BorrowReason = request.BorrowReason,
+                StaffReason = string.Empty,
                 Status = BorrowRequestStatus.Pending,
+                Created = localDateTimeNow,
+                CreatedBy = user.Id,
+            };
+            
+            if (document.IsPrivate)
+            {
+                var isGranted = _permissionManager.IsGranted(request.DocumentId, DocumentOperation.Borrow, request.BorrowerId);
+                if (!isGranted)
+                {
+                    throw new UnauthorizedAccessException("You don't have permission to borrow this document.");
+                }
+                entity.Status = BorrowRequestStatus.Approved;
+            }
+
+            var log = new DocumentLog()
+            {
+                UserId = user.Id,
+                User = user,
+                ObjectId = document.Id,
+                Time = localDateTimeNow,
+                Action = DocumentLogMessages.Borrow.NewBorrowRequest,
             };
 
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);
+            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return _mapper.Map<BorrowDto>(result.Entity);

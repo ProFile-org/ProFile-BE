@@ -1,5 +1,9 @@
+using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Folders;
+using Application.Common.Extensions;
+using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands;
 using Application.Folders.Queries;
@@ -11,6 +15,13 @@ namespace Api.Controllers;
 
 public class FoldersController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public FoldersController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a folder by id
     /// </summary>
@@ -23,8 +34,12 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Result<FolderDto>>> GetById([FromRoute] Guid folderId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetFolderById.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(query);
@@ -43,8 +58,12 @@ public class FoldersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<FolderDto>>>> GetAllPaginated(
         [FromQuery] GetAllFoldersPaginatedQueryParameters queryParameters)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var query = new GetAllFoldersPaginated.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentStaffRoomId = staffRoomId,
             RoomId = queryParameters.RoomId,
             LockerId = queryParameters.LockerId,
             SearchTerm = queryParameters.SearchTerm,
@@ -62,7 +81,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="request">Add folder details</param>
     /// <returns>A FolderDto of the added folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,8 +90,12 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> AddFolder([FromBody] AddFolderRequest request)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var command = new AddFolder.Command()
         {
+            CurrentUser = currentUser,
+            CurrentStaffRoomId = staffRoomId,
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
@@ -87,7 +110,7 @@ public class FoldersController : ApiControllerBase
     /// </summary>
     /// <param name="folderId">Id of the folder to be removed</param>
     /// <returns>A FolderDto of the removed folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpDelete("{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,58 +119,22 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<Result<FolderDto>>> RemoveFolder([FromRoute] Guid folderId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
+        Guid? staffRoomId = null;
+        if (currentUser.Role.IsStaff())
+        {
+            staffRoomId = _currentUserService.GetCurrentRoomForStaff();
+        }
         var command = new RemoveFolder.Command()
         {
-            FolderId = folderId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<FolderDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Enable a folder
-    /// </summary>
-    /// <param name="folderId">Id of the folder to be enabled</param>
-    /// <returns>A FolderDto of the enabled folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("enable/{folderId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> EnableFolder([FromRoute] Guid folderId)
-    {
-        var command = new EnableFolder.Command()
-        {
+            CurrentUser = currentUser,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
     }
 
-    /// <summary>
-    /// Disable a folder
-    /// </summary>
-    /// <param name="folderId">Id of the disabled folder</param>
-    /// <returns>A FolderDto of the disabled folder</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
-    [HttpPut("disable/{folderId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> DisableFolder([FromRoute] Guid folderId)
-    {
-        var command = new DisableFolder.Command()
-        {
-            FolderId = folderId,
-        };
-        var result = await Mediator.Send(command);
-        return Ok(Result<FolderDto>.Succeed(result));
-    }
-    
     /// <summary>
     /// Update a folder
     /// </summary>
@@ -159,10 +146,16 @@ public class FoldersController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<FolderDto>>> Update([FromRoute] Guid folderId, [FromBody] UpdateFolderRequest request)
+    public async Task<ActionResult<Result<FolderDto>>> Update(
+        [FromRoute] Guid folderId,
+        [FromBody] UpdateFolderRequest request)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var staffRoomId = _currentUserService.GetCurrentRoomForStaff();
         var command = new UpdateFolder.Command()
         {
+            CurrentUser = currentUser,
+            CurrentStaffRoomId = staffRoomId,
             FolderId = folderId,
             Name = request.Name,
             Description = request.Description,
@@ -170,5 +163,28 @@ public class FoldersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="queryParameters"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("logs")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<Result<PaginatedList<FolderLogDto>>>> GetAllLogsPaginated(
+        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    {
+        var query = new GetAllFolderLogsPaginated.Query()
+        {
+            FolderId = queryParameters.ObjectId,
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<FolderLogDto>>.Succeed(result));    
     }
 }

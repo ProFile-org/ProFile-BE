@@ -104,6 +104,180 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("UserGroups");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("BaseFolderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BaseFolderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DocumentLogs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.FolderLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("BaseLockerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BaseLockerId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FolderLogs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.LockerLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("BaseRoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BaseRoomId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LockerLogs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.RequestLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RequestLogs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.RoomLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RoomLogs");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.UserLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Time")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLogs");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -113,10 +287,20 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<LocalDateTime>("ActualReturnTime")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("BorrowReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<LocalDateTime>("BorrowTime")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("BorrowerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("DocumentId")
@@ -125,7 +309,13 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<LocalDateTime>("DueTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Reason")
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StaffReason")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -147,6 +337,12 @@ namespace Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uuid");
 
@@ -166,6 +362,15 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("ImporterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("boolean");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -199,12 +404,24 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("LockerId")
                         .HasColumnType("uuid");
@@ -224,6 +441,51 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("Folders");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Physical.ImportRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImportReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StaffReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId")
+                        .IsUnique();
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("ImportRequests");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>
                 {
                     b.Property<Guid>("Id")
@@ -233,12 +495,24 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Description")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -258,6 +532,28 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("Lockers");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Physical.Permission", b =>
+                {
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AllowedOperations")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<LocalDateTime>("ExpiryDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("DocumentId", "EmployeeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Permissions");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +562,12 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
+
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("uuid");
@@ -276,6 +578,12 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -289,8 +597,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasAlternateKey("Name");
 
-                    b.HasIndex("DepartmentId")
-                        .IsUnique();
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Rooms");
                 });
@@ -467,6 +774,90 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("File");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
+                {
+                    b.HasOne("Domain.Entities.Physical.Folder", "BaseFolder")
+                        .WithMany()
+                        .HasForeignKey("BaseFolderId");
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BaseFolder");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.FolderLog", b =>
+                {
+                    b.HasOne("Domain.Entities.Physical.Locker", "BaseLocker")
+                        .WithMany()
+                        .HasForeignKey("BaseLockerId");
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BaseLocker");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.LockerLog", b =>
+                {
+                    b.HasOne("Domain.Entities.Physical.Room", "BaseRoom")
+                        .WithMany()
+                        .HasForeignKey("BaseRoomId");
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BaseRoom");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.RequestLog", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.RoomLog", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Logging.UserLog", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
                 {
                     b.HasOne("Domain.Entities.User", "Borrower")
@@ -524,6 +915,25 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Locker");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Physical.ImportRequest", b =>
+                {
+                    b.HasOne("Domain.Entities.Physical.Document", "Document")
+                        .WithOne()
+                        .HasForeignKey("Domain.Entities.Physical.ImportRequest", "DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Physical.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Locker", b =>
                 {
                     b.HasOne("Domain.Entities.Physical.Room", "Room")
@@ -535,11 +945,30 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Physical.Permission", b =>
+                {
+                    b.HasOne("Domain.Entities.Physical.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("Domain.Entities.Physical.Room", b =>
                 {
                     b.HasOne("Domain.Entities.Department", "Department")
-                        .WithOne("Room")
-                        .HasForeignKey("Domain.Entities.Physical.Room", "DepartmentId")
+                        .WithMany("Rooms")
+                        .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -611,7 +1040,7 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Department", b =>
                 {
-                    b.Navigation("Room");
+                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Folder", b =>

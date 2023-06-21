@@ -5,6 +5,7 @@ namespace Api.Controllers.Payload.Requests.Documents;
 /// </summary>
 public class GetAllDocumentsPaginatedQueryParameters : PaginatedQueryParameters
 {
+    public Guid? UserId { get; set; }
     /// <summary>
     /// Id of the room to find documents in
     /// </summary>
@@ -21,4 +22,7 @@ public class GetAllDocumentsPaginatedQueryParameters : PaginatedQueryParameters
     /// Search term
     /// </summary>
     public string? SearchTerm { get; set; }
+    public string? DocumentStatus { get; set; }
+    public string? UserRole { get; set; }
+    public bool? IsPrivate { get; set; }
 }

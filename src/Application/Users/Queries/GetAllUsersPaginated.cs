@@ -1,13 +1,10 @@
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
-using Application.Common.Mappings;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
+using Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries;
 
@@ -15,7 +12,8 @@ public class GetAllUsersPaginated
 {
     public record Query : IRequest<PaginatedList<UserDto>>
     {
-        public Guid? DepartmentId { get; init; }
+        public Guid[]? DepartmentIds { get; init; }
+        public string? Role { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -36,38 +34,36 @@ public class GetAllUsersPaginated
 
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var users = _context.Users.AsQueryable()
+            var users = _context.Users
                 .Where(x => !x.Role.Equals(IdentityData.Roles.Admin));
 
-            if (request.DepartmentId is not null)
+            // Filter by department
+            if (request.DepartmentIds is not null)
             {
-                users = users.Where(x => x.Department!.Id == request.DepartmentId);
+                users = users.Where(x => request.DepartmentIds.Contains(x.Department!.Id) );
+            }
+
+            // Filter by role
+            if (request.Role is not null)
+            {
+                users = users.Where(x => x.Role.ToLower().Equals(request.Role.Trim().ToLower()));
             }
             
+            // Search
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
                 users = users.Where(x =>
                     x.FirstName!.ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
             
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<UserDto>())
-            {
-                sortBy = nameof(UserDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-            var count = await users.CountAsync(cancellationToken);
-            var list  = await users
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .OrderByCustom(sortBy, sortOrder)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<UserDto>>(list);
-
-            return new PaginatedList<UserDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await users
+                .ListPaginateWithSortAsync<User, UserDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

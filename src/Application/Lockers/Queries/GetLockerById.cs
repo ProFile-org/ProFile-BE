@@ -1,6 +1,9 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
+using Application.Identity;
 using AutoMapper;
+using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +13,8 @@ public class GetLockerById
 {
     public record Query : IRequest<LockerDto>
     {
+        public string CurrentUserRole { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid LockerId { get; init; }
     }
     
@@ -35,8 +40,19 @@ public class GetLockerById
             {
                 throw new KeyNotFoundException("Locker does not exist.");
             }
-
+            
+            if (request.CurrentUserRole.IsStaff()
+                && (request.CurrentStaffRoomId is null || !LockerInSameRoom(locker, request.CurrentStaffRoomId.Value)))
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
+            }
+            
             return _mapper.Map<LockerDto>(locker);
         }
+
+        private static bool LockerInSameRoom(
+            Locker locker,
+            Guid roomId)
+            => locker.Room.Id == roomId;
     }
 }

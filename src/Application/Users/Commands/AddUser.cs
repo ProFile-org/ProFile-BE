@@ -1,10 +1,13 @@
 using Application.Common.Exceptions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Helpers;
 using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Events;
 using FluentValidation;
 using MediatR;
@@ -53,6 +56,7 @@ public class AddUser
 
     public record Command : IRequest<UserDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public string Username { get; init; } = null!;
         public string Email { get; init; } = null!;
         public string? FirstName { get; init; }
@@ -67,16 +71,23 @@ public class AddUser
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ISecurityService _securityService;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService)
+        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
             _securityService = securityService;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
         {
+            if (request.Role.IsAdmin())
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(
                 x => x.Username.Equals(request.Username) || x.Email.Equals(request.Email), cancellationToken);
 
@@ -96,6 +107,8 @@ public class AddUser
             var password = StringUtil.RandomPassword();
             var salt = StringUtil.RandomSalt();
             
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
             var entity = new User
             {
                 Username = request.Username,
@@ -109,10 +122,27 @@ public class AddUser
                 Position = request.Position,
                 IsActive = true,
                 IsActivated = false,
-                Created = LocalDateTime.FromDateTime(DateTime.UtcNow)
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
+            
+           
             entity.AddDomainEvent(new UserCreatedEvent(entity, password));
+            if (request.Role.IsStaff())
+            {
+                entity.AddDomainEvent(new StaffCreatedEvent(entity, request.CurrentUser));
+            }
             var result = await _context.Users.AddAsync(entity, cancellationToken);
+            
+            var log = new UserLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = entity.Id,
+                Time = localDateTimeNow,
+                Action = UserLogMessages.Add(entity.Role),
+            };
+            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<UserDto>(result.Entity);
         }

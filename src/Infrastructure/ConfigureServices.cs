@@ -1,10 +1,13 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Infrastructure.Identity;
 using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Shared;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +23,8 @@ public static class ConfigureServices
         services.AddScoped<IApplicationDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IAuthDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPermissionManager, PermissionManager>();
+        services.AddTransient<IDateTimeProvider, DateTimeService>();
         services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);
@@ -82,7 +87,7 @@ public static class ConfigureServices
         services.AddSingleton(encryptionKey);
         services.AddSingleton(signingKey);
         services.AddSingleton(tokenValidationParameters);
-
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         services.AddAuthentication(JweAuthenticationOptions.DefaultScheme)
             .AddScheme<JweAuthenticationOptions, JweAuthenticationHandler>(JweAuthenticationOptions.DefaultScheme,
                 options =>

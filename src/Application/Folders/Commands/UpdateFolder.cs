@@ -1,10 +1,16 @@
 using Application.Common.Exceptions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Folders.Commands;
 
@@ -31,6 +37,8 @@ public class UpdateFolder
     
     public record Command : IRequest<FolderDto>
     {
+        public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
         public Guid FolderId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
@@ -41,11 +49,13 @@ public class UpdateFolder
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
@@ -60,14 +70,14 @@ public class UpdateFolder
             {
                 throw new KeyNotFoundException("Folder does not exist.");
             }
-
-            var nameExisted = await _context.Folders.AnyAsync( x => 
-                    x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) 
-                    && x.Id != folder.Id
-                    && x.Locker.Id == folder.Locker.Id
-                    , cancellationToken);
-
-            if (nameExisted)
+            
+            if (request.CurrentUser.Role.IsStaff()
+                && (request.CurrentStaffRoomId is null || !FolderIsInRoom(folder, request.CurrentStaffRoomId!.Value)))
+            {
+                throw new UnauthorizedAccessException("User cannot access this resource.");
+            }
+            
+            if (await DuplicatedNameFolderExistsInSameLockerAsync(request.Name, folder.Id, folder.Locker.Id, cancellationToken))
             {
                 throw new ConflictException("Folder name already exists.");
             }
@@ -77,13 +87,42 @@ public class UpdateFolder
                 throw new ConflictException("New capacity cannot be less than current number of documents.");
             }
 
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             folder.Name = request.Name;
             folder.Description = request.Description;
             folder.Capacity = request.Capacity;
-
+            folder.LastModified = localDateTimeNow;
+            folder.LastModifiedBy = request.CurrentUser.Id;
+            
+            var log = new FolderLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = folder.Id,
+                Time = localDateTimeNow,
+                Action = FolderLogMessage.Update,
+            };
             var result = _context.Folders.Update(folder);
+            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<FolderDto>(result.Entity);
         }
+        private async Task<bool> DuplicatedNameFolderExistsInSameLockerAsync(
+            string folderName,
+            Guid lockerId,
+            Guid folderId,
+            CancellationToken cancellationToken)
+        {
+            var folder = await _context.Folders.FirstOrDefaultAsync(
+                x => x.Name.Trim().ToLower().Equals(folderName.Trim().ToLower())
+                                    && x.Id != folderId
+                                    && x.Locker.Id == lockerId,
+                cancellationToken);
+            return folder is not null;
+        }
+        
+        private static bool FolderIsInRoom(Folder folder, Guid roomId)
+            => folder.Locker.Room.Id == roomId;
     }
 }

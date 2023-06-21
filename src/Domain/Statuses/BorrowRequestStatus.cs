@@ -2,13 +2,13 @@ namespace Domain.Statuses;
 
 public enum BorrowRequestStatus
 {
-    Approved,
     Pending,
+    Approved,
     Rejected,
-    Overdue,
-    Cancelled,
     CheckedOut,
     Returned,
+    Overdue,
+    Cancelled,
     Lost,
     NotProcessable,
 }
