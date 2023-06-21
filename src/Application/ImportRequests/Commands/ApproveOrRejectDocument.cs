@@ -70,6 +70,25 @@ public class ApproveOrRejectDocument
                 throw new ConflictException("Document does not exist.");
             }
 
+            var staff = await _context.Staffs
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
+
+            if (staff is null)
+            {
+                throw new KeyNotFoundException("Staff does not exist.");
+            }
+
+            if (staff.Room is null)
+            {
+                throw new ConflictException("Staff does not assign to a room.");
+            }
+
+            if (staff.Room.Id != importRequest.RoomId)
+            {
+                throw new KeyNotFoundException("Can not approve request from different room");
+            }
+
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
             var log = new DocumentLog()

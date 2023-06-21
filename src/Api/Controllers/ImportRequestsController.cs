@@ -65,6 +65,7 @@ public class ImportRequestsController : ApiControllerBase
         {
             CurrentUser = currentUser,
             SearchTerm = queryParameters.SearchTerm,
+            RoomId = queryParameters.RoomId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
@@ -98,6 +99,7 @@ public class ImportRequestsController : ApiControllerBase
             IsPrivate = request.IsPrivate,
             Issuer = currentUser,
             RoomId = request.RoomId,
+            Reason = request.Reason
         };
         var result = await Mediator.Send(command);
         return Ok(Result<ImportRequestDto>.Succeed(result));
@@ -133,7 +135,7 @@ public class ImportRequestsController : ApiControllerBase
     /// <summary>
     /// Assign a document to a folder
     /// </summary>
-    /// <param name="importRequestId">Id of the document to be rejected</param>
+    /// <param name="importRequestId">Id of the import request to be rejected or approved</param>
     /// <param name="request"></param>
     /// <returns>A DocumentDto of the rejected document</returns>    
     [RequiresRole(IdentityData.Roles.Staff)]

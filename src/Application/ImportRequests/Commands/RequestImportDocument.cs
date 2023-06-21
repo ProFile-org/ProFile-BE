@@ -23,6 +23,7 @@ public class RequestImportDocument
         public User Issuer { get; init; } = null!;
         public Guid RoomId { get; init; }
         public bool IsPrivate { get; init; }
+        public string Reason { get; set; } = null!;
     }
 
     public class CommandHandler : IRequestHandler<Command, ImportRequestDto>
@@ -70,14 +71,16 @@ public class RequestImportDocument
                 Created = localDateTimeNow,
                 CreatedBy = request.Issuer.Id,
             };
-
+            await _context.Documents.AddAsync(entity, cancellationToken);
+           
             var importRequest = new ImportRequest()
             {
                 Document = entity,
                 Status = ImportRequestStatus.Pending,
                 Room = room,
                 Created = localDateTimeNow,
-                CreatedBy = request.Issuer.Id
+                CreatedBy = request.Issuer.Id,
+                Reason = request.Reason
             };
             
             var log = new DocumentLog()
@@ -88,7 +91,6 @@ public class RequestImportDocument
                 UserId = request.Issuer.Id,
                 Action = DocumentLogMessages.Import.NewImportRequest,
             };
-            await _context.Documents.AddAsync(entity, cancellationToken);
             var result = await _context.ImportRequests.AddAsync(importRequest, cancellationToken);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);

@@ -99,6 +99,6 @@ public class CheckinDocument
         }
 
         private static bool StatusesAreNotValid(DocumentStatus documentStatus, ImportRequestStatus importRequestStatus)
-            => documentStatus is not DocumentStatus.Available || importRequestStatus is not ImportRequestStatus.Approved;
+            => documentStatus is not DocumentStatus.Issued || importRequestStatus is not ImportRequestStatus.Approved;
     }
 }
