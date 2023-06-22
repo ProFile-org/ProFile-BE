@@ -2,6 +2,7 @@ using System.Runtime.Serialization;
 using Application.Common.Mappings;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Digital;
+using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using Application.Users.Queries;
 using AutoMapper;
@@ -48,6 +49,9 @@ public class MappingTests
     [InlineData(typeof(FileEntity), typeof(FileDto))]
     [InlineData(typeof(Entry), typeof(EntryDto))]
     [InlineData(typeof(UserGroup), typeof(UserGroupDto))]
+    [InlineData(typeof(User), typeof(IssuerDto))]
+    [InlineData(typeof(Document), typeof(IssuedDocumentDto))]
+    [InlineData(typeof(ImportRequest), typeof(ImportRequestDto))]
     public void ShouldSupportMappingFromSourceToDestination(Type source, Type destination)
     {
         // Arrange

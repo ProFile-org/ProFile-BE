@@ -66,8 +66,7 @@ public class GetAllStaffsPaginatedTests : BaseClassFixture
         // Assert
         result.TotalCount.Should().Be(1);
         result.Items.First().Should()
-            .BeEquivalentTo(_mapper.Map<StaffDto>(staff1), 
-                config => config.Excluding(x => x.User.Created));
+            .BeEquivalentTo(_mapper.Map<StaffDto>(staff1));
         
         // Cleanup
         Remove(staff2);

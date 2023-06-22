@@ -1,12 +1,16 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Lockers.Commands;
 
@@ -35,6 +39,7 @@ public class AddLocker
 
     public record Command : IRequest<LockerDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public Guid RoomId { get; init; }
@@ -45,11 +50,13 @@ public class AddLocker
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
@@ -63,34 +70,50 @@ public class AddLocker
 
             if (room.NumberOfLockers >= room.Capacity)
             {
-                throw new LimitExceededException(
-                    "This room cannot accept more lockers."
-                );
+                throw new LimitExceededException("This room cannot accept more lockers.");
             }
 
-            var locker = await _context.Lockers.FirstOrDefaultAsync(
-                x => x.Name.Trim().ToLower().Equals(request.Name.Trim().ToLower()) && x.Room.Id.Equals(request.RoomId),
-                cancellationToken);
-            if (locker is not null)
+            if (await DuplicatedNameLockerExistsInSameRoomAsync(request.Name, request.RoomId, cancellationToken))
             {
                 throw new ConflictException("Locker name already exists.");
             }
 
-            var entity = new Locker
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            var entity = new Locker()
             {
                 Name = request.Name.Trim(),
                 Description = request.Description?.Trim(),
                 NumberOfFolders = 0,
                 Capacity = request.Capacity,
                 Room = room,
-                IsAvailable = true
+                IsAvailable = true,
+                Created = localDateTimeNow,
+                CreatedBy = request.CurrentUser.Id,
             };
-
+            
+            var log = new LockerLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = entity.Id,
+                Time = localDateTimeNow,
+                Action = LockerLogMessage.Add,
+            };
             var result = await _context.Lockers.AddAsync(entity, cancellationToken);
             room.NumberOfLockers += 1;
             _context.Rooms.Update(room);
+            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<LockerDto>(result.Entity);
+        }
+
+        private async Task<bool> DuplicatedNameLockerExistsInSameRoomAsync(string lockerName, Guid roomId, CancellationToken cancellationToken)
+        {
+            var locker = await _context.Lockers.FirstOrDefaultAsync(
+                x => x.Name.ToLower().Equals(lockerName.ToLower())
+                     && x.Room.Id == roomId, cancellationToken);
+            return locker is not null;
         }
     }
 }

@@ -1,10 +1,13 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Infrastructure.Identity;
 using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Shared;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,13 +20,17 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddApplicationDbContext(configuration);
-        services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
+        services.AddScoped<IAuthDbContext>(sp => sp.GetService<ApplicationDbContext>()!);
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IPermissionManager, PermissionManager>();
+        services.AddTransient<IDateTimeProvider, DateTimeService>();
         services.AddMailService(configuration);
 
         services.AddJweAuthentication(configuration);
 
         services.AddAuthorization();
+        services.AddSecurityService(configuration);
         
         return services;
     }
@@ -80,7 +87,7 @@ public static class ConfigureServices
         services.AddSingleton(encryptionKey);
         services.AddSingleton(signingKey);
         services.AddSingleton(tokenValidationParameters);
-
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         services.AddAuthentication(JweAuthenticationOptions.DefaultScheme)
             .AddScheme<JweAuthenticationOptions, JweAuthenticationHandler>(JweAuthenticationOptions.DefaultScheme,
                 options =>
@@ -105,6 +112,20 @@ public static class ConfigureServices
         });
         
         services.AddTransient<IMailService, MailService>();
+        
+        return services;
+    }
+
+    private static IServiceCollection AddSecurityService(this IServiceCollection services, IConfiguration configuration)
+    {
+        var securitySettings = configuration.GetSection(nameof(SecuritySettings)).Get<SecuritySettings>();
+
+        services.Configure<SecuritySettings>(option =>
+        {
+            option.Pepper = securitySettings!.Pepper;
+        });
+
+        services.AddTransient<ISecurityService, SecurityService>();
         
         return services;
     }

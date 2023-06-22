@@ -31,7 +31,7 @@ public class GetStaffByRoomTests : BaseClassFixture
         var staff = CreateStaff(user, room);
         await AddAsync(staff);
 
-        var query = new GetStaffByRoom.Query()
+        var query = new GetStaffByRoomId.Query()
         {
             RoomId = room.Id 
         };
@@ -57,7 +57,7 @@ public class GetStaffByRoomTests : BaseClassFixture
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
     {
         // Arrange 
-        var query = new GetStaffByRoom.Query()
+        var query = new GetStaffByRoomId.Query()
         {
             RoomId = Guid.NewGuid()
         };
@@ -78,7 +78,7 @@ public class GetStaffByRoomTests : BaseClassFixture
         var room = CreateRoom(department);
         await AddAsync(room);
 
-        var query = new GetStaffByRoom.Query()
+        var query = new GetStaffByRoomId.Query()
         {
             RoomId = room.Id
         };

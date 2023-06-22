@@ -8,17 +8,17 @@ public class AddLockerRequest
     /// <summary>
     /// Name of the locker to be updated
     /// </summary>
-    public string Name { get; init; } = null!;
+    public string Name { get; set; } = null!;
     /// <summary>
     /// Description of the locker to be updated
     /// </summary>
-    public string? Description { get; init; }
+    public string? Description { get; set; }
     /// <summary>
     /// Id of the room that this locker will be in
     /// </summary>
-    public Guid RoomId { get; init; }
+    public Guid RoomId { get; set; }
     /// <summary>
     /// Number of folders this locker can hold
     /// </summary>
-    public int Capacity { get; init; }
+    public int Capacity { get; set; }
 }

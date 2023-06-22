@@ -1,7 +1,9 @@
 using Api.Controllers.Payload.Requests.Staffs;
+using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
+using Application.Rooms.Queries;
 using Application.Staffs.Commands;
 using Application.Staffs.Queries;
 using Infrastructure.Identity.Authorization;
@@ -11,42 +13,53 @@ namespace Api.Controllers;
 
 public class StaffsController : ApiControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+
+    public StaffsController(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     /// <summary>
     /// Get a staff by id
     /// </summary>
     /// <param name="staffId">Id of the staff to be retrieved</param>
     /// <returns>A StaffDto of the retrieved staff</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("{staffId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> GetById([FromRoute] Guid staffId)
+    public async Task<ActionResult<Result<StaffDto>>> GetById(
+        [FromRoute] Guid staffId)
     {
         var query = new GetStaffById.Query()
         {
-            StaffId = staffId
+            StaffId = staffId,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<StaffDto>.Succeed(result));
     }
     
     /// <summary>
-    /// Get a staff by room
+    /// Get room by staff id
     /// </summary>
-    /// <param name="roomId">Id of the room to retrieve staff</param>
-    /// <returns>A StaffDto of the retrieved staff</returns>
-    [HttpGet("get-by-room/{roomId:guid}")]
+    /// <param name="staffId">Id of the staff to retrieve room</param>
+    /// <returns>A RoomDto of the retrieved room</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [HttpGet("{staffId:guid}/rooms")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> GetByRoom([FromRoute] Guid roomId)
+    public async Task<ActionResult<Result<RoomDto>>> GetRoomByStaffId(
+        [FromRoute] Guid staffId)
     {
-        var query = new GetStaffByRoom.Query()
+        var query = new GetRoomByStaffId.Query()
         {
-            RoomId = roomId
+            StaffId = staffId,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<StaffDto>.Succeed(result));
+        return Ok(Result<RoomDto>.Succeed(result));
     }
     
     /// <summary>
@@ -54,6 +67,7 @@ public class StaffsController : ApiControllerBase
     /// </summary>
     /// <param name="queryParameters">Get all staffs query parameters</param>
     /// <returns>A paginated list of StaffDto</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -73,7 +87,7 @@ public class StaffsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Add a staff
+    /// Assign a staff
     /// </summary>
     /// <param name="request">Add staff details</param>
     /// <returns>A StaffDto of the added staff</returns>
@@ -82,12 +96,15 @@ public class StaffsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> Add([FromBody] AddStaffRequest request)
+    public async Task<ActionResult<Result<StaffDto>>> Assign(
+        [FromBody] AddStaffRequest request)
     {
-        var command = new AddStaff.Command()
+        var currentUser = _currentUserService.GetCurrentUser();
+        var command = new AssignStaff.Command()
         {
+            CurrentUser = currentUser,
             RoomId = request.RoomId,
-            UserId = request.UserId,
+            StaffId = request.StaffId,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
@@ -98,39 +115,21 @@ public class StaffsController : ApiControllerBase
     /// </summary>
     /// <param name="staffId">Id of the staff to be removed from room</param>
     /// <returns>A StaffDto of the removed staff</returns>
+    [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPut("{staffId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<StaffDto>>> RemoveFromRoom(
+    public async Task<ActionResult<Result<StaffDto>>> RemoveStaffFromRoom(
         [FromRoute] Guid staffId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new RemoveStaffFromRoom.Command()
         {
+            CurrentUser = currentUser,
             StaffId = staffId,
         };
-        var result = await Mediator.Send(command);
-        return Ok(Result<StaffDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Remove a staff
-    /// </summary>
-    /// <param name="staffId">Id of the staff to be removed</param>
-    /// <returns>A StaffDto of the removed staff</returns>
-    [HttpDelete("{staffId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<StaffDto>>> Remove(
-        [FromRoute] Guid staffId)
-    {
-        var command = new RemoveStaff.Command()
-        {
-            StaffId = staffId
-        };
-
         var result = await Mediator.Send(command);
         return Ok(Result<StaffDto>.Succeed(result));
     }

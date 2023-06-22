@@ -28,7 +28,7 @@ public class BorrowConfiguration : IEntityTypeConfiguration<Borrow>
         builder.Property(x => x.DueTime)
             .IsRequired();
 
-        builder.Property(x => x.Reason)
+        builder.Property(x => x.BorrowReason)
             .IsRequired();
 
         builder.Property(x => x.Status)

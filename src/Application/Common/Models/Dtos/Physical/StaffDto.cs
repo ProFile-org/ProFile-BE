@@ -5,9 +5,8 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
 
-public class StaffDto : IMapFrom<Staff>
+public class StaffDto : BaseDto, IMapFrom<Staff>
 {
-    public Guid Id { get; set; }
     public UserDto User { get; set; } = null!;
     public RoomDto? Room { get; set; }
     

@@ -32,7 +32,7 @@ public class UpdateBorrowTests : BaseClassFixture
 
         var command = new UpdateBorrow.Command()
         {
-            Reason = "Example Update",
+            BorrowReason = "Example Update",
             BorrowFrom = DateTime.Now.AddDays(3),
             BorrowTo = DateTime.Now.AddDays(12),
             BorrowId = borrow.Id,
@@ -42,7 +42,7 @@ public class UpdateBorrowTests : BaseClassFixture
         var result = await SendAsync(command);
         
         // Assert
-        result.Reason.Should().Be(command.Reason);
+        result.BorrowReason.Should().Be(command.BorrowReason);
         result.BorrowTime.Should().Be(command.BorrowFrom);
         result.DueTime.Should().Be(command.BorrowTo);
         
@@ -58,7 +58,7 @@ public class UpdateBorrowTests : BaseClassFixture
         // Arrange
         var command = new UpdateBorrow.Command()
         {
-            Reason = "adsda",
+            BorrowReason = "adsda",
             BorrowFrom = DateTime.Now.AddHours(1),
             BorrowTo = DateTime.Now.AddHours(2),
             BorrowId = Guid.NewGuid(),
@@ -86,7 +86,7 @@ public class UpdateBorrowTests : BaseClassFixture
 
         var command = new UpdateBorrow.Command()
         {
-            Reason = "Example Update",
+            BorrowReason = "Example Update",
             BorrowFrom = DateTime.Now.AddDays(3),
             BorrowTo = DateTime.Now.AddDays(12),
             BorrowId = borrow.Id,
@@ -120,7 +120,7 @@ public class UpdateBorrowTests : BaseClassFixture
 
         var command = new UpdateBorrow.Command()
         {
-            Reason = "Example Update",
+            BorrowReason = "Example Update",
             BorrowFrom = DateTime.Now.AddDays(3),
             BorrowTo = DateTime.Now.AddDays(12),
             BorrowId = borrow.Id,
@@ -163,7 +163,7 @@ public class UpdateBorrowTests : BaseClassFixture
 
         var command = new UpdateBorrow.Command()
         {
-            Reason = "Example Update",
+            BorrowReason = "Example Update",
             BorrowFrom = DateTime.Now.AddDays(5),
             BorrowTo = DateTime.Now.AddDays(13),
             BorrowId = borrow1.Id,

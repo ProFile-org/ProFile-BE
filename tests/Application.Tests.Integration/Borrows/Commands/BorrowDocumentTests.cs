@@ -42,7 +42,7 @@ public class BorrowDocumentTests : BaseClassFixture
         {
             BorrowerId = user.Id,
             DocumentId = document.Id,
-            Reason = "Example",
+            BorrowReason = "Example",
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromHours(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(1)),
         };
@@ -53,7 +53,7 @@ public class BorrowDocumentTests : BaseClassFixture
         // Assert
         result.DocumentId.Should().Be(command.DocumentId);
         result.BorrowerId.Should().Be(command.BorrowerId);
-        result.Reason.Should().Be(command.Reason);
+        result.BorrowReason.Should().Be(command.BorrowReason);
         result.BorrowTime.Should().Be(command.BorrowFrom);
         result.DueTime.Should().Be(command.BorrowTo);
         result.Status.Should().Be(BorrowRequestStatus.Pending.ToString());
@@ -79,7 +79,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
         
         // Act
@@ -111,7 +111,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
         
         // Act
@@ -144,7 +144,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
         
         // Act
@@ -172,7 +172,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = Guid.NewGuid(),
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
 
         // Act
@@ -203,7 +203,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
 
         // Act
@@ -244,7 +244,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
 
         // Act
@@ -287,7 +287,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromDays(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
         
         // Act
@@ -334,7 +334,7 @@ public class BorrowDocumentTests : BaseClassFixture
             DocumentId = document.Id,
             BorrowFrom = DateTime.Now.AddHours(1),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
-            Reason = "Example",
+            BorrowReason = "Example",
         };
         
         // Act

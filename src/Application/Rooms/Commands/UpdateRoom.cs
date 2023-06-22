@@ -1,11 +1,15 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Rooms.Commands;
 
@@ -30,21 +34,25 @@ public class UpdateRoom
     }
     public record Command : IRequest<RoomDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid RoomId { get; init; }
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, RoomDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
@@ -52,6 +60,7 @@ public class UpdateRoom
             var room = await _context.Rooms
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.RoomId), cancellationToken: cancellationToken);
           
             if (room is null)
@@ -59,12 +68,7 @@ public class UpdateRoom
                 throw new KeyNotFoundException("Room does not exist.");
             }
             
-            var nameExisted = await _context.Rooms.AnyAsync(x => x.Name
-                .ToLower().Equals(request.Name.ToLower())
-                && x.Id != room.Id
-                , cancellationToken: cancellationToken);
-
-            if (nameExisted)
+            if (await DuplicatedNameRoomExistsAsync(request.Name, request.RoomId, cancellationToken))
             {
                 throw new ConflictException("Name has already exists.");
             }
@@ -74,26 +78,40 @@ public class UpdateRoom
                 throw new ConflictException("New capacity cannot be less than current number of lockers.");
             }
 
-            var updatedRoom = new Room
-            {
-                Id = room.Id,
-                Name = request.Name,
-                Description = request.Description,
-                Staff = room.Staff,
-                Department = room.Department,
-                DepartmentId = room.DepartmentId,
-                Capacity = request.Capacity,
-                NumberOfLockers = room.NumberOfLockers,
-                IsAvailable = room.IsAvailable,
-                Lockers = room.Lockers
-            };
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
-            _context.Rooms.Entry(room).State = EntityState.Detached;
-            _context.Rooms.Entry(updatedRoom).State = EntityState.Modified;
+            // update work
+            room.Name = request.Name;
+            room.Description = request.Description;
+            room.Capacity = request.Capacity;
+            room.IsAvailable = request.IsAvailable;
+            room.LastModified = localDateTimeNow;
+            room.LastModifiedBy = request.CurrentUser.Id;
             
+            var log = new RoomLog()
+            {
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                ObjectId = room.Id,
+                Time = localDateTimeNow,
+                Action = RoomLogMessage.Update,
+            };
+            _context.Rooms.Entry(room).State = EntityState.Modified;
+            await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            
-            return _mapper.Map<RoomDto>(updatedRoom);
+            return _mapper.Map<RoomDto>(room);
+        }
+        
+        private async Task<bool> DuplicatedNameRoomExistsAsync(
+            string roomName,
+            Guid roomId,
+            CancellationToken cancellationToken)
+        {
+            var room = await _context.Rooms.FirstOrDefaultAsync(
+                x => x.Name.Trim().ToLower().Equals(roomName.Trim().ToLower())
+                     && x.Id != roomId,
+                cancellationToken);
+            return room is not null;
         }
     }
 }

@@ -9,6 +9,7 @@ public class User : BaseAuditableEntity
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string PasswordHash { get; set; } = null!;
+    public string PasswordSalt { get; set; } = null!;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public Department? Department { get; set; }

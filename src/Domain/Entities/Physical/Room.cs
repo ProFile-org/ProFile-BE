@@ -2,7 +2,7 @@ using Domain.Common;
 
 namespace Domain.Entities.Physical;
 
-public class Room : BaseEntity
+public class Room : BaseAuditableEntity
 {
     public string Name { get; set; } = null!;
     public string? Description { get; set; }

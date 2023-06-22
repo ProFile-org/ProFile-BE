@@ -8,7 +8,7 @@ public class AddStaffRequest
     /// <summary>
     /// User id of the new staff
     /// </summary>
-    public Guid UserId { get; init; }
+    public Guid StaffId { get; init; }
     /// <summary>
     /// Id of the room this staff will be in
     /// </summary>

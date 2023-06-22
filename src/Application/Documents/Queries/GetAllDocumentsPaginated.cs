@@ -6,6 +6,9 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Domain.Entities;
+using Domain.Entities.Physical;
+using Domain.Statuses;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +32,9 @@ public class GetAllDocumentsPaginated
 
     public record Query : IRequest<PaginatedList<DocumentDto>>
     {
+        public User CurrentUser { get; init; } = null!;
+        public Guid? CurrentStaffRoomId { get; init; }
+        public Guid? UserId { get; init; }
         public Guid? RoomId { get; init; }
         public Guid? LockerId { get; init; }
         public Guid? FolderId { get; init; }
@@ -37,6 +43,9 @@ public class GetAllDocumentsPaginated
         public int? Size { get; init; }
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
+        public string? DocumentStatus { get; init; }
+        public string? Role { get; init; }
+        public bool? IsPrivate { get; init; }
     }
 
     public class QueryHandler : IRequestHandler<Query, PaginatedList<DocumentDto>>
@@ -50,9 +59,21 @@ public class GetAllDocumentsPaginated
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<DocumentDto>> Handle(Query request,
-            CancellationToken cancellationToken)
+        public async Task<PaginatedList<DocumentDto>> Handle(Query request, CancellationToken cancellationToken)
         {
+            if (request.CurrentUser.Role.IsStaff())
+            {
+                if (request.RoomId is null)
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
+
+                if (request.RoomId != request.CurrentStaffRoomId)
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
+            }
+            
             var documents = _context.Documents.AsQueryable();
             var roomExists = request.RoomId is not null;
             var lockerExists = request.LockerId is not null;
@@ -61,9 +82,29 @@ public class GetAllDocumentsPaginated
             documents = documents
                 .Include(x => x.Department)
                 .Include(x => x.Folder)
-                .ThenInclude(y => y.Locker)
-                .ThenInclude(z => z.Room)
-                .ThenInclude(t => t.Department);
+                .ThenInclude(y => y!.Locker)
+                .ThenInclude(z => z.Room);
+
+            if (request.DocumentStatus is not null 
+                && Enum.TryParse(request.DocumentStatus, true, out DocumentStatus status))
+            {
+                documents = documents.Where(x => x.Status == status);
+            }
+            
+            if (request.IsPrivate is not null)
+            {
+                documents = documents.Where(x => x.IsPrivate == request.IsPrivate);
+            }
+
+            if (request.UserId is not null)
+            {
+                documents = documents.Where(x => x.Importer!.Id == request.UserId);
+            }
+            
+            if (request.Role is not null)
+            {
+                documents = documents.Where(x => x.Importer!.Role.ToLower().Equals(request.Role.Trim().ToLower()));
+            }
 
             if (folderExists)
             {
@@ -123,24 +164,14 @@ public class GetAllDocumentsPaginated
                     x.Title.ToLower().Contains(request.SearchTerm.ToLower()));
             }
 
-            var sortBy = request.SortBy;
-            if (sortBy is null || !sortBy.MatchesPropertyName<DocumentDto>())
-            {
-                sortBy = nameof(DocumentDto.Id);
-            }
-            var sortOrder = request.SortOrder ?? "asc";
-            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
-            
-            var count = await documents.CountAsync(cancellationToken);
-            var list  = await documents
-                .OrderByCustom(sortBy, sortOrder)
-                .Paginate(pageNumber.Value, sizeNumber.Value)
-                .ToListAsync(cancellationToken);
-            
-            var result = _mapper.Map<List<DocumentDto>>(list);
-
-            return new PaginatedList<DocumentDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            return await documents
+                .ListPaginateWithSortAsync<Document, DocumentDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }

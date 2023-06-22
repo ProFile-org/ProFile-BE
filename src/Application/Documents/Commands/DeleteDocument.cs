@@ -1,8 +1,12 @@
 using Application.Common.Interfaces;
+using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Logging;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Documents.Commands;
 
@@ -10,6 +14,7 @@ public class DeleteDocument
 {
     public record Command : IRequest<DocumentDto>
     {
+        public User CurrentUser { get; init; } = null!; 
         public Guid DocumentId { get; init; }
     }
     
@@ -17,33 +22,44 @@ public class DeleteDocument
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var document = await _context.Documents
                 .Include( x => x.Folder)
-                .FirstOrDefaultAsync(x => x.Id.Equals(request.DocumentId), cancellationToken);
+                .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
 
             if (document is null)
             {
                 throw new KeyNotFoundException("Document does not exist.");
             }
 
-            var folder = document.Folder;
-            var result = _context.Documents.Remove(document);
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
-            if (folder is not null)
+            if (document.Folder is not null)
             {
-                folder.NumberOfDocuments -= 1;
-                _context.Folders.Update(folder);
+                document.Folder.NumberOfDocuments -= 1;
+                _context.Folders.Update(document.Folder);
             }
             
+            var log = new DocumentLog()
+            {
+                ObjectId = document.Id,
+                Time = localDateTimeNow,
+                User = request.CurrentUser,
+                UserId = request.CurrentUser.Id,
+                Action = DocumentLogMessages.Delete,
+            };
+            var result = _context.Documents.Remove(document);
+            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(result.Entity);
         }

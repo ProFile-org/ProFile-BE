@@ -174,6 +174,8 @@ public class BaseClassFixture
 
     protected static User CreateUser(string role, string password)
     {
+        var salt = StringUtil.RandomSalt();
+        
         return new User()
         {
             Id = Guid.NewGuid(),
@@ -186,7 +188,8 @@ public class BaseClassFixture
             IsActivated = true,
             IsActive = true,
             Created = LocalDateTime.FromDateTime(DateTime.Now),
-            PasswordHash = SecurityUtil.Hash(password)
+            PasswordHash = password.HashPasswordWith(salt, "random pepper"),
+            PasswordSalt = salt
         };
     }
 
@@ -239,7 +242,7 @@ public class BaseClassFixture
             Id = Guid.NewGuid(),
             Borrower = borrower,
             Document = document,
-            Reason = "something something",
+            BorrowReason = "something something",
             Status = status,
             BorrowTime = LocalDateTime.FromDateTime(DateTime.Now),
             DueTime = LocalDateTime.FromDateTime(DateTime.Now + TimeSpan.FromDays(1))
