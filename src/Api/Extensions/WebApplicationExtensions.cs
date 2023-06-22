@@ -1,3 +1,4 @@
+using Api.Common;
 using Api.Middlewares;
 using Infrastructure.Persistence;
 using Serilog;
@@ -18,7 +19,7 @@ public static class WebApplicationExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
             
-            app.UseCors("AllowAllOrigins");
+            app.UseCors(CORSPolicy.Development);
             
             app.MigrateDatabase<ApplicationDbContext>((context, _) =>
             {
@@ -30,6 +31,15 @@ public static class WebApplicationExtensions
         {
             app.MigrateDatabase<ApplicationDbContext>((_, _) =>
             {
+            });
+        }
+
+        if (app.Environment.IsEnvironment("Production"))
+        {
+            app.UseCors(CORSPolicy.Production);
+            app.MigrateDatabase<ApplicationDbContext>((_, _) =>
+            {
+                // TODO: should only generate admin account 
             });
         }
 
