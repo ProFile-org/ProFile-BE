@@ -38,7 +38,7 @@ public class UpdateUserGroup
             }
 
             var existedUserGroup = await _context.UserGroups
-                .FirstOrDefaultAsync(x => x.Name.Equals(request.Name) 
+                .FirstOrDefaultAsync(x => x.Name.ToLower().Trim().Equals(request.Name.ToLower().Trim()) 
                                           && x.Id != userGroup.Id, cancellationToken);
 
             if (existedUserGroup is not null)
@@ -49,7 +49,7 @@ public class UpdateUserGroup
             var updatedUserGroup = new UserGroup()
             {
                 Id = userGroup.Id,
-                Name = request.Name,
+                Name = request.Name.Trim(),
                 Users = userGroup.Users,
             };
             
