@@ -244,10 +244,12 @@ public class BorrowsController : ApiControllerBase
         {
             BorrowId = borrowId,
         };
-        
+
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
-    
+
+    }
+
     /// <summary>
     /// Get all logs related to requests.
     /// </summary>

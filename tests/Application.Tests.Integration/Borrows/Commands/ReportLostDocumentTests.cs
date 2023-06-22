@@ -91,7 +91,7 @@ public class ReportLostDocumentTests : BaseClassFixture
         {
             BorrowerId = user1.Id,
             DocumentId = document.Id,
-            Reason = "There's a reason that we came across in this world",
+            BorrowReason = "There's a reason that we came across in this world",
             BorrowFrom = DateTime.Now + TimeSpan.FromDays(2),
             BorrowTo = DateTime.Now + TimeSpan.FromDays(3),
         };
@@ -102,7 +102,7 @@ public class ReportLostDocumentTests : BaseClassFixture
         {
             BorrowerId = user2.Id,
             DocumentId = document.Id,
-            Reason = "There's a reason that we caught the magnetic wave",
+            BorrowReason = "There's a reason that we caught the magnetic wave",
             BorrowFrom = DateTime.Now + TimeSpan.FromDays(4),
             BorrowTo = DateTime.Now + TimeSpan.FromDays(6),
         };
