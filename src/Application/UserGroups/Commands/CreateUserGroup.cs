@@ -41,7 +41,7 @@ public class CreateUserGroup
 
         public async Task<UserGroupDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(x => x.Name.ToLower().Trim().Equal(request.Name.ToLower().Trim()), cancellationToken);
+            var userGroup = await _context.UserGroups.FirstOrDefaultAsync(x => x.Name.ToLower().Trim().Equals(request.Name.ToLower().Trim()), cancellationToken);
 
             if (userGroup is not null)
             {
