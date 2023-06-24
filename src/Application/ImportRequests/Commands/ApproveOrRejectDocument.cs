@@ -1,15 +1,18 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.ImportRequests.Commands;
@@ -40,12 +43,18 @@ public class ApproveOrRejectDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<ApproveOrRejectDocument> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(
+            IApplicationDbContext context,
+            IMapper mapper,
+            IDateTimeProvider dateTimeProvider,
+            ILogger<ApproveOrRejectDocument> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<ImportRequestDto> Handle(Command request, CancellationToken cancellationToken)
@@ -114,6 +123,12 @@ public class ApproveOrRejectDocument
                 importRequest.Status = ImportRequestStatus.Approved;
                 log.Action = DocumentLogMessages.Import.Approve;
                 requestLog.Action = RequestLogMessages.ApproveImport;
+
+                using (Logging.PushProperties(nameof(ImportRequest), importRequest.Id, request.CurrentUser.Id))
+                {
+                    _logger.LogApproveImportRequest(importRequest.Id.ToString());
+                    _logger.LogApproveImportRequestForDocument(document.Id.ToString());
+                }
             }
 
             if (request.Decision.IsRejection())
@@ -121,6 +136,12 @@ public class ApproveOrRejectDocument
                 importRequest.Status = ImportRequestStatus.Rejected;
                 log.Action = DocumentLogMessages.Import.Reject;
                 requestLog.Action = RequestLogMessages.RejectImport;
+
+                using (Logging.PushProperties(nameof(ImportRequest), importRequest.Id, request.CurrentUser.Id))
+                {
+                    _logger.LogRejectImportRequest(importRequest.Id.ToString());
+                    _logger.LogApproveImportRequestForDocument(document.Id.ToString());
+                }
             }
 
             importRequest.StaffReason = request.StaffReason;

@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -10,6 +11,7 @@ using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Lockers.Commands;

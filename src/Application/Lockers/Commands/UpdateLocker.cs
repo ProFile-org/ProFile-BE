@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -10,6 +11,7 @@ using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Lockers.Commands;
@@ -47,12 +49,13 @@ public class UpdateLocker
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        private readonly ILogger<CommandHandler> _logger;
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CommandHandler> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
@@ -86,6 +89,8 @@ public class UpdateLocker
             locker.LastModified = localDateTimeNow;
             locker.LastModifiedBy = request.CurrentUser.Id;
             
+
+
             var log = new LockerLog()
             {
                 User = request.CurrentUser,
@@ -97,6 +102,12 @@ public class UpdateLocker
             var result = _context.Lockers.Update(locker);
             await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
+            // {
+            //     _logger.LogUpdateLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
+            // }
+
             return _mapper.Map<LockerDto>(result.Entity);
         }
         

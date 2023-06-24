@@ -7,8 +7,8 @@ public static class DocumentLogMessages
         public const string NewImport = "Imported new document";
         public const string NewImportRequest = "Created new import request";
         public const string Checkin = "Checked in document";
-        public const string Approve = "Document is approved to be imported";
-        public const string Reject = "Rejected import request";
+        public const string Approve = "Document with id {DocumentId} is approved to be imported";
+        public const string Reject = "Document with id {DocumentId} is rejected to be imported";
         public const string Assign = "Assigned to a folder";
     }
     public static class Borrow

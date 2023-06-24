@@ -2,7 +2,7 @@ namespace Application.Common.Messages;
 
 public static class UserLogMessages
 {
-    public static string Add(string role) => $"Added user with role {role}";
+    public const string Add = "Added user {Username} with email {Email} of role {Role}";
     public const string Update = "Updated user";
     public const string Disable = "Disabled user";
 
