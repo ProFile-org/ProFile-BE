@@ -1,8 +1,10 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
+using Application.ImportRequests;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Logging;
@@ -10,6 +12,7 @@ using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Documents.Commands;
@@ -33,12 +36,14 @@ public class ImportDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<ImportDocument> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<ImportDocument> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
@@ -123,6 +128,14 @@ public class ImportDocument
             _context.Folders.Update(folder);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Document), result.Entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogImportDocument(result.Entity.Id.ToString());
+            }
+            using (Logging.PushProperties(nameof(Folder), folder.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAssignDocumentToFolder(result.Entity.Id.ToString());
+            }
             return _mapper.Map<DocumentDto>(result.Entity);
         }
     }

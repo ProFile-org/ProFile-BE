@@ -49,8 +49,8 @@ public class UpdateLocker
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<CommandHandler> _logger;
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CommandHandler> logger)
+        private readonly ILogger<UpdateLocker> _logger;
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UpdateLocker> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -103,10 +103,10 @@ public class UpdateLocker
             await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
-            // {
-            //     _logger.LogUpdateLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
-            // }
+            using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
+            {
+                _logger.LogUpdateLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
+            }
 
             return _mapper.Map<LockerDto>(result.Entity);
         }

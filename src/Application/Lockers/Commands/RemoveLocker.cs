@@ -39,9 +39,9 @@ public class RemoveLocker
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<CommandHandler> _logger;
+        private readonly ILogger<RemoveLocker> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CommandHandler> logger)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RemoveLocker> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -84,10 +84,10 @@ public class RemoveLocker
             _context.Rooms.Update(room);
             await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            // using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
-            // {
-            //     _logger.LogRemoveLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
-            // }
+            using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
+            {
+                _logger.LogRemoveLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
+            }
             return _mapper.Map<LockerDto>(result.Entity);
         }
     }

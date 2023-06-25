@@ -1,22 +1,20 @@
-﻿using Application.Common.Extensions;
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
-using Application.Common.Models.Dtos.Logging;
-using Application.Common.Models.Dtos.Physical;
 using Application.Users.Queries;
 using AutoMapper;
-using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Borrows.Queries;
+namespace Application.Logs.Queries;
 
-public class GetAllRequestLogsPaginated
+public class GetAllLogsPaginated
 {
     public record Query : IRequest<PaginatedList<LogDto>>
     {
-        public Guid? BorrowRequestId { get; set; }
+        public Guid? ObjectId { get; init; }
+        public string? ObjectType { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -35,30 +33,32 @@ public class GetAllRequestLogsPaginated
 
         public async Task<PaginatedList<LogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var logs = _context.Logs
-                .Where(x => x.ObjectType!.Equals("BorrowRequest"))
-                .AsQueryable();
+            var logs = _context.Logs.AsQueryable();
 
-            if (request.BorrowRequestId is not null)
+            if (request.ObjectType is not null)
             {
-                logs = logs.Where(x => x.ObjectId! == request.BorrowRequestId);
+                logs = logs.Where(x => x.ObjectType!.Equals(request.ObjectType));
+            }
+
+            if (request.ObjectId is not null)
+            {
+                logs = logs.Where(x => x.ObjectId! == request.ObjectId);
             }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
-                logs = logs.Where(x =>
-                    x.Message!.ToLower().Contains(request.SearchTerm.Trim().ToLower()));
+                logs = logs.Where(x => x.Message!.Contains(request.SearchTerm.Trim().ToLower()));
             }
-
+            
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
             var sizeNumber = request.Size is null or <= 0 ? 10 : request.Size;
-
+            
             var count = await logs.CountAsync(cancellationToken);
             var list  = await logs
                 .OrderByDescending(x => x.Time!)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
-
+            
             var result = list.Select(x => new LogDto()
                 {
                     Id = x.Id,
@@ -72,8 +72,8 @@ public class GetAllRequestLogsPaginated
                     Time = x.Time?.ToDateTimeUtc(),
                 })
                 .ToList();
-
-                return new PaginatedList<LogDto>(result, count, pageNumber.Value, sizeNumber.Value);
+            
+            return new PaginatedList<LogDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

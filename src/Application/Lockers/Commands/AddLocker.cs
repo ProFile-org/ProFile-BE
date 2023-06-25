@@ -53,17 +53,21 @@ public class AddLocker
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<AddLocker> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<AddLocker> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var room = await _context.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+            var room = await _context.Rooms
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
 
             if (room is null)
             {
@@ -94,6 +98,8 @@ public class AddLocker
                 CreatedBy = request.CurrentUser.Id,
             };
             
+            var result = await _context.Lockers.AddAsync(entity, cancellationToken);
+           
             var log = new LockerLog()
             {
                 User = request.CurrentUser,
@@ -102,11 +108,14 @@ public class AddLocker
                 Time = localDateTimeNow,
                 Action = LockerLogMessage.Add,
             };
-            var result = await _context.Lockers.AddAsync(entity, cancellationToken);
             room.NumberOfLockers += 1;
             _context.Rooms.Update(room);
             await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Locker), result.Entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAddLocker(result.Entity.Id.ToString(), room.Id.ToString(), room.Department.Name);
+            }
             return _mapper.Map<LockerDto>(result.Entity);
         }
 

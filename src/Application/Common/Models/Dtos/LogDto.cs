@@ -8,9 +8,9 @@ public class LogDto {
     public string? Template { get; set; }
     public string? Message { get; set; }
     public string? Level { get; set; }
-    public Instant? Time { get; set; }
+    public DateTime? Time { get; set; }
     public string? Event { get; set; }
     public UserDto? User { get; set; }
-    public BaseDto? Object { get; set; }
+    public Guid? ObjectId { get; set; }
     public string? ObjectType { get; set; }
 }

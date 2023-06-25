@@ -1,9 +1,7 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
@@ -279,27 +277,5 @@ public class DocumentsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all log of document
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllDocumentLogsPaginated.Query()
-        {
-            DocumentId = queryParameters.ObjectId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };        
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
     }
 }

@@ -45,11 +45,7 @@ public class ApproveOrRejectDocument
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ILogger<ApproveOrRejectDocument> _logger;
 
-        public CommandHandler(
-            IApplicationDbContext context,
-            IMapper mapper,
-            IDateTimeProvider dateTimeProvider,
-            ILogger<ApproveOrRejectDocument> logger)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<ApproveOrRejectDocument> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -124,10 +120,13 @@ public class ApproveOrRejectDocument
                 log.Action = DocumentLogMessages.Import.Approve;
                 requestLog.Action = RequestLogMessages.ApproveImport;
 
+                using (Logging.PushProperties(nameof(Document), document.Id, request.CurrentUser.Id))
+                {
+                    _logger.LogApproveImportRequestForDocument(document.Id.ToString());
+                }
                 using (Logging.PushProperties(nameof(ImportRequest), importRequest.Id, request.CurrentUser.Id))
                 {
                     _logger.LogApproveImportRequest(importRequest.Id.ToString());
-                    _logger.LogApproveImportRequestForDocument(document.Id.ToString());
                 }
             }
 
@@ -137,10 +136,13 @@ public class ApproveOrRejectDocument
                 log.Action = DocumentLogMessages.Import.Reject;
                 requestLog.Action = RequestLogMessages.RejectImport;
 
+                using (Logging.PushProperties(nameof(Document), document.Id, request.CurrentUser.Id))
+                {
+                    _logger.LogRejectImportRequestForDocument(document.Id.ToString());
+                }
                 using (Logging.PushProperties(nameof(ImportRequest), importRequest.Id, request.CurrentUser.Id))
                 {
                     _logger.LogRejectImportRequest(importRequest.Id.ToString());
-                    _logger.LogApproveImportRequestForDocument(document.Id.ToString());
                 }
             }
 

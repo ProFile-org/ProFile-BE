@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using Application.Common.Models.Operations;
@@ -9,6 +10,7 @@ using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Documents.Commands;
@@ -31,13 +33,15 @@ public class ShareDocument
         private readonly IMapper _mapper;
         private readonly IPermissionManager _permissionManager;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<ShareDocument> _logger;
 
-        public CommandHandler(IApplicationDbContext applicationDbContext, IMapper mapper, IPermissionManager permissionManager, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext applicationDbContext, IMapper mapper, IPermissionManager permissionManager, IDateTimeProvider dateTimeProvider, ILogger<ShareDocument> logger)
         {
             _applicationDbContext = applicationDbContext;
             _mapper = mapper;
             _permissionManager = permissionManager;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
@@ -79,8 +83,8 @@ public class ShareDocument
                 Action = string.Empty,
             };
 
-            await HandlePermissionGrantOrRevoke(request.CanRead, document, DocumentOperation.Read, user, request.ExpiryDate.ToLocalTime(), cancellationToken, log);
-            await HandlePermissionGrantOrRevoke(request.CanBorrow, document, DocumentOperation.Borrow, user, request.ExpiryDate.ToLocalTime(), cancellationToken, log);
+            await HandlePermissionGrantOrRevoke(request.CanRead, document, DocumentOperation.Read, user, request.ExpiryDate.ToLocalTime(), request.CurrentUser.Id, cancellationToken);
+            await HandlePermissionGrantOrRevoke(request.CanBorrow, document, DocumentOperation.Borrow, user, request.ExpiryDate.ToLocalTime(), request.CurrentUser.Id, cancellationToken);
 
             if (!string.IsNullOrEmpty(log.Action))
             {
@@ -96,19 +100,19 @@ public class ShareDocument
             DocumentOperation operation,
             User user,
             DateTime expiryDate,
-            CancellationToken cancellationToken,
-            DocumentLog log)
+            Guid currentUserId,
+            CancellationToken cancellationToken)
         {
             var isGranted = _permissionManager.IsGranted(document.Id, operation, user.Id);
 
             if (canPerformAction && !isGranted)
             {
-                await GrantPermission(document, operation, user, expiryDate, log, cancellationToken);
+                await GrantPermission(document, operation, user, expiryDate, currentUserId, cancellationToken);
             }
 
             if (!canPerformAction && isGranted)
             {
-                await RevokePermission(document, operation, user, log, cancellationToken);
+                await RevokePermission(document, operation, user, currentUserId, cancellationToken);
             }
         }
 
@@ -117,36 +121,52 @@ public class ShareDocument
             DocumentOperation operation,
             User user,
             DateTime expiryDate,
-            DocumentLog log,
+            Guid currentUserId,
             CancellationToken cancellationToken)
         {
             await _permissionManager.GrantAsync(document, operation, new[] { user }, expiryDate, cancellationToken);
 
             // log
-            log.Action = operation switch
+            using (Logging.PushProperties(nameof(Document), document.Id, currentUserId))
             {
-                DocumentOperation.Read => DocumentLogMessages.GrantRead(user.Username),
-                DocumentOperation.Borrow => DocumentLogMessages.GrantBorrow(user.Username),
-                _ => log.Action
-            };
+                switch(operation)
+                {
+                    case DocumentOperation.Read:
+                        _logger.LogGrantPermission(DocumentOperation.Read.ToString(), user.Username);
+                        break;
+                    case DocumentOperation.Borrow:
+                        _logger.LogGrantPermission(DocumentOperation.Borrow.ToString(), user.Username);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         private async Task RevokePermission(
             Document document,
             DocumentOperation operation,
             User user,
-            DocumentLog log,
+            Guid currentUserId,
             CancellationToken cancellationToken)
         {
             await _permissionManager.RevokeAsync(document.Id, operation, new[] { user.Id }, cancellationToken);
 
             // log
-            log.Action = operation switch
+            using (Logging.PushProperties(nameof(Document), document.Id, currentUserId))
             {
-                DocumentOperation.Read => DocumentLogMessages.RevokeRead(user.Username),
-                DocumentOperation.Borrow => DocumentLogMessages.RevokeBorrow(user.Username),
-                _ => log.Action
-            };
+                switch(operation)
+                {
+                    case DocumentOperation.Read:
+                        _logger.LogRevokePermission(DocumentOperation.Read.ToString(), user.Username);
+                        break;
+                    case DocumentOperation.Borrow:
+                        _logger.LogRevokePermission(DocumentOperation.Borrow.ToString(), user.Username);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }

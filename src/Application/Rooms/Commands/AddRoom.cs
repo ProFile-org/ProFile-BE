@@ -102,13 +102,6 @@ public class AddRoom
             };
 
             var result = await _context.Rooms.AddAsync(entity, cancellationToken);
-            
-            using (LogContext.PushProperty("ObjectType", nameof(Room)))
-            using (LogContext.PushProperty("ObjectId", entity.Id.ToString()))
-            using (LogContext.PushProperty("UserId", request.CurrentUser.Id.ToString()))
-            {
-                _logger.LogInformation(RoomLogMessage.Add, result.Entity.Id.ToString(), result.Entity.Department.Name);
-            }
 
             var log = new RoomLog()
             {
@@ -119,9 +112,9 @@ public class AddRoom
                 Action = RoomLogMessage.Add,
             };
 
-            using (Logging.PushProperties(nameof(User), entity.Id, request.CurrentUser.Id))
+            using (Logging.PushProperties(nameof(Room), entity.Id, request.CurrentUser.Id))
             {
-                _logger.LogAddRoom(result.Entity.Id.ToString(), result.Entity.Department.Name);
+                _logger.LogAddRoom(result.Entity.Id.ToString(), department.Name);
             }
 
             await _context.RoomLogs.AddAsync(log, cancellationToken);
