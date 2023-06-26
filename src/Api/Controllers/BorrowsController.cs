@@ -236,6 +236,7 @@ public class BorrowsController : ApiControllerBase
     /// </summary>
     /// <param name="borrowId">Id of the borrow request to be reported</param>
     /// <returns>A BorrowDto of the cancelled borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Staff)]
     [HttpPost("lost/{borrowId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<BorrowDto>>> LostReport([FromRoute] Guid borrowId)
