@@ -104,6 +104,12 @@ public class AddUser
                 throw new KeyNotFoundException("Department does not exist.");
             }
 
+            if (!request.Role.Trim().Equals(IdentityData.Roles.Staff) &&
+                !request.Role.Trim().Equals(IdentityData.Roles.Employee))
+            {
+                throw new ConflictException("Invalid role provided.");
+            }
+
             var password = StringUtil.RandomPassword();
             var salt = StringUtil.RandomSalt();
             
