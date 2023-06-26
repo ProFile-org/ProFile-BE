@@ -240,8 +240,10 @@ public class BorrowsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<Result<BorrowDto>>> LostReport([FromRoute] Guid borrowId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new ReportLostDocument.Command()
         {
+            CurrentUser = currentUser,
             BorrowId = borrowId,
         };
 

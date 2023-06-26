@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,9 @@ public class ReportLostDocument
 {
     public record Command : IRequest<BorrowDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid BorrowId { get; init; }
+        
     }
     
     public class CommandHander : IRequestHandler<Command, BorrowDto>
@@ -31,11 +34,36 @@ public class ReportLostDocument
             var borrowRequest = await _context.Borrows
                 .Include(x => x.Borrower)
                 .Include(x => x.Document)
+                .ThenInclude(x => x.Folder!)
+                .ThenInclude(x => x.Locker)
+                .ThenInclude(x => x.Room)
                 .FirstOrDefaultAsync(x => x.Id == request.BorrowId, cancellationToken);
+            
+            
             
             if (borrowRequest is null)
             {
                 throw new KeyNotFoundException("Borrow request does not exist.");
+            }
+
+            var staff = await _context.Staffs
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == request.CurrentUser.Id, cancellationToken);
+            
+            if (staff is null)
+            {
+                throw new KeyNotFoundException("Staff does not exist.");
+            }
+            
+            if (staff.Room is null)
+            {
+                throw new ConflictException("Staff does not have a room.");
+            }
+            
+            // Staff cant report lost documents from other department 
+            if (staff.Room.Id != borrowRequest.Document.Folder!.Locker.Room.Id)
+            {
+                throw new ConflictException("Request cannot be checked out due to different room.");
             }
 
             if (borrowRequest.Document.Status is not DocumentStatus.Borrowed)
