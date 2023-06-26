@@ -33,7 +33,6 @@ public class AddRoom
                 .Must(BeUnique).WithMessage("Room name already exists.");
         
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Description is required.")
                 .MaximumLength(256).WithMessage("Description cannot exceed 256 characters.");
         }
 
@@ -45,7 +44,7 @@ public class AddRoom
     
     public record Command : IRequest<RoomDto>
     {
-        public User CurrentUser { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
