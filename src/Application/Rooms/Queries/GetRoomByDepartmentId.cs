@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using AutoMapper;
@@ -30,7 +31,7 @@ public class GetRoomByDepartmentId
             var room = await _context.Rooms
                 .Include(x => x.Department)
                 .Include(x => x.Staff)
-                .FirstOrDefaultAsync(x => x.DepartmentId == request.DepartmentId, cancellationToken: cancellationToken);
+                .FirstOrDefaultAsync(x => x.DepartmentId == request.DepartmentId, cancellationToken);
             
             if (room is null)
             {
