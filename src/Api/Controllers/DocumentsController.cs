@@ -122,7 +122,6 @@ public class DocumentsController : ApiControllerBase
     /// Get all document types
     /// </summary>
     /// <returns>A list of document types</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
