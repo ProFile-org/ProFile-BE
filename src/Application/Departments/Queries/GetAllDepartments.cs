@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using AutoMapper;
 using MediatR;
@@ -9,9 +10,9 @@ namespace Application.Departments.Queries;
 
 public class GetAllDepartments
 {
-    public record Query : IRequest<IEnumerable<DepartmentDto>>;
+    public record Query : IRequest<ItemsResult<DepartmentDto>>;
 
-    public class QueryHandler : IRequestHandler<Query, IEnumerable<DepartmentDto>>
+    public class QueryHandler : IRequestHandler<Query, ItemsResult<DepartmentDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -22,11 +23,12 @@ public class GetAllDepartments
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<DepartmentDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<ItemsResult<DepartmentDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var departments = await _context.Departments
                 .ToListAsync(cancellationToken);
-            var result = new ReadOnlyCollection<DepartmentDto>(_mapper.Map<List<DepartmentDto>>(departments));
+            var result = new ItemsResult<DepartmentDto>(
+                new ReadOnlyCollection<DepartmentDto>(_mapper.Map<List<DepartmentDto>>(departments)));
             return result;
         }
     } 

@@ -35,7 +35,7 @@ public class GetAllDepartmentsTests : BaseClassFixture
         var result = await SendAsync(query);
 
         // Assert
-        result.Should().ContainEquivalentOf(_mapper.Map<DepartmentDto>(department));
+        result.Items.Should().ContainEquivalentOf(_mapper.Map<DepartmentDto>(department));
         
         // Cleanup
         Remove(department);
@@ -51,6 +51,6 @@ public class GetAllDepartmentsTests : BaseClassFixture
         var result = await SendAsync(query);
 
         // Assert
-        result.Count().Should().Be(0);
+        result.Items.Count().Should().Be(0);
     }
 }

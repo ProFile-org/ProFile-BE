@@ -79,10 +79,10 @@ public class DepartmentsController : ApiControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
+    public async Task<ActionResult<Result<ItemsResult<DepartmentDto>>>> GetAll()
     {
         var result = await Mediator.Send(new GetAllDepartments.Query());
-        return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
+        return Ok(Result<ItemsResult<DepartmentDto>>.Succeed(result));
     }
     
     /// <summary>
