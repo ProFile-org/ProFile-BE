@@ -39,6 +39,9 @@ public class GetDocumentById
         public async Task<DocumentDto> Handle(Query request, CancellationToken cancellationToken)
         {
             var document = await _context.Documents
+                .Include(x => x.Folder)
+                .ThenInclude(x => x.Locker)
+                .ThenInclude(x => x.Room)
                 .Include(x => x.Department)
                 .Include(x => x.Importer)
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);

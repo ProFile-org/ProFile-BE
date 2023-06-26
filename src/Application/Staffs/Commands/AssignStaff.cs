@@ -47,6 +47,7 @@ public class AssignStaff
             
             var room = await _context.Rooms
                 .Include(x => x.Staff)
+                .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
             
             if (room is null)
@@ -62,6 +63,20 @@ public class AssignStaff
             if (room.Staff is not null)
             {
                 throw new ConflictException("Room already has a staff.");
+            }
+
+            var user = await _context.Users
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == staff.Id, cancellationToken);
+
+            if (user is null)
+            {
+                throw new KeyNotFoundException("User does not exist.");
+            }
+
+            if (room.Department.Id != user.Department!.Id)
+            {
+                throw new ConflictException("Room is in different department.");
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);

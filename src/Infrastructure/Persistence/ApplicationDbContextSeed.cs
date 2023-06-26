@@ -117,7 +117,7 @@ public class ApplicationDbContextSeed
                 staffUser.Department = itDepartment;
                 await context.Users.AddAsync(staffUser);
             }
-            if (context.Staffs.All(s => s.Id != staff.Id))
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
             {
                 await context.Staffs.AddAsync(staff);
             }
@@ -135,7 +135,7 @@ public class ApplicationDbContextSeed
                 staffUser.Department = itDepartment;
                 await context.Users.AddAsync(staffUser);
             }
-            if (context.Staffs.All(s => s.Id != staff.Id))
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
             {
                 await context.Staffs.AddAsync(staff);
             }
