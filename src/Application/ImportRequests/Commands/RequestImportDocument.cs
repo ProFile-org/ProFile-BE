@@ -41,10 +41,16 @@ public class RequestImportDocument
 
         public async Task<ImportRequestDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var document = _context.Documents.FirstOrDefault(x =>
-                x.Title.Trim().ToLower().Equals(request.Title.Trim().ToLower())
-                && x.Importer!.Id == request.Issuer.Id);
-            if (document is not null)
+            var documentRequest = await _context.ImportRequests
+                .Include(x => x.Document)
+                .ThenInclude(x => x.Importer)
+                .FirstOrDefaultAsync( x => 
+                x.Document.Title.Trim().ToLower().Equals(request.Title.Trim().ToLower())
+                && x.Document.Importer!.Id == request.Issuer.Id
+                && x.Status != ImportRequestStatus.Rejected
+                , cancellationToken);
+            
+            if (documentRequest is not null)
             {
                 throw new ConflictException($"Document title already exists for user {request.Issuer.FirstName}.");
             }
