@@ -81,6 +81,8 @@ public class AssignDocument
             importRequest.Document.Folder = folder;
             importRequest.Document.LastModified = localDateTimeNow;
             importRequest.Document.LastModifiedBy = request.CurrentUser.Id;
+            importRequest.Status = ImportRequestStatus.Assigned;
+          
             folder.NumberOfDocuments += 1;
             folder.LastModified = localDateTimeNow;
             folder.LastModifiedBy = request.CurrentUser.Id;
@@ -101,8 +103,8 @@ public class AssignDocument
                 UserId = request.CurrentUser.Id,
                 Action = FolderLogMessage.AssignDocument,
             };
-            _context.Documents.Update(importRequest.Document);
-
+            var result = _context.Documents.Update(importRequest.Document);
+            _context.Folders.Update(folder);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.FolderLogs.AddAsync(folderLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
@@ -114,7 +116,7 @@ public class AssignDocument
             {
                 _logger.LogAssignDocumentToFolder(importRequest.Document.Id.ToString());
             }
-            return _mapper.Map<ImportRequestDto>(importRequest);
+            return _mapper.Map<ImportRequestDto>(result.Entity);
         }
     }
 }

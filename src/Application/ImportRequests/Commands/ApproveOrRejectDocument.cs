@@ -133,6 +133,7 @@ public class ApproveOrRejectDocument
             if (request.Decision.IsRejection())
             {
                 importRequest.Status = ImportRequestStatus.Rejected;
+                _context.Documents.Remove(importRequest.Document);
                 log.Action = DocumentLogMessages.Import.Reject;
                 requestLog.Action = RequestLogMessages.RejectImport;
 

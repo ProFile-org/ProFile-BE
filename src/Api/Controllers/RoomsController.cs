@@ -62,6 +62,7 @@ public class RoomsController : ApiControllerBase
         {
             CurrentUser = currentUser,
             DepartmentId = queryParameters.DepartmentId,
+            IsAvailable = queryParameters.IsAvailable,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,

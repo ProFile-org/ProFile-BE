@@ -1,6 +1,7 @@
 using Application.Helpers;
 using Application.Identity;
 using Domain.Entities;
+using Domain.Entities.Physical;
 using Infrastructure.Shared;
 using Microsoft.Extensions.Configuration;
 using NodaTime;
@@ -50,7 +51,7 @@ public class ApplicationDbContextSeed
         };
         
         salt = StringUtil.RandomSalt();
-        var staff = new User()
+        var staffUser = new User()
         {
             Username = "staff", 
             Email = "staff@profile.dev", 
@@ -77,6 +78,12 @@ public class ApplicationDbContextSeed
             IsActivated = true,
             Created = LocalDateTime.FromDateTime(DateTime.UtcNow),
             Role = IdentityData.Roles.Employee,
+        };
+
+        var staff = new Staff()
+        {
+            User = staffUser,
+            Room = null,
         };
         
         if (context.Departments.All(u => u.Name != department.Name))
@@ -106,10 +113,14 @@ public class ApplicationDbContextSeed
                 employee.Department = itDepartment;
                 await context.Users.AddAsync(employee);
             }
-            if (context.Users.All(u => u.Username != staff.Username))
+            if (context.Users.All(u => u.Username != staffUser.Username))
             {
-                staff.Department = department;
-                await context.Users.AddAsync(staff);
+                staffUser.Department = itDepartment;
+                await context.Users.AddAsync(staffUser);
+            }
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
+            {
+                await context.Staffs.AddAsync(staff);
             }
         }
         else
@@ -120,10 +131,14 @@ public class ApplicationDbContextSeed
                 employee.Department = departmentEntity;
                 await context.Users.AddAsync(employee);
             }
-            if (context.Users.All(u => u.Username != staff.Username))
+            if (context.Users.All(u => u.Username != staffUser.Username))
             {
-                staff.Department = departmentEntity;
-                await context.Users.AddAsync(staff);
+                staffUser.Department = itDepartment;
+                await context.Users.AddAsync(staffUser);
+            }
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
+            {
+                await context.Staffs.AddAsync(staff);
             }
         }
 

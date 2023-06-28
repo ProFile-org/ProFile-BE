@@ -120,7 +120,7 @@ public class DocumentsController : ApiControllerBase
     /// Get all document types
     /// </summary>
     /// <returns>A list of document types</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -160,6 +160,7 @@ public class DocumentsController : ApiControllerBase
             DocumentType = request.DocumentType,
             FolderId = request.FolderId,
             ImporterId = request.ImporterId,
+            IsPrivate = request.IsPrivate,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
