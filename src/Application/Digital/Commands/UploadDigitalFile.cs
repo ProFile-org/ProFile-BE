@@ -7,6 +7,7 @@ using Domain.Entities.Digital;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace Application.Digital.Commands;
 
@@ -37,11 +38,13 @@ public class UploadDigitalFile {
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper; 
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public Handler(IApplicationDbContext context, IMapper mapper)
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
         
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
@@ -55,15 +58,19 @@ public class UploadDigitalFile {
                 throw new ConflictException("File already exists.");
             }
             
+            // Make this dynamic
             if (request.FileData.Length > 20971520)
             {
                 throw new ConflictException("File size must be lower than 20MB");
             }
             
+            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+            
             var fileEntity = new FileEntity()
             {
                 FileData = request.FileData.ToArray(),
                 FileType = request.FileType,
+                FileExtension = "",
             };
             
             var entryEntity = new Entry()
@@ -71,6 +78,8 @@ public class UploadDigitalFile {
                 Name = request.Name.Trim(),
                 Path = request.Path.Trim(),
                 File = fileEntity,
+                Uploader = request.CurrentUser,
+                Created = localDateTimeNow,
             };
             
             await _context.Files.AddAsync(fileEntity, cancellationToken);
