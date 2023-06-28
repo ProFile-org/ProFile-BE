@@ -48,7 +48,7 @@ public class UploadDigitalFile {
         {
             var fileEntry = await _context.Entries.FirstOrDefaultAsync(
                 x => x.Name.Trim().Equals(request.Name.Trim())
-                && x.Path.Trim().Equals(request.Name.Trim()), cancellationToken);
+                && x.Path.Trim().Equals(request.Path.Trim()), cancellationToken);
             
             if (fileEntry is not null)
             {
