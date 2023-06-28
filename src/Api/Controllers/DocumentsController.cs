@@ -162,6 +162,7 @@ public class DocumentsController : ApiControllerBase
             DocumentType = request.DocumentType,
             FolderId = request.FolderId,
             ImporterId = request.ImporterId,
+            IsPrivate = request.IsPrivate,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
