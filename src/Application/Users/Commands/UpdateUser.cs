@@ -1,5 +1,6 @@
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Identity;
 using Application.Users.Queries;
@@ -9,6 +10,7 @@ using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Users.Commands;
@@ -46,12 +48,14 @@ public class UpdateUser
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<UpdateUser> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UpdateUser> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
@@ -92,6 +96,10 @@ public class UpdateUser
             var result = _context.Users.Update(user);
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(User), result.Entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogUpdateUser(result.Entity.Username);
+            }
             return _mapper.Map<UserDto>(result.Entity);
         }
 

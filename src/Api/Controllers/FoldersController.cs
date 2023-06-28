@@ -1,9 +1,7 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Folders;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Folders.Commands;
 using Application.Folders.Queries;
@@ -163,28 +161,5 @@ public class FoldersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<FolderDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<FolderLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllFolderLogsPaginated.Query()
-        {
-            FolderId = queryParameters.ObjectId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<FolderLogDto>>.Succeed(result));    
     }
 }

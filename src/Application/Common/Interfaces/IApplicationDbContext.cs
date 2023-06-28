@@ -1,3 +1,4 @@
+using Application.Common.Models;
 using Domain.Entities;
 using Domain.Entities.Digital;
 using Domain.Entities.Logging;
@@ -18,12 +19,14 @@ public interface IApplicationDbContext
     public DbSet<Document> Documents { get; }
     public DbSet<ImportRequest> ImportRequests { get; }
     public DbSet<Borrow> Borrows { get; }
-    public DbSet<Permission?> Permissions { get; }
+    public DbSet<Permission> Permissions { get; }
     
     public DbSet<UserGroup> UserGroups { get; }
     public DbSet<FileEntity> Files { get; }
     public DbSet<Entry> Entries { get; }
     
+    public DbSet<Log> Logs { get; }
+
     public DbSet<RoomLog> RoomLogs { get; }
     public DbSet<LockerLog> LockerLogs { get; }
     public DbSet<FolderLog> FolderLogs { get; }

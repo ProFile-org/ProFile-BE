@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using AutoMapper;
@@ -9,6 +10,7 @@ using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.ImportRequests.Commands;
@@ -31,12 +33,14 @@ public class RequestImportDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<RequestImportDocument> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RequestImportDocument> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<ImportRequestDto> Handle(Command request, CancellationToken cancellationToken)
@@ -99,8 +103,16 @@ public class RequestImportDocument
                 Action = DocumentLogMessages.Import.NewImportRequest,
             };
             var result = await _context.ImportRequests.AddAsync(importRequest, cancellationToken);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
+            var documentEntry = await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Document), documentEntry.Entity.Id, request.Issuer.Id))
+            {
+                _logger.LogAddDocument(documentEntry.Entity.Id.ToString());
+            }
+            using (Logging.PushProperties(nameof(ImportRequest), importRequest.Id, request.Issuer.Id))
+            {
+                _logger.LogAddDocumentRequest(result.Entity.Id.ToString());
+            }
             return _mapper.Map<ImportRequestDto>(result.Entity);
         }
     }
