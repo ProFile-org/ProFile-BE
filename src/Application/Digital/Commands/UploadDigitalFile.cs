@@ -20,7 +20,7 @@ public class UploadDigitalFile {
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
             RuleFor(x => x.Path)
                 .NotEmpty().WithMessage("File's path is required.")
-                .Matches("^(/?[a-z_\\-\\s0-9]+)+$").WithMessage("Invalid path format.");
+                .Matches("^(/(?!/)[a-z_.\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
     
