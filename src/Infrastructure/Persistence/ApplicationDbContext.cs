@@ -32,7 +32,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<Borrow> Borrows => Set<Borrow>();
     public DbSet<Permission> Permissions => Set<Permission>();
     
-    public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<FileEntity> Files => Set<FileEntity>();
     public DbSet<Entry> Entries => Set<Entry>();
 
