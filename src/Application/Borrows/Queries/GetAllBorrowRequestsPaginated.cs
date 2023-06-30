@@ -58,29 +58,6 @@ public class GetAllBorrowRequestsPaginated
                 }
             }
 
-            if (request.CurrentUser.Role.IsEmployee())
-            {
-                if (request.RoomId is null)
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-
-                if (request.EmployeeId != request.CurrentUser.Id)
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource");
-                }
-
-                var room = await _context.Rooms
-                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
-                var roomDoesNotExist = room is null;
-
-                if (roomDoesNotExist
-                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-            }
-
             var borrows = _context.Borrows.AsQueryable();
 
             borrows = borrows
@@ -93,6 +70,24 @@ public class GetAllBorrowRequestsPaginated
                 .ThenInclude(t => t.Room)
                 .ThenInclude(s => s.Department);
 
+            if (request.CurrentUser.Role.IsEmployee())
+            {
+                borrows = borrows.Where(x => x.CreatedBy! == request.CurrentUser.Id);
+
+                if (request.RoomId is not null)
+                {
+                    var room = await _context.Rooms
+                        .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                    var roomDoesNotExist = room is null;
+
+                    if (roomDoesNotExist
+                        || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                    {
+                        throw new UnauthorizedAccessException("User can not access this resource.");
+                    }
+                }
+            }
+            
             if (request.RoomId is not null)
             {
                 borrows = borrows.Where(x => x.Document.Folder!.Locker.Room.Id == request.RoomId);
