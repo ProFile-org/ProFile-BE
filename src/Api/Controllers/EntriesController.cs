@@ -1,9 +1,11 @@
 using Api.Controllers.Payload.Requests.DigitalFile;
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Digital.Commands;
 using Application.Identity;
+using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,12 +34,18 @@ public class EntriesController  : ApiControllerBase
 
         if (request is { IsDirectory: true, File: not null })
         {
-            return BadRequest("Cannot create a directory with a file.");
+            throw new RequestValidationException(new List<ValidationFailure>()
+            {
+                new("File", "Cannot create a directory with a file.")
+            });
         }
 
         if (request is { IsDirectory: false, File: null })
         {
-            return BadRequest("Cannot upload with no files.");
+            throw new RequestValidationException(new List<ValidationFailure>()
+            {
+                new("File", "Cannot upload with no files.")
+            });
         }
 
         UploadDigitalFile.Command command;
