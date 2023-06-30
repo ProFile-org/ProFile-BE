@@ -203,16 +203,6 @@ public class BaseClassFixture
         };
     }
     
-    protected static UserGroup CreateUserGroup(User[] users)
-    {
-        return new UserGroup()
-        {
-            Id = Guid.NewGuid(),
-            Name = new Faker().Commerce.ProductName(),
-            Users = users,
-        };
-    }
-    
     protected static FileEntity CreateFile()
     {
         return new FileEntity()
