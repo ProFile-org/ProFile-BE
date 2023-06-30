@@ -13,7 +13,8 @@ public class EntryDto : BaseDto, IMapFrom<Entry>
     public string? FileType { get; set; }
     public string? FileExtension { get; set; }
     public bool IsDirectory { get; set; }
-    
+
+    public UserDto Owner { get; set; } = null!;
     public DateTime Created { get; set; }
     public Guid? CreatedBy { get; set; }
     public DateTime? LastModified { get; set; }
