@@ -3,36 +3,43 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Digital.Commands;
+using Application.Identity;
+using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-public class DigitalController  : ApiControllerBase
+public class FilesController  : ApiControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
 
-    public DigitalController(ICurrentUserService currentUserService)
+    public FilesController(ICurrentUserService currentUserService)
     {
         _currentUserService = currentUserService;
     }
     
-    
-    [HttpPost("upload")]
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [HttpPost]
     public async Task<ActionResult<Result<EntryDto>>> UploadDigitalFile(
         [FromForm] UploadDigitalFileRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         
-        var stream = new MemoryStream();
-        await request.File.CopyToAsync(stream);
+        var fileData = new MemoryStream();
+        await request.File.CopyToAsync(fileData);
         
         var command = new UploadDigitalFile.Command()
         {
             CurrentUser =  currentUser,
-            Path = request.Path,
+            Path = request.Directory,
             Name = request.File.FileName,
             FileType = request.File.ContentType,
-            FileData = stream,
+            FileData = fileData,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));

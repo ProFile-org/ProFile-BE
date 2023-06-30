@@ -26,7 +26,12 @@ public class EntryConfiguration : IEntityTypeConfiguration<Entry>
 
         builder.HasOne(x => x.Uploader)
             .WithMany()
-            .HasForeignKey(x => x.UploaderId)
+            .HasForeignKey(x => x.CreatedBy)
+            .IsRequired();
+        
+        builder.HasOne(x => x.Owner)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerId)
             .IsRequired();
     }
 }

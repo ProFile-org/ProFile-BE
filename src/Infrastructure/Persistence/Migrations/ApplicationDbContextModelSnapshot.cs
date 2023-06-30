@@ -50,7 +50,17 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<LocalDateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
@@ -58,20 +68,21 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UploaderId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("FileId")
                         .IsUnique();
 
-                    b.HasIndex("UploaderId")
-                        .IsUnique();
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Entries");
                 });
@@ -779,17 +790,25 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Digital.Entry", b =>
                 {
+                    b.HasOne("Domain.Entities.User", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Digital.FileEntity", "File")
                         .WithOne()
                         .HasForeignKey("Domain.Entities.Digital.Entry", "FileId");
 
-                    b.HasOne("Domain.Entities.User", "Uploader")
-                        .WithOne()
-                        .HasForeignKey("Domain.Entities.Digital.Entry", "UploaderId")
+                    b.HasOne("Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("File");
+
+                    b.Navigation("Owner");
 
                     b.Navigation("Uploader");
                 });

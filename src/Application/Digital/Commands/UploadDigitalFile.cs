@@ -57,6 +57,15 @@ public class UploadDigitalFile {
             {
                 throw new ConflictException("File already exists.");
             }
+
+            var directoryExists = await _context.Entries.AnyAsync(
+                x => request.Path.Trim().ToLower().Equals((x.Path + x.Name).ToLower())
+                     && x.FileId == null, cancellationToken);
+
+            if (!request.Path.Equals("/") && !directoryExists)
+            {
+                throw new ConflictException("Directory does not exist.");
+            }
             
             // Make this dynamic
             if (request.FileData.Length > 20971520)
@@ -65,12 +74,15 @@ public class UploadDigitalFile {
             }
             
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            var lastDotIndex = request.Name.LastIndexOf(".", StringComparison.Ordinal);
+            var fileExtension = request.Name.Substring(lastDotIndex + 1, request.Name.Length - lastDotIndex - 1);
             
             var fileEntity = new FileEntity()
             {
                 FileData = request.FileData.ToArray(),
                 FileType = request.FileType,
-                FileExtension = "",
+                FileExtension = fileExtension,
             };
             
             var entryEntity = new Entry()
@@ -78,6 +90,7 @@ public class UploadDigitalFile {
                 Name = request.Name.Trim(),
                 Path = request.Path.Trim(),
                 File = fileEntity,
+                CreatedBy = request.CurrentUser.Id,
                 Uploader = request.CurrentUser,
                 Created = localDateTimeNow,
             };
