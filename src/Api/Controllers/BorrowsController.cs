@@ -2,10 +2,9 @@ using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Borrows;
 using Application.Borrows.Commands;
 using Application.Borrows.Queries;
-using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
+using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
@@ -239,7 +238,7 @@ public class BorrowsController : ApiControllerBase
     [HttpGet("logs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<RequestLogDto>>>> GetAllRequestLogs(
+    public async Task<ActionResult<Result<PaginatedList<LogDto>>>> GetAllRequestLogs(
         [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
     {
         var query = new GetAllRequestLogsPaginated.Query()
@@ -249,6 +248,6 @@ public class BorrowsController : ApiControllerBase
             Size = queryParameters.Size,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<RequestLogDto>>.Succeed(result));    
+        return Ok(Result<PaginatedList<LogDto>>.Succeed(result));    
     }
 }

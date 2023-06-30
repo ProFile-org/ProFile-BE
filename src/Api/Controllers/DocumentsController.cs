@@ -1,9 +1,7 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
@@ -122,7 +120,7 @@ public class DocumentsController : ApiControllerBase
     /// Get all document types
     /// </summary>
     /// <returns>A list of document types</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("types")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -162,6 +160,7 @@ public class DocumentsController : ApiControllerBase
             DocumentType = request.DocumentType,
             FolderId = request.FolderId,
             ImporterId = request.ImporterId,
+            IsPrivate = request.IsPrivate,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
@@ -279,27 +278,5 @@ public class DocumentsController : ApiControllerBase
         };
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all log of document
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllDocumentLogsPaginated.Query()
-        {
-            DocumentId = queryParameters.ObjectId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };        
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
     }
 }

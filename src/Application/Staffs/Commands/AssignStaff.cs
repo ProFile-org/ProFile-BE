@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Staffs.Commands;
@@ -26,12 +28,14 @@ public class AssignStaff
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<AssignStaff> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<AssignStaff> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<StaffDto> Handle(Command request, CancellationToken cancellationToken)
@@ -47,6 +51,7 @@ public class AssignStaff
             
             var room = await _context.Rooms
                 .Include(x => x.Staff)
+                .Include(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
             
             if (room is null)
@@ -64,6 +69,20 @@ public class AssignStaff
                 throw new ConflictException("Room already has a staff.");
             }
 
+            var user = await _context.Users
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == staff.Id, cancellationToken);
+
+            if (user is null)
+            {
+                throw new KeyNotFoundException("User does not exist.");
+            }
+
+            if (room.Department.Id != user.Department!.Id)
+            {
+                throw new ConflictException("Room is in different department.");
+            }
+
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
             staff.Room = room;
@@ -77,14 +96,17 @@ public class AssignStaff
                 UserId = request.CurrentUser.Id,
                 ObjectId = staff.User.Id,
                 Time = localDateTimeNow,
-                Action = UserLogMessages.Staff.AssignStaff(room.Id.ToString()),
+                Action = UserLogMessages.Staff.AssignStaff,
             };
             _context.Rooms.Update(room);
             var result = _context.Staffs.Update(staff);
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Staff), staff.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAssignStaff(staff.Id.ToString(), staff.Room.Id.ToString());
+            }
             return _mapper.Map<StaffDto>(result.Entity);
-            
         }
     }
 }

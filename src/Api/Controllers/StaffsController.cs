@@ -54,8 +54,10 @@ public class StaffsController : ApiControllerBase
     public async Task<ActionResult<Result<RoomDto>>> GetRoomByStaffId(
         [FromRoute] Guid staffId)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetRoomByStaffId.Query()
         {
+            CurrentUser = currentUser,
             StaffId = staffId,
         };
         var result = await Mediator.Send(query);

@@ -4,27 +4,25 @@ public static class DocumentLogMessages
 {
     public static class Import
     {
-        public const string NewImport = "Imported new document";
+        public const string NewImport = "Imported new document with id {DocumentId}";
         public const string NewImportRequest = "Created new import request";
-        public const string Checkin = "Checked in document";
-        public const string Approve = "Document is approved to be imported";
-        public const string Reject = "Rejected import request";
-        public const string Assign = "Assigned to a folder";
+        public const string Checkin = "Checked in document with id {DocumentId}";
+        public const string Approve = "Document with id {DocumentId} is approved to be imported";
+        public const string Reject = "Document with id {DocumentId} is rejected to be imported";
+        public const string Assign = "Assigned document with id {DocumentId} to folder {FolderId}";
     }
     public static class Borrow
     {
-        public const string NewBorrowRequest = "Created new borrow request";
-        public const string CanCel = "Cancelled borrow request";
-        public const string Approve = "Approved borrow request";
-        public const string Reject = "Rejected borrow request";
-        public const string Checkout = "Checked out borrow request";
-        public const string Return = "Returned borrow request";
-        public const string Update = "Updated borrow request";
+        public const string NewBorrowRequest = "Create new borrow request for document {DocumentId} with id {BorrowId}";
+        public const string Cancel = "Cancel borrow request for document {DocumentId} with id {BorrowId}";
+        public const string Approve = "Approve borrow request for document {DocumentId} with id {BorrowId}";
+        public const string Reject = "Reject borrow request for document {DocumentId} with id {BorrowId}";
+        public const string Checkout = "Check out borrow request for document {DocumentId} with id {BorrowId}";
+        public const string Return = "Return borrow request for document {DocumentId} with id {BorrowId}";
+        public const string UpdateBorrow = "Update borrow request for document {DocumentId} with id {BorrowId}";
     }
-    public const string Delete = "Delete document";
-    public const string Update = "Updated document information";
-    public static string GrantRead(string userName) => $"Share Read Permission to user {userName}";
-    public static string GrantBorrow(string userName) => $"Share Borrow Permission to user {userName}";
-    public static string RevokeRead(string userName) => $"Remove Read Permission to user {userName}";
-    public static string RevokeBorrow(string userName) => $"Remove Borrow Permission to user {userName}";
+    public const string Delete = "Delete document with id {DocumentId}";
+    public const string Update = "Update document with id {DocumentId} ";
+    public const string Grant = "Share Permission {Permission} to user {Username}";
+    public const string Revoke = "Remove Permission {Permission} from user {Username}";
 }
