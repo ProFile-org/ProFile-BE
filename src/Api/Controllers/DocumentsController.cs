@@ -279,4 +279,29 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
+    
+    /// <summary>
+    /// Download a file linked with a document
+    /// </summary>
+    /// <param name="documentId">Document id</param>
+    /// <returns>File</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{documentId:guid}/file")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadFile(
+        [FromRoute] Guid documentId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new DownloadDocumentFile.Query()
+        {
+            CurrentUser = currentUser,
+            DocumentId = documentId,
+        };
+        var result = await Mediator.Send(query);
+        var content = new MemoryStream(result.FileData);
+        HttpContext.Response.ContentType = result.FileType;
+        return File(content, result.FileType, result.FileName);
+    }
 }
