@@ -27,6 +27,10 @@ public class GetEntryById
         public async Task<EntryDto> Handle(Query request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
+                .Include(x => x.Uploader)
+                .ThenInclude(x => x.Department)
+                .Include(x => x.Owner)
+                .ThenInclude(x => x.Department)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)
