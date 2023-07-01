@@ -73,6 +73,7 @@ public class UploadDigitalFile {
                 Created = localDateTimeNow,
                 Owner = request.CurrentUser,
                 OwnerId = request.CurrentUser.Id,
+                Size = null
             };
             
             if (request.IsDirectory)
@@ -89,6 +90,8 @@ public class UploadDigitalFile {
             }
             else
             {
+                
+                entryEntity.Size = request.FileData!.Length;
                 // Make this dynamic
                 if (request.FileData!.Length > 20971520)
                 {
