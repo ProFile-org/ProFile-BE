@@ -22,7 +22,7 @@ public class BinController : ApiControllerBase
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("entries/{entryId:guid}/restore")]
     public async Task<ActionResult<Result<EntryDto>>> RestoreEntry(
         [FromRoute] Guid entryId)

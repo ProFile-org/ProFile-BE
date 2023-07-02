@@ -38,21 +38,43 @@ public class RestoreEntry
 
             if (entry is null)
             {
-                throw new KeyNotFoundException("Entry does not exist");
+                throw new KeyNotFoundException("Entry does not exist.");
             }
 
-            var path = entry.Path;
-            var firstSlashIndex = path.IndexOf("/", StringComparison.Ordinal);
-            var binCheck = path.Substring(0, firstSlashIndex);
+            var entryPath = entry.Path;
+            var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
+            var binCheck = entryPath.Substring(0, firstSlashIndex);
 
             if (!binCheck.Contains(BinString))
             {
-                throw new ConflictException("Entry is not in bin");
+                throw new NotChangedException("Entry is not in bin.");
+            }
+
+            if (!binCheck.Contains(request.CurrentUser.Username))
+            {
+                throw new NotAllowedException("You do not have the permission to restore this entry.");
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
             
-            entry.Path = path.Replace(binCheck, "");
+            if (entry.IsDirectory)
+            {
+                var path = entry.Path[^1].Equals('/') ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
+                var pattern = $"{path}/%";
+                var childEntries = _context.Entries.Where(x => 
+                    x.Path.Trim().ToLower().Equals(path)
+                    || EF.Functions.Like(x.Path, pattern));
+
+                foreach (var childEntry in childEntries)
+                {
+                    childEntry.Path = childEntry.Path.Replace(binCheck, "");
+                    childEntry.LastModified = localDateTimeNow;
+                    childEntry.LastModifiedBy = request.CurrentUser.Id;
+                    _context.Entries.Update(childEntry);
+                }
+            }
+            
+            entry.Path = entryPath.Replace(binCheck, "");
             entry.LastModified = localDateTimeNow;
             entry.LastModifiedBy = request.CurrentUser.Id;
 
