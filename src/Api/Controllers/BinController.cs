@@ -24,7 +24,7 @@ public class BinController : ApiControllerBase
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpPost("entries")]
-    public async Task<ActionResult<Result<EntryDto>>> MoveFileToBin(
+    public async Task<ActionResult<Result<EntryDto>>> MoveEntryToBin(
         [FromQuery] Guid entryId)
     {
         var currentUser = _currentUserService.GetCurrentUser();
