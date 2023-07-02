@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     
     public DbSet<FileEntity> Files => Set<FileEntity>();
     public DbSet<Entry> Entries => Set<Entry>();
+    public DbSet<EntryPermission> EntryPermissions => Set<EntryPermission>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ResetPasswordToken> ResetPasswordTokens => Set<ResetPasswordToken>();
