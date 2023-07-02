@@ -114,7 +114,6 @@ public class ExceptionMiddleware : IMiddleware
     private static async void HandleNotChangedException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status204NoContent;
-        await WriteExceptionMessageAsync(context, ex);
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
