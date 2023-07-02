@@ -24,12 +24,12 @@ public class BinController : ApiControllerBase
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("entries/{entryId:guid}/restore")]
-    public async Task<ActionResult<Result<EntryDto>>> RestoreEntry(
+    public async Task<ActionResult<Result<EntryDto>>> RestoreBinEntry(
         [FromRoute] Guid entryId)
     {
         var currentUser = _currentUserService.GetCurrentUser();
 
-        var command = new RestoreEntry.Command()
+        var command = new RestoreBinEntry.Command()
         {
             CurrentUser = currentUser,
             EntryId = entryId,

@@ -10,7 +10,7 @@ using NodaTime;
 
 namespace Application.Digital.Commands;
 
-public class RestoreEntry
+public class RestoreBinEntry
 {
     public record Command : IRequest<EntryDto>
     {
@@ -34,7 +34,9 @@ public class RestoreEntry
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var entry = await _context.Entries.FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
+            var entry = await _context.Entries
+                .Include(x => x.Owner)
+                .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)
             {
@@ -50,7 +52,7 @@ public class RestoreEntry
                 throw new NotChangedException("Entry is not in bin.");
             }
 
-            if (!binCheck.Contains(request.CurrentUser.Username))
+            if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
             {
                 throw new NotAllowedException("You do not have the permission to restore this entry.");
             }
