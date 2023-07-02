@@ -4,6 +4,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Digital.Commands;
+using Application.Digital.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
@@ -83,5 +84,21 @@ public class EntriesController  : ApiControllerBase
         }
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
+    }
+
+    [HttpGet("{entryId:guid}/shared-users")]
+    public async Task<ActionResult<PaginatedList<GetEntrySharedUsersPaginated.Result>>> GetSharedUsers(
+        [FromRoute] Guid entryId,
+        [FromQuery] int? page,
+        [FromQuery] int? size)
+    {
+        var query = new GetEntrySharedUsersPaginated.Query
+        {
+            EntryId = entryId,
+            Page = page,
+            Size = size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<GetEntrySharedUsersPaginated.Result>>.Succeed(result));
     }
 }
