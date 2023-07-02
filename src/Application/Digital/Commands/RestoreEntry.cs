@@ -62,7 +62,7 @@ public class RestoreEntry
                 var path = entry.Path[^1].Equals('/') ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
                 var pattern = $"{path}/%";
                 var childEntries = _context.Entries.Where(x => 
-                    x.Path.Trim().ToLower().Equals(path)
+                    x.Path.Trim().Equals(path)
                     || EF.Functions.Like(x.Path, pattern));
 
                 foreach (var childEntry in childEntries)
