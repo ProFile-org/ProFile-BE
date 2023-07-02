@@ -86,14 +86,24 @@ public class EntriesController  : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
 
+    /// <summary>
+    /// Get shared users of an entry
+    /// </summary>
+    /// <param name="entryId">Entry id</param>
+    /// <param name="page">Page number</param>
+    /// <param name="size">Size number</param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("{entryId:guid}/shared-users")]
     public async Task<ActionResult<PaginatedList<GetEntrySharedUsersPaginated.Result>>> GetSharedUsers(
         [FromRoute] Guid entryId,
         [FromQuery] int? page,
         [FromQuery] int? size)
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetEntrySharedUsersPaginated.Query
         {
+            CurrentUser = currentUser,
             EntryId = entryId,
             Page = page,
             Size = size,

@@ -2,7 +2,9 @@ using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
+using Application.Common.Models.Operations;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +14,7 @@ public abstract class GetEntrySharedUsersPaginated
 {
     public record Query : IRequest<PaginatedList<Result>>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid EntryId { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -49,6 +52,21 @@ public abstract class GetEntrySharedUsersPaginated
             if (entry is null)
             {
                 throw new KeyNotFoundException("Entry does not exist.");
+            }
+            
+            if (entry.OwnerId != request.CurrentUser.Id)
+            {
+                var currentUserPermission = await _context.EntryPermissions.FirstOrDefaultAsync(
+                    x => x.EntryId == entry.Id
+                         && x.EmployeeId == request.CurrentUser.Id, cancellationToken);
+
+                if (currentUserPermission is null
+                    || !currentUserPermission.AllowedOperations
+                        .Split(",")
+                        .Contains(EntryOperation.ChangePermission.ToString()))
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
             }
 
             var permissions = _context.EntryPermissions.Where(x => x.EntryId == entry.Id);
