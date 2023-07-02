@@ -39,7 +39,7 @@ public class MoveEntryToBin
 
             if (entry is null)
             {
-                throw new KeyNotFoundException("Entry does not exist");
+                throw new KeyNotFoundException("Entry does not exist.");
             }
 
             var entryPath = entry.Path;
@@ -48,7 +48,7 @@ public class MoveEntryToBin
 
             if (binCheck.Contains(BinString))
             {
-                throw new ConflictException("Entry is already in bin");
+                throw new ConflictException("Entry is already in bin.");
             }
 
             var ownerUsername = entry.Owner.Username;
