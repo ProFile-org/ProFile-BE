@@ -9,7 +9,7 @@ using NodaTime;
 
 namespace Application.Digital.Commands;
 
-public class DeleteEntry
+public class DeleteBinEntry
 {
     public record Command : IRequest<EntryDto>
     {
@@ -51,7 +51,7 @@ public class DeleteEntry
                 throw new NotChangedException("Entry is not in bin.");
             }
             
-            if (!binCheck.Contains(request.CurrentUser.Username))
+            if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
             {
                 throw new NotAllowedException("You do not have the permission to delete this entry.");
             }

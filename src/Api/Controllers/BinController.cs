@@ -24,12 +24,12 @@ public class BinController : ApiControllerBase
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpDelete("entries/{entryId:guid}")]
-    public async Task<ActionResult<Result<EntryDto>>> DeleteEntry(
+    public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
         [FromRoute] Guid entryId)
     {
         var currentUser = _currentUserService.GetCurrentUser();
 
-        var command = new DeleteEntry.Command()
+        var command = new DeleteBinEntry.Command()
         {
             CurrentUser = currentUser,
             EntryId = entryId,
