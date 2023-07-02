@@ -22,7 +22,7 @@ public class BinController : ApiControllerBase
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost("entries")]
     public async Task<ActionResult<Result<EntryDto>>> MoveEntryToBin(
         [FromQuery] Guid entryId)

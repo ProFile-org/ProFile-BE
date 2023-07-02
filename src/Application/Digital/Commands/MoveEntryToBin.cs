@@ -41,22 +41,39 @@ public class MoveEntryToBin
             {
                 throw new KeyNotFoundException("Entry does not exist");
             }
-            
-            var path = entry.Path;
-            var firstSlashIndex = path.IndexOf("/", StringComparison.Ordinal);
-            var binCheck = path.Substring(0, firstSlashIndex);
+
+            var entryPath = entry.Path;
+            var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
+            var binCheck = entryPath.Substring(0, firstSlashIndex);
 
             if (binCheck.Contains(BinString))
             {
                 throw new ConflictException("Entry is already in bin");
             }
-            
+
             var ownerUsername = entry.Owner.Username;
 
-            var binPath = ownerUsername + BinString + path;
-            
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
+            if (entry.IsDirectory)
+            {
+                var path = entry.Path.Equals("/") ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
+                var pattern = $"{path}/%";
+                var childEntries = _context.Entries.Where(x => 
+                    x.Path.Trim().ToLower().Equals(path)
+                    || EF.Functions.Like(x.Path, pattern));
+
+                foreach (var childEntry in childEntries)
+                {
+                    var childBinPath = ownerUsername + BinString + childEntry.Path;
+                    childEntry.Path = childBinPath;
+                    childEntry.LastModified = localDateTimeNow;
+                    childEntry.LastModifiedBy = request.CurrentUser.Id;
+                    _context.Entries.Update(childEntry);
+                }
+            }
+            
+            var binPath = ownerUsername + BinString + entryPath;
             entry.Path = binPath;
             entry.LastModified = localDateTimeNow;
             entry.LastModifiedBy = request.CurrentUser.Id;
