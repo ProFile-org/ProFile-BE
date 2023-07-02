@@ -84,4 +84,27 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="entryId"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{entryId:guid}/files")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> DownloadFile([FromRoute] Guid entryId)
+    {
+        var command = new DownloadDigitalFile.Command()
+        {
+            EntryId = entryId
+        };
+
+        var result = await Mediator.Send(command);
+        HttpContext.Response.ContentType = result.FileType;
+        return File(result.Content, result.FileType, result.FileName);
+    }
+
 }
