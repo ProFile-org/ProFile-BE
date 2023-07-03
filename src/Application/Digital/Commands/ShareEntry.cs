@@ -42,7 +42,6 @@ public class ShareEntry
         public async Task<EntryPermissionDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
-                .Include(x => x.Uploader)
                 .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
             
@@ -87,7 +86,6 @@ public class ShareEntry
                 // Update permissions for child Entries
                 var path = entry.Path.Equals("/") ? (entry.Path + entry.Name) : (entry.Path + "/" + entry.Name);
                 var childEntries = _context.Entries
-                    .Include(x => x.Uploader)
                     .Include(x => x.Owner)
                     .Where(x => x.Id != entry.Id 
                                 && x.Path.StartsWith(path)
