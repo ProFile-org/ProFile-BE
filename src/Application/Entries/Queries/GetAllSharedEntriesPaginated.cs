@@ -1,10 +1,15 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
+using Application.Common.Models.Operations;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Entries.Queries;
 
@@ -45,8 +50,21 @@ public class GetAllSharedEntriesPaginated
 
         public async Task<PaginatedList<EntryDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var permissions = _context.EntryPermissions
-                .Where(x => x.EmployeeId == request.CurrentUser.Id);
+            var entries = _context.EntryPermissions
+                .Where(x => x.EmployeeId == request.CurrentUser.Id
+                            && x.AllowedOperations
+                                .ToLower()
+                                .Contains(EntryOperation.View.ToString()))
+                .Select(x => x.Entry);
+            
+            return await entries
+                .ListPaginateWithSortAsync<Entry, EntryDto>(
+                    request.Page,
+                    request.Size,
+                    request.SortBy,
+                    request.SortOrder,
+                    _mapper.ConfigurationProvider,
+                    cancellationToken);
         }
     }
 }
