@@ -86,19 +86,22 @@ public class EntriesController  : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Download a file
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>The download file</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
-    [HttpGet("{entryId:guid}/files")]
+    [HttpGet("{entryId:guid}/file")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DownloadFile([FromRoute] Guid entryId)
     {
+        var currentUserId = _currentUserService.GetId();
         var command = new DownloadDigitalFile.Command()
         {
+            CurrentUserId = currentUserId,
             EntryId = entryId
         };
 

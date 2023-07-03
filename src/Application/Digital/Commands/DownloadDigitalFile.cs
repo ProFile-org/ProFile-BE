@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +12,11 @@ public class DownloadDigitalFile
 {
     public record Command : IRequest<Result>
     {
+        public Guid CurrentUserId { get; init;}
         public Guid EntryId { get; init; }
     }
 
-    public class Result : BaseDto
+    public class Result
     {
         public MemoryStream Content { get; set; } = null!;
         public string FileType { get; set; } = null!;
@@ -35,16 +37,23 @@ public class DownloadDigitalFile
         {
             var entry = await _context.Entries
                 .Include(x => x.File)
+                .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)
             {
                 throw new KeyNotFoundException("Entry does not exist.");
             }
-
+            
             if (entry.IsDirectory)
             {
-                throw new ConflictException("Can not delete folder.");
+                throw new ConflictException("Can not download folder.");
+            }
+            
+            
+            if (entry.Owner.Id != request.CurrentUserId)
+            {
+                throw new UnauthorizedAccessException("Can not download file that does not belong to you.");
             }
 
             var content = new MemoryStream(entry.File!.FileData);
@@ -53,7 +62,6 @@ public class DownloadDigitalFile
             
             return new Result()
             {
-                Id = entry.File.Id,
                 Content = content,
                 FileType = fileType,
                 FileName = $"{entry.Name}.{fileExtension}",
