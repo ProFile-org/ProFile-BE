@@ -118,8 +118,7 @@ public class ShareEntry
         {
             var existedPermission = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == entry.Id
-                    && x.EmployeeId == user.Id
-                , cancellationToken);
+                    && x.EmployeeId == user.Id, cancellationToken);
             
             if (existedPermission is null)
             {
