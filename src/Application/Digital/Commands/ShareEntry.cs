@@ -42,7 +42,6 @@ public class ShareEntry
         public async Task<EntryPermissionDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
-                .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
             
             if (entry is null)
@@ -55,7 +54,7 @@ public class ShareEntry
                 && x.EmployeeId == request.CurrentUser.Id
                 && x.AllowedOperations.Contains(EntryOperation.ChangePermission.ToString()));
             
-            if (entry.Owner!.Id != request.CurrentUser.Id && !canChangeEntryPermission)
+            if (entry.OwnerId != request.CurrentUser.Id && !canChangeEntryPermission)
             {
                 throw new UnauthorizedAccessException("You are not allow to change permission of this entry.");
             }
@@ -87,7 +86,6 @@ public class ShareEntry
                 var path = entry.Path.Equals("/") ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
                 var pattern = $"{path}/%";
                 var childEntries = _context.Entries
-                    .Include(x => x.Owner)
                     .Where(x => x.Id != entry.Id 
                                 && (x.Path.Equals(path) || EF.Functions.Like(x.Path, pattern))
                                 && x.OwnerId == entry.OwnerId)
