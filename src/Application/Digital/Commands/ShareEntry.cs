@@ -103,7 +103,7 @@ public class ShareEntry
             var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == request.EntryId
                     && x.EmployeeId == request.UserId, cancellationToken);
-            
+            await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<EntryPermissionDto>(result);
         }
 
@@ -137,7 +137,6 @@ public class ShareEntry
                 existedPermission.ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate);
                 _context.EntryPermissions.Update(existedPermission);
             }
-            await _context.SaveChangesAsync(cancellationToken);
         }
 
         private static string GenerateAllowOperations(Command request, bool isDirectory)
