@@ -91,6 +91,8 @@ public class EntriesController  : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    
     public async Task<ActionResult<Result<EntryDto>>> Update(
         [FromRoute] Guid entryId, 
         [FromBody] UpdateEntryRequest request)
