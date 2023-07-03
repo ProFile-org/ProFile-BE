@@ -34,11 +34,17 @@ public class UpdateEntry
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
+                .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)
             {
                 throw new KeyNotFoundException("Entry does not exist.");
+            }
+
+            if (entry.Owner.Id != request.CurrentUserId )
+            {
+                throw new UnauthorizedAccessException("User can not access this resource.");
             }
 
             var nameExisted = await _context.Entries
