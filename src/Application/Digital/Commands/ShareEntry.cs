@@ -102,8 +102,7 @@ public class ShareEntry
 
             var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == request.EntryId
-                    && x.EmployeeId == request.UserId
-                , cancellationToken);
+                    && x.EmployeeId == request.UserId, cancellationToken);
             
             return _mapper.Map<EntryPermissionDto>(result);
         }
