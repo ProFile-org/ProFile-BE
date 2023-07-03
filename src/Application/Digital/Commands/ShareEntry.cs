@@ -50,12 +50,12 @@ public class ShareEntry
                 throw new KeyNotFoundException("Entry does not exist.");
             }
 
-            var hasModifyPermission = _context.EntryPermissions.Any(x =>
+            var canChangeEntryPermission = _context.EntryPermissions.Any(x =>
                 x.EntryId == request.EntryId
                 && x.EmployeeId == request.CurrentUser.Id
                 && x.AllowedOperations.Contains(EntryOperation.ChangePermission.ToString()));
             
-            if (entry.Owner!.Id != request.CurrentUser.Id && !hasModifyPermission)
+            if (entry.Owner!.Id != request.CurrentUser.Id && !canChangeEntryPermission)
             {
                 throw new UnauthorizedAccessException("You are not allow to change permission of this entry.");
             }
