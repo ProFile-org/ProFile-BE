@@ -84,11 +84,12 @@ public class ShareEntry
             if (entry.IsDirectory)
             {
                 // Update permissions for child Entries
-                var path = entry.Path.Equals("/") ? (entry.Path + entry.Name) : (entry.Path + "/" + entry.Name);
+                var path = entry.Path.Equals("/") ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
+                var pattern = $"{path}/%";
                 var childEntries = _context.Entries
                     .Include(x => x.Owner)
                     .Where(x => x.Id != entry.Id 
-                                && x.Path.StartsWith(path)
+                                && (x.Path.Equals(path) || EF.Functions.Like(x.Path, pattern))
                                 && x.OwnerId == entry.OwnerId)
                     .ToList();
                 foreach (var childEntry in childEntries)
@@ -97,11 +98,11 @@ public class ShareEntry
                     await GrantPermission(childEntry, user, childAllowOperations, request.ExpiryDate, cancellationToken);
                 }
             }
-
+            await _context.SaveChangesAsync(cancellationToken);
+            
             var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == request.EntryId
                     && x.EmployeeId == request.UserId, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<EntryPermissionDto>(result);
         }
 
