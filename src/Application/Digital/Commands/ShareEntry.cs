@@ -167,7 +167,7 @@ public class ShareEntry
                 allowOperations.Add(EntryOperation.Download.ToString());
             }
             
-            if (request.CanChangePermission)
+            if (request is { CanView: true, CanChangePermission: true })
             {
                 allowOperations.Add(EntryOperation.ChangePermission.ToString());
             }
