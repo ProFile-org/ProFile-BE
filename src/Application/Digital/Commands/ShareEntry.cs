@@ -105,7 +105,6 @@ public class ShareEntry
                     && x.EmployeeId == request.UserId
                 , cancellationToken);
             
-            await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<EntryPermissionDto>(result);
         }
 
