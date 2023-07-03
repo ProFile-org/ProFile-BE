@@ -4,6 +4,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -58,6 +59,53 @@ public class RestoreBinEntry
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
+
+            var entryCheckPath = entryPath.Replace(binCheck, "");
+
+            var entryCheck = await _context.Entries.FirstOrDefaultAsync(x =>
+                (x.Path.Equals("/") ? x.Path + x.Name : x.Path + "/" + x.Name).Equals(entryCheckPath.Equals("/") ? 
+                    entryCheckPath + entry.Name : entryCheckPath + "/" + entry.Name), cancellationToken);
+
+            if (entryCheck is not null)
+            {
+                entryCheck.LastModified = localDateTimeNow;
+                entryCheck.LastModifiedBy = request.CurrentUser.Id;
+                var dupeResult = _context.Entries.Update(entryCheck);
+                _context.Entries.Remove(entry);
+                await _context.SaveChangesAsync(cancellationToken);
+                return _mapper.Map<EntryDto>(dupeResult.Entity);
+            }
+
+            var splitPath = entry.Path.Split("/");
+            var currentPath = "/";
+            foreach (var node in splitPath)
+            {
+                var entrySearch = await _context.Entries.FirstOrDefaultAsync(x => x.Path.Equals(currentPath) 
+                    && x.Name.Equals(node), cancellationToken);
+                
+                if (entrySearch is not null)
+                {
+                    continue;
+                }
+
+                if (Array.IndexOf(splitPath, node) == 0)
+                {
+                    continue;
+                }
+
+                var parentEntry = new Entry()
+                {
+                    Name = node,
+                    Path = currentPath,
+                    Created = localDateTimeNow,
+                    CreatedBy = request.CurrentUser.Id,
+                    OwnerId = request.CurrentUser.Id,
+                    Owner = request.CurrentUser,
+                    Uploader = request.CurrentUser,
+                };
+                await _context.Entries.AddAsync(parentEntry, cancellationToken);
+                currentPath = currentPath.Equals("/") ? currentPath + node : currentPath + "/" + node;
+            }
             
             if (entry.IsDirectory)
             {
