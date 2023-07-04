@@ -80,15 +80,15 @@ public class RestoreBinEntry
             var currentPath = "/";
             foreach (var node in splitPath)
             {
+                if (Array.IndexOf(splitPath, node) == 0)
+                {
+                    continue;
+                }
+                
                 var entrySearch = await _context.Entries.FirstOrDefaultAsync(x => x.Path.Equals(currentPath) 
                     && x.Name.Equals(node), cancellationToken);
                 
                 if (entrySearch is not null)
-                {
-                    continue;
-                }
-
-                if (Array.IndexOf(splitPath, node) == 0)
                 {
                     continue;
                 }
