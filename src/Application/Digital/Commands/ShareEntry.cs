@@ -78,7 +78,7 @@ public class ShareEntry
 
             var allowOperations = GenerateAllowOperations(request, entry.IsDirectory);
             
-            await GrantPermission(entry, user, allowOperations, request.ExpiryDate, cancellationToken);
+            await GrantOrRevokePermission(entry, user, allowOperations, request.ExpiryDate, true, cancellationToken);
 
             if (entry.IsDirectory)
             {
@@ -92,7 +92,7 @@ public class ShareEntry
                 foreach (var childEntry in childEntries)
                 {
                     var childAllowOperations = GenerateAllowOperations(request, childEntry.IsDirectory);
-                    await GrantPermission(childEntry, user, childAllowOperations, request.ExpiryDate, cancellationToken);
+                    await GrantOrRevokePermission(childEntry, user, childAllowOperations, request.ExpiryDate, false, cancellationToken);
                 }
             }
             await _context.SaveChangesAsync(cancellationToken);
@@ -103,11 +103,12 @@ public class ShareEntry
             return _mapper.Map<EntryPermissionDto>(result);
         }
 
-        private async Task GrantPermission(
+        private async Task GrantOrRevokePermission(
             Entry entry,
             User user,
             string allowOperations,
             DateTime expiryDate,
+            bool isSharedRoot,
             CancellationToken cancellationToken)
         {
             var existedPermission = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
@@ -122,10 +123,15 @@ public class ShareEntry
                     EntryId = entry.Id,
                     AllowedOperations = allowOperations,
                     ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate),
+                    IsSharedRoot = isSharedRoot,
                     Employee = user,
                     Entry = entry,
                 };
                 await _context.EntryPermissions.AddAsync(entryPermission, cancellationToken);
+            }
+            else if (allowOperations.Equals(string.Empty))
+            {
+                _context.EntryPermissions.Remove(existedPermission);
             }
             else
             {
@@ -137,19 +143,18 @@ public class ShareEntry
 
         private static string GenerateAllowOperations(Command request, bool isDirectory)
         {
-            if (request is { CanView: false, CanDownload: false, CanUpload: false, CanChangePermission: false })
-            {
-                return string.Empty;
-            }
-            
             var allowOperations = new CommaDelimitedStringCollection();
 
             if (request.CanView)
             {
                 allowOperations.Add(EntryOperation.View.ToString());
             }
+            else
+            {
+                return string.Empty;
+            }
             
-            if (request is { CanView: true, CanUpload: true } && !isDirectory)
+            if (request is { CanView: true, CanUpload: true } && isDirectory)
             {
                 allowOperations.Add(EntryOperation.Upload.ToString());
             }
