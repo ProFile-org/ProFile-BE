@@ -33,7 +33,7 @@ public class SharedController : ApiControllerBase
             CurrentUser = currentUser,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
-            EntryPath = queryParameters.EntryPath,
+            EntryId = queryParameters.EntryId,
             SortBy = queryParameters.SortBy,
             SortOrder = queryParameters.SortOrder,
         };

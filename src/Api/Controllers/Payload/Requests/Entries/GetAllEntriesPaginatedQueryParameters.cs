@@ -5,5 +5,8 @@ namespace Api.Controllers.Payload.Requests.Entries;
 /// </summary>
 public class GetAllEntriesPaginatedQueryParameters : PaginatedQueryParameters
 {
-    public string EntryPath { get; set; } = null!;
+    /// <summary>
+    /// Entry id
+    /// </summary>
+    public Guid? EntryId { get; set; }
 }
