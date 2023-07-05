@@ -13,7 +13,8 @@ public class EntryPermissionDto : IMapFrom<EntryPermission>
     public bool CanUpload { get; set; }
     public bool CanDownload { get; set; }
     public bool CanChangePermission { get; set; }
-    
+    public bool IsSharedRoot { get; set; }
+
     public void Mapping(Profile profile)
     {
         profile.CreateMap<EntryPermission, EntryPermissionDto>()
