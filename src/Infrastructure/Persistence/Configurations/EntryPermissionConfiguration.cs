@@ -12,5 +12,8 @@ public class EntryPermissionConfiguration : IEntityTypeConfiguration<EntryPermis
 
         builder.Property(x => x.AllowedOperations)
             .IsRequired();
+
+        builder.Property(x => x.IsSharedRoot)
+            .IsRequired();
     }
 }
