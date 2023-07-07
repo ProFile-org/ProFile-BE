@@ -1,5 +1,6 @@
 using System.Reflection;
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Domain.Entities;
 using Domain.Entities.Digital;
 using Domain.Entities.Logging;
@@ -29,14 +30,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<ImportRequest> ImportRequests => Set<ImportRequest>();
     public DbSet<Borrow> Borrows => Set<Borrow>();
-    public DbSet<Permission?> Permissions => Set<Permission>();
+    public DbSet<Permission> Permissions => Set<Permission>();
     
-    public DbSet<UserGroup> UserGroups => Set<UserGroup>();
     public DbSet<FileEntity> Files => Set<FileEntity>();
     public DbSet<Entry> Entries => Set<Entry>();
+    public DbSet<EntryPermission> EntryPermissions => Set<EntryPermission>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ResetPasswordToken> ResetPasswordTokens => Set<ResetPasswordToken>();
+    
+    public DbSet<Log> Logs => Set<Log>();
     
     public DbSet<RoomLog> RoomLogs => Set<RoomLog>();
     public DbSet<LockerLog> LockerLogs => Set<LockerLog>();

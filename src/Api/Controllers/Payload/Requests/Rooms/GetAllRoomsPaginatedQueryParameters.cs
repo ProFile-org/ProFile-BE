@@ -9,5 +9,6 @@ public class GetAllRoomsPaginatedQueryParameters : PaginatedQueryParameters
     /// Search term
     /// </summary>
     public string? SearchTerm { get; set; }
+    public bool? IsAvailable { get; set; }
     public Guid? DepartmentId { get; set; }
 }

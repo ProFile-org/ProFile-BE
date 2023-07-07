@@ -1,13 +1,16 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Lockers.Commands;
@@ -36,12 +39,14 @@ public class RemoveLocker
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<RemoveLocker> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RemoveLocker> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
     
         public async Task<LockerDto> Handle(Command request, CancellationToken cancellationToken)
@@ -79,6 +84,10 @@ public class RemoveLocker
             _context.Rooms.Update(room);
             await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
+            {
+                _logger.LogRemoveLocker(locker.Id.ToString(), locker.Room.Id.ToString(), locker.Room.Department.Name);
+            }
             return _mapper.Map<LockerDto>(result.Entity);
         }
     }

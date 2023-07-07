@@ -16,6 +16,7 @@ public class GetAllLockersPaginated
 {
     public record Query : IRequest<PaginatedList<LockerDto>>
     {
+        public Guid CurrentUserId { get; init; }
         public string CurrentUserRole { get; init; } = null!;
         public Guid CurrentUserDepartmentId { get; init; }
         public Guid? RoomId { get; init; }
@@ -46,14 +47,14 @@ public class GetAllLockersPaginated
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }
                 
-                var currentUserRoom = await GetRoomByDepartmentIdAsync(request.CurrentUserDepartmentId, cancellationToken);
+                var currentStaffRoom = await GetRoomByStaffIdAsync(request.CurrentUserId, cancellationToken);
                 
-                if (currentUserRoom is null)
+                if (currentStaffRoom is null)
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }
                 
-                if (!IsSameRoom(currentUserRoom.Id, request.RoomId.Value))
+                if (!IsSameRoom(currentStaffRoom.Id, request.RoomId.Value))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }
@@ -85,10 +86,14 @@ public class GetAllLockersPaginated
                     cancellationToken);
         }
 
-        private async Task<Room?> GetRoomByDepartmentIdAsync(Guid departmentId, CancellationToken cancellationToken) 
-            => await _context.Rooms.FirstOrDefaultAsync(
-                x => x.DepartmentId == departmentId,
-                cancellationToken);
+        private async Task<Room?> GetRoomByStaffIdAsync(Guid departmentId, CancellationToken cancellationToken)
+        {
+            var staff = await _context.Staffs
+                .Include(x => x.Room)
+                .FirstOrDefaultAsync(x => x.Id == departmentId, cancellationToken);
+
+            return staff?.Room;
+        }
 
         private static bool IsSameRoom(Guid roomId1, Guid roomId2)
             => roomId1 == roomId2;

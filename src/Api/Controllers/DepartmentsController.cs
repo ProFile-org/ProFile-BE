@@ -23,7 +23,7 @@ public class DepartmentsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Get back a room based on its department id
+    /// Get a department by it id
     /// </summary>
     /// <param name="departmentId">id of the department to be retrieved</param>
     /// <returns>A DepartmentDto of the retrieved department</returns>
@@ -51,7 +51,7 @@ public class DepartmentsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Get back a department based on its id
+    /// Get rooms based on department id
     /// </summary>
     /// <param name="departmentId">id of the department to be retrieved</param>
     /// <returns>A DepartmentDto of the retrieved department</returns>

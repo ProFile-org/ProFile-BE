@@ -13,9 +13,9 @@ public class Document : BaseAuditableEntity
     public Department? Department { get; set; }
     public Folder? Folder { get; set; }
     public DocumentStatus Status { get; set; }
-    public Guid? EntryId { get; set; }
+    public Guid? FileId { get; set; }
     public bool IsPrivate { get; set; }
     
     public User? Importer { get; set; }
-    public virtual Entry? Entry { get; set; }
+    public virtual FileEntity? File { get; set; }
 }

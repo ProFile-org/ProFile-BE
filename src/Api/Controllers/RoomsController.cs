@@ -1,9 +1,6 @@
-using Api.Controllers.Payload.Requests;
-using Api.Controllers.Payload.Requests.Lockers;
 using Api.Controllers.Payload.Requests.Rooms;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Rooms.Commands;
@@ -65,6 +62,7 @@ public class RoomsController : ApiControllerBase
         {
             CurrentUser = currentUser,
             DepartmentId = queryParameters.DepartmentId,
+            IsAvailable = queryParameters.IsAvailable,
             SearchTerm = queryParameters.SearchTerm,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
@@ -203,27 +201,5 @@ public class RoomsController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<RoomDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all room logs paginated
-    /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>A paginated list of RoomLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")] 
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<RoomLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllRoomLogsPaginated.Query()
-        {
-            RoomId = queryParameters.ObjectId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<RoomLogDto>>.Succeed(result));
     }
 }

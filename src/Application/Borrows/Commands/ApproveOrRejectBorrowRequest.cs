@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -9,6 +10,7 @@ using Domain.Enums;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Borrows.Commands;
@@ -28,12 +30,14 @@ public class ApproveOrRejectBorrowRequest
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<ApproveOrRejectBorrowRequest> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<ApproveOrRejectBorrowRequest> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -133,6 +137,11 @@ public class ApproveOrRejectBorrowRequest
                 }
 
                 borrowRequest.Status = BorrowRequestStatus.Approved;
+
+                using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
+                {
+                    _logger.LogApproveBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                }
             }
 
             if (request.Decision.IsRejection())
@@ -140,6 +149,11 @@ public class ApproveOrRejectBorrowRequest
                 borrowRequest.Status = BorrowRequestStatus.Rejected;
                 log.Action = DocumentLogMessages.Borrow.Reject;
                 requestLog.Action = RequestLogMessages.RejectBorrow;
+
+                using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
+                {
+                    _logger.LogRejectBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                }
             }
 
             borrowRequest.StaffReason = request.StaffReason;
