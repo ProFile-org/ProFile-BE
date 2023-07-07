@@ -12,7 +12,7 @@ using NodaTime;
 
 namespace Application.Digital.Commands;
 
-public class AddSharedEntry
+public class UploadSharedEntry
 {
     public class Validator : AbstractValidator<Command>
     {
@@ -65,6 +65,11 @@ public class AddSharedEntry
             if (rootEntry is null)
             {
                 throw new KeyNotFoundException("Entry does not exist.");
+            }
+
+            if (!rootEntry.IsDirectory)
+            {
+                throw new ConflictException("This is a file.");
             }
             
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
