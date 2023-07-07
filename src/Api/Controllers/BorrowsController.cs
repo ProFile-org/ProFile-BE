@@ -248,7 +248,6 @@ public class BorrowsController : ApiControllerBase
 
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
-
     }
 
     /// <summary>

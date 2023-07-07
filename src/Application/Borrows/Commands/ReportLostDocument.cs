@@ -18,12 +18,12 @@ public class ReportLostDocument
         
     }
     
-    public class CommandHander : IRequestHandler<Command, BorrowDto>
+    public class CommandHandler : IRequestHandler<Command, BorrowDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public CommandHander(IApplicationDbContext context, IMapper mapper)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
