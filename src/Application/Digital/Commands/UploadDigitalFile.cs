@@ -54,7 +54,8 @@ public class UploadDigitalFile {
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var baseDirectoryExists = await _context.Entries.AnyAsync(
-                x => request.Path.Trim().ToLower().Equals((x.Path + x.Name).ToLower())
+                x => request.Path.Trim().ToLower()
+                         .Equals((x.Path.Equals("/") ? (x.Path + x.Name) : (x.Path + "/" + x.Name)).ToLower())
                      && x.FileId == null, cancellationToken);
 
             if (!request.Path.Equals("/") && !baseDirectoryExists)

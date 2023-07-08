@@ -23,6 +23,7 @@ public interface IApplicationDbContext
     
     public DbSet<FileEntity> Files { get; }
     public DbSet<Entry> Entries { get; }
+    public DbSet<EntryPermission> EntryPermissions { get; }
     
     public DbSet<Log> Logs { get; }
 
