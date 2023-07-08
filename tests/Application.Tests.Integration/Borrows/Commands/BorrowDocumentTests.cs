@@ -1,4 +1,4 @@
-﻿using Application.Borrows.Commands;
+using Application.Borrows.Commands;
 using Application.Common.Exceptions;
 using Application.Identity;
 using Domain.Entities;
@@ -7,7 +7,6 @@ using Domain.Statuses;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
-using NodaTime;
 using Xunit;
 
 namespace Application.Tests.Integration.Borrows.Commands;
@@ -16,7 +15,7 @@ public class BorrowDocumentTests : BaseClassFixture
 {
     public BorrowDocumentTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
-        
+
     }
 
     [Fact]
@@ -27,7 +26,7 @@ public class BorrowDocumentTests : BaseClassFixture
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var department = CreateDepartment();
         await context.AddAsync(department);
-        
+
         var user = CreateUser(IdentityData.Roles.Employee, "aaaaaa");
         user.Department = department;
         await context.AddAsync(user);
@@ -46,10 +45,10 @@ public class BorrowDocumentTests : BaseClassFixture
             BorrowFrom = DateTime.Now.Add(TimeSpan.FromHours(1)),
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(1)),
         };
-        
+
         // Act
         var result = await SendAsync(command);
-        
+
         // Assert
         result.DocumentId.Should().Be(command.DocumentId);
         result.BorrowerId.Should().Be(command.BorrowerId);
@@ -57,7 +56,7 @@ public class BorrowDocumentTests : BaseClassFixture
         result.BorrowTime.Should().Be(command.BorrowFrom);
         result.DueTime.Should().Be(command.BorrowTo);
         result.Status.Should().Be(BorrowRequestStatus.Pending.ToString());
-        
+
         // Cleanup
         Remove(await FindAsync<Borrow>(result.Id));
         Remove(user);
@@ -72,7 +71,7 @@ public class BorrowDocumentTests : BaseClassFixture
         var document = CreateNDocuments(1).First();
         document.Status = DocumentStatus.Available;
         await AddAsync(document);
-        
+
         var command = new BorrowDocument.Command()
         {
             BorrowerId = Guid.NewGuid(),
@@ -81,18 +80,18 @@ public class BorrowDocumentTests : BaseClassFixture
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             BorrowReason = "Example",
         };
-        
+
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("User does not exist.");
-        
+
         // Cleanup
         Remove(document);
     }
-    
+
     [Fact]
     public async Task ShouldThrowConflictException_WhenUserIsNotActive()
     {
@@ -100,11 +99,11 @@ public class BorrowDocumentTests : BaseClassFixture
         var document = CreateNDocuments(1).First();
         document.Status = DocumentStatus.Available;
         await AddAsync(document);
-        
+
         var user = CreateUser(IdentityData.Roles.Employee, "aaaaaa");
         user.IsActive = false;
         await AddAsync(user);
-        
+
         var command = new BorrowDocument.Command()
         {
             BorrowerId = user.Id,
@@ -113,19 +112,19 @@ public class BorrowDocumentTests : BaseClassFixture
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             BorrowReason = "Example",
         };
-        
+
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("User is not active.");
-        
+
         // Cleanup
         Remove(document);
         Remove(user);
     }
-    
+
     [Fact]
     public async Task ShouldThrowConflictException_WhenUserIsNotActivated()
     {
@@ -133,11 +132,11 @@ public class BorrowDocumentTests : BaseClassFixture
         var document = CreateNDocuments(1).First();
         document.Status = DocumentStatus.Available;
         await AddAsync(document);
-        
+
         var user = CreateUser(IdentityData.Roles.Employee, "aaaaaa");
         user.IsActivated = false;
         await AddAsync(user);
-        
+
         var command = new BorrowDocument.Command()
         {
             BorrowerId = user.Id,
@@ -146,14 +145,14 @@ public class BorrowDocumentTests : BaseClassFixture
             BorrowTo = DateTime.Now.Add(TimeSpan.FromDays(2)),
             BorrowReason = "Example",
         };
-        
+
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("User is not activated.");
-        
+
         // Cleanup
         Remove(document);
         Remove(user);
@@ -177,15 +176,15 @@ public class BorrowDocumentTests : BaseClassFixture
 
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("Document does not exist.");
-        
+
         // Cleanup
         Remove(user);
     }
-    
+
     [Fact]
     public async Task ShouldConflictException_WhenDocumentIsNotAvailable()
     {
@@ -208,16 +207,16 @@ public class BorrowDocumentTests : BaseClassFixture
 
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("Document is not available.");
-        
+
         // Cleanup
         Remove(user);
         Remove(document);
     }
-    
+
     [Fact]
     public async Task ShouldConflictException_WhenUserAndDocumentDoesNotBelongToTheSameDepartment()
     {
@@ -226,7 +225,7 @@ public class BorrowDocumentTests : BaseClassFixture
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var department1 = CreateDepartment();
         var department2 = CreateDepartment();
-        
+
         var user = CreateUser(IdentityData.Roles.Employee, "bbbbbb");
         user.Department = department1;
         await context.AddAsync(user);
@@ -249,11 +248,11 @@ public class BorrowDocumentTests : BaseClassFixture
 
         // Act
         var result = async () => await SendAsync(command);
-        
+
         // Assert
         await result.Should().ThrowAsync<ConflictException>()
             .WithMessage("User is not allowed to borrow this document.");
-        
+
         // Cleanup
         Remove(user);
         Remove(document);
