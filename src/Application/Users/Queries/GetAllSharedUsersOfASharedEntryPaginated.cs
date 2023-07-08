@@ -2,6 +2,7 @@
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
@@ -43,9 +44,13 @@ public class GetAllSharedUsersOfASharedEntryPaginated
                 throw new KeyNotFoundException("Entry does not exist.");
             }
 
-            if (entry.OwnerId != request.CurrentUser.Id)
+            var permission = await _context.EntryPermissions
+                .FirstOrDefaultAsync(x => x.EntryId == request.EntryId
+                                          && x.EmployeeId == request.CurrentUser.Id, cancellationToken);
+
+            if (permission is null || !permission.AllowedOperations.Contains(EntryOperation.View.ToString()))
             {
-                throw new NotAllowedException("You do not have permission to view shared users of this entry.");
+                throw new NotAllowedException("You do not have permission to view this shared entry's users.");
             }
             
             var sharedUsers = _context.EntryPermissions
