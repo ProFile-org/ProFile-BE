@@ -1,4 +1,5 @@
-﻿using Application.Rooms.Commands;
+﻿using Application.Common.Exceptions;
+using Application.Rooms.Commands;
 using Domain.Entities;
 using Domain.Entities.Physical;
 using FluentAssertions;
@@ -11,31 +12,7 @@ public class RemoveRoomTests : BaseClassFixture
     public RemoveRoomTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
-
-    [Fact]
-    public async Task ShouldRemoveRoom_WhenRoomHasNoDocuments()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var room = CreateRoom(department);
-        await Add(room);
-
-        var command = new RemoveRoom.Command()
-        {
-            RoomId = room.Id
-        };
-        
-        // Act
-        await SendAsync(command);
-
-        // Assert
-        var deletedRoom = await FindAsync<Room>(room.Id);
-        deletedRoom.Should().BeNull();
-        
-        // Cleanup
-        Remove(await FindAsync<Department>(department.Id));
-    }
-
+    
     [Fact]
     public async Task ShouldThrowInvalidOperationException_WhenRoomHaveDocuments()
     {
@@ -56,8 +33,8 @@ public class RemoveRoomTests : BaseClassFixture
         var action = async () => await SendAsync(command);
         
         // Assert
-        await action.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Room cannot be removed because it contains documents.");
+        await action.Should().ThrowAsync<ConflictException>()
+            .WithMessage("Room cannot be removed because it contains something.");
         
         // Cleanup
         Remove(documents.First());

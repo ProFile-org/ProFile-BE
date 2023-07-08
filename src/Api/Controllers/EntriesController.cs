@@ -105,4 +105,31 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<EntryDto>.Succeed(result));
     }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("{entryId:guid}/permissions")]
+    public async Task<ActionResult<Result<EntryPermissionDto>>> ManagePermission(
+        [FromRoute] Guid entryId,
+        [FromBody] ShareEntryPermissionRequest request)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var command = new ShareEntry.Command
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+            UserId = request.UserId,
+            ExpiryDate = request.ExpiryDate,
+            CanView = request.CanView,
+            CanUpload = request.CanUpload,
+            CanDownload = request.CanDownload,
+            CanChangePermission = request.CanChangePermission,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryPermissionDto>.Succeed(result));
+    }
 }
