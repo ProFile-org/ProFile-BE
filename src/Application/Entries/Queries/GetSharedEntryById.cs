@@ -42,6 +42,11 @@ public class GetSharedEntryById
             {
                 throw new KeyNotFoundException("Shared entry does not exist.");
             }
+
+            if (!permission.AllowedOperations.Contains(EntryOperation.View.ToString()))
+            {
+                throw new NotAllowedException("You do not have permission to view this shared entry.");
+            }
             
             return _mapper.Map<EntryDto>(permission.Entry);
         }
