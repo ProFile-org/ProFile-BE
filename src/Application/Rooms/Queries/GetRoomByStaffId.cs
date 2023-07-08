@@ -1,6 +1,8 @@
+using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,7 @@ public class GetRoomByStaffId
 {
     public record Query : IRequest<RoomDto>
     {
+        public User CurrentUser { get; init; } = null!;
         public Guid StaffId { get; init; }
     }
     

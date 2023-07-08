@@ -18,5 +18,8 @@ public class FileConfiguration : IEntityTypeConfiguration<FileEntity>
 
         builder.Property(x => x.FileData)
             .IsRequired();
+
+        builder.Property(x => x.FileExtension)
+            .IsRequired(false);
     }
 }

@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -9,7 +10,9 @@ using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
+using Serilog.Context;
 
 namespace Application.Rooms.Commands;
 
@@ -56,11 +59,13 @@ public class AddRoom
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        private readonly ILogger<AddRoom> _logger;
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<AddRoom> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
         
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
@@ -94,7 +99,9 @@ public class AddRoom
                 Created = localDateTimeNow,
                 CreatedBy = request.CurrentUser.Id,
             };
-            
+
+            var result = await _context.Rooms.AddAsync(entity, cancellationToken);
+
             var log = new RoomLog()
             {
                 User = request.CurrentUser,
@@ -103,7 +110,12 @@ public class AddRoom
                 Time = localDateTimeNow,
                 Action = RoomLogMessage.Add,
             };
-            var result = await _context.Rooms.AddAsync(entity, cancellationToken);
+
+            using (Logging.PushProperties(nameof(Room), entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAddRoom(result.Entity.Id.ToString(), department.Name);
+            }
+
             await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<RoomDto>(result.Entity);
