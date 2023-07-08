@@ -86,7 +86,7 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
-
+    
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("{entryId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -109,6 +109,7 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
+    
 
     /// <summary>
     /// 
