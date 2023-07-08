@@ -60,8 +60,6 @@ public class SharedController : ApiControllerBase
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             EntryId = entryId,
-            SortBy = queryParameters.SortBy,
-            SortOrder = queryParameters.SortOrder,
         };
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 

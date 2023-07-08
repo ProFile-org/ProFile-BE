@@ -19,8 +19,6 @@ public class GetAllSharedUsersOfASharedEntryPaginated
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
-        public string? SortBy { get; init; }
-        public string? SortOrder { get; init; }
     }
 
     public class Handler : IRequestHandler<Query, PaginatedList<UserDto>>
@@ -54,7 +52,6 @@ public class GetAllSharedUsersOfASharedEntryPaginated
             }
             
             var sharedUsers = _context.EntryPermissions
-                .AsQueryable()
                 .Where(x => x.EntryId == request.EntryId)
                 .Select(x => x.Employee);
             
@@ -68,8 +65,8 @@ public class GetAllSharedUsersOfASharedEntryPaginated
                 .ListPaginateWithSortAsync<User, UserDto>(
                     request.Page,
                     request.Size,
-                    request.SortBy,
-                    request.SortOrder,
+                    null,
+                    null,
                     _mapper.ConfigurationProvider,
                     cancellationToken);
         }
