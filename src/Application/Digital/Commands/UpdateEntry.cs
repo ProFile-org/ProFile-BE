@@ -42,11 +42,6 @@ public class UpdateEntry
             {
                 throw new KeyNotFoundException("Entry does not exist.");
             }
-
-            if (entry.Owner.Id != request.CurrentUserId )
-            {
-                throw new UnauthorizedAccessException("User can not access this resource.");
-            }
             
             if (entry.OwnerId != request.CurrentUserId)
             {
