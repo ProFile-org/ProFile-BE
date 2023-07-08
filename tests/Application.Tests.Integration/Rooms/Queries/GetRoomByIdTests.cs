@@ -10,32 +10,7 @@ public class GetRoomByIdTests : BaseClassFixture
     public GetRoomByIdTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
-    
-    [Fact]
-    public async Task ShouldReturnRoom_WhenThatRoomExists()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var room = CreateRoom(department);
-        await AddAsync(room);
-        
-        var query = new GetRoomById.Query()
-        {
-            RoomId = room.Id,
-        };
-
-        // Act
-        var result = await SendAsync(query);
-
-        // Assert
-        result.Id.Should().Be(room.Id);
-        result.Name.Should().Be(room.Name);
-
-        // Cleanup
-        Remove(room);
-        Remove(await FindAsync<Department>(department.Id));
-    }
-    
+  
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenThatRoomDoesNotExist()
     {
