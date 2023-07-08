@@ -4,6 +4,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Digital.Commands;
+using Application.Digital.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;

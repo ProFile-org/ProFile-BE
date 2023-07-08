@@ -1,6 +1,7 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos;
+using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
@@ -50,10 +51,19 @@ public class DownloadDigitalFile
                 throw new ConflictException("Can not download folder.");
             }
             
-            
-            if (entry.Owner.Id != request.CurrentUserId)
+            if (entry.OwnerId != request.CurrentUserId)
             {
-                throw new UnauthorizedAccessException("Can not download file that does not belong to you.");
+                var permission = await _context.EntryPermissions.FirstOrDefaultAsync(
+                    x => x.EntryId == request.EntryId 
+                         && x.EmployeeId == request.CurrentUserId, cancellationToken);
+
+                if (permission is null ||
+                    !permission.AllowedOperations
+                        .Split(",")
+                        .Contains(EntryOperation.Download.ToString()))
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
             }
 
             var content = new MemoryStream(entry.File!.FileData);
