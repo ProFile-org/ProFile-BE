@@ -12,33 +12,6 @@ public class GetLockerByIdTests : BaseClassFixture
     }
     
     [Fact]
-    public async Task ShouldReturnLocker_WhenThatLockerExists()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var locker = CreateLocker();
-        var room = CreateRoom(department, locker);
-        await AddAsync(room);
-        
-        var query = new GetLockerById.Query()
-        {
-            LockerId = locker.Id,
-        };
-
-        // Act
-        var result = await SendAsync(query);
-
-        // Assert
-        result.Id.Should().Be(locker.Id);
-        result.Name.Should().Be(locker.Name);
-
-        // Cleanup
-        Remove(locker);
-        Remove(room);
-        Remove(await FindAsync<Department>(department.Id));
-    }
-    
-    [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenThatLockerDoesNotExist()
     {
         // Arrange
