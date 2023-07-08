@@ -1,6 +1,7 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Digital;
+using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
@@ -46,7 +47,22 @@ public class UpdateEntry
             {
                 throw new UnauthorizedAccessException("User can not access this resource.");
             }
+            
+            if (entry.OwnerId != request.CurrentUserId)
+            {
+                var permission = await _context.EntryPermissions.FirstOrDefaultAsync(
+                    x => x.EntryId == request.EntryId
+                         && x.EmployeeId == request.CurrentUserId, cancellationToken);
 
+                if (permission is null ||
+                    !permission.AllowedOperations
+                        .Split(",")
+                        .Contains(EntryOperation.Upload.ToString()))
+                {
+                    throw new UnauthorizedAccessException("User cannot access this resource.");
+                }
+            }
+            
             var nameExisted = await _context.Entries
                 .AnyAsync(x => x.Id != entry.Id 
                                && x.Path.Equals(entry.Path)
