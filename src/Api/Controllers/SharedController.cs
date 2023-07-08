@@ -59,6 +59,7 @@ public class SharedController : ApiControllerBase
             CurrentUser = currentUser,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
+            SearchTerm = queryParameters.SearchTerm,
             EntryId = entryId,
         };
         var result = await Mediator.Send(query);
