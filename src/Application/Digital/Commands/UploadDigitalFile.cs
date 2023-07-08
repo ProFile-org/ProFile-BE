@@ -73,7 +73,7 @@ public class UploadDigitalFile {
                 Created = localDateTimeNow,
                 Owner = request.CurrentUser,
                 OwnerId = request.CurrentUser.Id,
-                Size = null
+                SizeInBytes = null
             };
             
             if (request.IsDirectory)
@@ -90,8 +90,6 @@ public class UploadDigitalFile {
             }
             else
             {
-                
-                entryEntity.Size = request.FileData!.Length;
                 // Make this dynamic
                 if (request.FileData!.Length > 20971520)
                 {
@@ -109,6 +107,7 @@ public class UploadDigitalFile {
                 };
                 entryEntity.FileId = fileEntity.Id;
                 entryEntity.File = fileEntity;
+                entryEntity.SizeInBytes = request.FileData!.Length;
                 
                 await _context.Files.AddAsync(fileEntity, cancellationToken);
             }

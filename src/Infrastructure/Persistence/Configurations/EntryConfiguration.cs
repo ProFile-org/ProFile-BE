@@ -34,7 +34,7 @@ public class EntryConfiguration : IEntityTypeConfiguration<Entry>
             .HasForeignKey(x => x.OwnerId)
             .IsRequired();
 
-        builder.Property(x => x.Size)
+        builder.Property(x => x.SizeInBytes)
             .IsRequired(false);
     }
 }

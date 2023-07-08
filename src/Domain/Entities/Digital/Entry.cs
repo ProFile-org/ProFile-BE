@@ -9,7 +9,7 @@ public class Entry : BaseAuditableEntity
     public string Path { get; set; } = null!;
     public Guid? FileId { get; set; }
     public Guid OwnerId { get; set; }
-    public long? Size { get; set; }
+    public long? SizeInBytes { get; set; }
     [NotMapped] public bool IsDirectory => FileId is null;
 
     public virtual FileEntity? File { get; set; }
