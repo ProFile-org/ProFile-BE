@@ -228,7 +228,28 @@ public class BorrowsController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<BorrowDto>.Succeed(result));
     }
-    
+
+    /// <summary>
+    /// Report lost document
+    /// </summary>
+    /// <param name="borrowId">Id of the borrow request to be reported</param>
+    /// <returns>A BorrowDto of the cancelled borrow request</returns>
+    [RequiresRole(IdentityData.Roles.Staff)]
+    [HttpPost("lost/{borrowId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<BorrowDto>>> LostReport([FromRoute] Guid borrowId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var command = new ReportLostDocument.Command()
+        {
+            CurrentUser = currentUser,
+            BorrowId = borrowId,
+        };
+
+        var result = await Mediator.Send(command);
+        return Ok(Result<BorrowDto>.Succeed(result));
+    }
+
     /// <summary>
     /// Get all logs related to requests.
     /// </summary>

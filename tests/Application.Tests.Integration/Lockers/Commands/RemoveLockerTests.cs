@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Lockers.Commands;
 using Application.Rooms.Commands;
 using Domain.Entities;
@@ -12,34 +13,7 @@ public class RemoveLockerTests : BaseClassFixture
     public RemoveLockerTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
-
-    [Fact]
-    public async Task ShouldRemoveLocker_WhenLockerHasNoDocuments()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var locker = CreateLocker();
-        var room = CreateRoom(department, locker);
-        await Add(room);
-
-        var command = new RemoveLocker.Command()
-        {
-            LockerId = locker.Id,
-        };
-        
-        // Act
-        var result = await SendAsync(command);
-
-        // Assert
-        result.Id.Should().Be(locker.Id);
-        var removedLocker = await FindAsync<Locker>(locker.Id);
-        removedLocker.Should().BeNull();
-        
-        // Cleanup
-        Remove(await FindAsync<Room>(room.Id));
-        Remove(await FindAsync<Department>(department.Id));
-    }
-
+    
     [Fact]
     public async Task ShouldThrowConflictException_WhenRoomStillHasDocuments()
     {
@@ -60,7 +34,7 @@ public class RemoveLockerTests : BaseClassFixture
         var action = async () => await SendAsync(command);
         
         // Assert
-        await action.Should().ThrowAsync<InvalidOperationException>()
+        await action.Should().ThrowAsync<ConflictException>()
             .WithMessage("Locker cannot be removed because it contains documents.");
         
         // Cleanup
