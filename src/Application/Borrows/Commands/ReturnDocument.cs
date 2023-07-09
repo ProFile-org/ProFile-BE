@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Borrows.Commands;
@@ -25,12 +27,14 @@ public class ReturnDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-        
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        private readonly ILogger<ReturnDocument> _logger;
+
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<ReturnDocument> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -95,6 +99,10 @@ public class ReturnDocument
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             _context.Documents.Update(borrowRequest.Document);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUser.Id))
+            {
+                _logger.LogReturnDocument(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+            }
             return _mapper.Map<BorrowDto>(result.Entity);
         }
     }

@@ -25,4 +25,8 @@ public class ImportDocumentRequest
     /// Id of the folder that this document will be in
     /// </summary>
     public Guid FolderId { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool IsPrivate { get; set; }
 }

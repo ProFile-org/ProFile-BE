@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -7,6 +8,7 @@ using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Borrows.Commands;
@@ -24,12 +26,14 @@ public class CancelBorrowRequest
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<CancelBorrowRequest> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CancelBorrowRequest> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<BorrowDto> Handle(Command request, CancellationToken cancellationToken)
@@ -63,13 +67,17 @@ public class CancelBorrowRequest
                 UserId = currentUser!.Id,
                 User = currentUser,
                 Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.CanCel,
+                Action = DocumentLogMessages.Borrow.Cancel,
             };
 
             borrowRequest.Status = BorrowRequestStatus.Cancelled;
             var result = _context.Borrows.Update(borrowRequest);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
+            {
+                _logger.LogCancelBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+            }
             return _mapper.Map<BorrowDto>(result.Entity);
         }
     }

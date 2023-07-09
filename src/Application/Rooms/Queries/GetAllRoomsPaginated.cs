@@ -18,6 +18,7 @@ public class GetAllRoomsPaginated
     {
         public User CurrentUser { get; init; } = null!;
         public Guid? DepartmentId { get; init; }
+        public bool? IsAvailable { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -52,6 +53,11 @@ public class GetAllRoomsPaginated
             if (request.DepartmentId is not null)
             {
                 rooms = rooms.Where(x => x.Department.Id == request.DepartmentId);
+            }
+
+            if (request.IsAvailable is not null)
+            {
+                rooms = rooms.Where(x => x.IsAvailable == request.IsAvailable);
             }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))

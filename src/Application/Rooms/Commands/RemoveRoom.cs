@@ -1,13 +1,16 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Logging;
+using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Rooms.Commands;
@@ -36,12 +39,14 @@ public class RemoveRoom
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<RemoveRoom> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RemoveRoom> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<RoomDto> Handle(Command request, CancellationToken cancellationToken)
@@ -68,6 +73,8 @@ public class RemoveRoom
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
+            var result = _context.Rooms.Remove(room);
+
             var log = new RoomLog()
             {
                 User = request.CurrentUser,
@@ -76,9 +83,15 @@ public class RemoveRoom
                 Time = localDateTimeNow,
                 Action = RoomLogMessage.Remove,
             };
-            var result = _context.Rooms.Remove(room);
             await _context.RoomLogs.AddAsync(log, cancellationToken);
+
             await _context.SaveChangesAsync(cancellationToken);
+
+            using (Logging.PushProperties(nameof(Room), room.Id, request.CurrentUser.Id))
+            {
+               _logger.LogRemoveRoom(room.Id.ToString(), room.Department.Name);
+            }
+
             return _mapper.Map<RoomDto>(result.Entity);
         }
     }
