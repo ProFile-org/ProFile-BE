@@ -53,7 +53,7 @@ public class RestoreBinEntry
                 throw new NotChangedException("Entry is not in bin.");
             }
 
-            if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
+            if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
             {
                 throw new NotAllowedException("You do not have the permission to restore this entry.");
             }
