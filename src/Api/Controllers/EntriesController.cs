@@ -89,6 +89,25 @@ public class EntriesController  : ApiControllerBase
     /// <summary>
     /// 
     /// </summary>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllPaginated(
+        [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters )
+    {
+        var query = new GetAllEntriesPaginated.Query()
+        {
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            EntryPath = queryParameters.EntryPath,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
+    }
     /// <param name="entryId"></param>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
