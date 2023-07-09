@@ -4,6 +4,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Digital.Commands;
+using Application.Digital.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
@@ -88,7 +89,45 @@ public class EntriesController  : ApiControllerBase
     /// <summary>
     /// 
     /// </summary>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllPaginated(
+        [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters )
+    {
+        var query = new GetAllEntriesPaginated.Query()
+        {
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            EntryPath = queryParameters.EntryPath,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
+    }
     /// <param name="entryId"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{entryId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<EntryDto>>> GetById([FromRoute] Guid entryId)
+    {
+        var query = new GetEntryById.Query()
+        {
+            EntryId = entryId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]

@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Digital;
+using Application.Helpers;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Digital;
@@ -74,6 +75,7 @@ public class UploadDigitalFile {
                 Created = localDateTimeNow,
                 Owner = request.CurrentUser,
                 OwnerId = request.CurrentUser.Id,
+                SizeInBytes = null
             };
             
             if (request.IsDirectory)
@@ -91,7 +93,7 @@ public class UploadDigitalFile {
             else
             {
                 // Make this dynamic
-                if (request.FileData!.Length > 20971520)
+                if (request.FileData!.Length > FileUtil.ToByteFromMb(20))
                 {
                     throw new ConflictException("File size must be lower than 20MB");
                 }
@@ -107,6 +109,7 @@ public class UploadDigitalFile {
                 };
                 entryEntity.FileId = fileEntity.Id;
                 entryEntity.File = fileEntity;
+                entryEntity.SizeInBytes = request.FileData!.Length;
                 
                 await _context.Files.AddAsync(fileEntity, cancellationToken);
             }

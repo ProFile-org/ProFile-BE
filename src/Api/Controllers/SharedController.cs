@@ -1,6 +1,7 @@
 using Api.Controllers.Payload.Requests.DigitalFile;
 using Api.Controllers.Payload.Requests.Entries;
 using Application.Common.Exceptions;
+using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
@@ -8,6 +9,7 @@ using Application.Digital.Commands;
 using Application.Entries.Queries;
 using Application.Identity;
 using FluentValidation.Results;
+using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,10 +27,31 @@ public class SharedController : ApiControllerBase
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="entryId"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("entries/{entryId:guid}/file")]
+    public async Task<ActionResult> DownloadSharedFile([FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new DownloadSharedEntry.Query()
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+        };
+        var result = await Mediator.Send(query);
+        var content = new MemoryStream(result.FileData);
+        HttpContext.Response.ContentType = result.FileType;
+        return File(content, result.FileType, result.FileName);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
-    public async Task<ActionResult<PaginatedList<EntryDto>>> DownloadSharedFile(
+    public async Task<ActionResult<PaginatedList<EntryDto>>> GetAll(
         [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters)
     {
         var currentUser = _currentUserService.GetCurrentUser();
@@ -44,6 +67,7 @@ public class SharedController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<EntryDto>>.Succeed(result)); 
     }
+
 
     /// <summary>
     ///  upload a file or create a directory to a shared entry
@@ -113,3 +137,46 @@ public class SharedController : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
 }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("entries/{entryId:guid}/shared-users")]
+    public async Task<ActionResult<PaginatedList<UserDto>>> GetSharedUsersFromASharedEntryPaginated(
+        [FromRoute] Guid entryId,
+        [FromQuery] GetAllSharedUsersFromASharedEntryPaginatedQueryParameters queryParameters)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetAllSharedUsersOfASharedEntryPaginated.Query()
+        {
+            CurrentUser = currentUser,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SearchTerm = queryParameters.SearchTerm,
+            EntryId = entryId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns> [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("entries/{entryId}/permissions")]
+    public async Task<ActionResult<Result<EntryPermissionDto>>> SharePermissions(
+        [FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetPermissions.Query
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<EntryPermissionDto>.Succeed(result));
+    }
+}
+
