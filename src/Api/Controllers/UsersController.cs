@@ -1,13 +1,10 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Identity;
 using Application.Users.Commands;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -187,28 +184,5 @@ public class UsersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<UserDto>.Succeed(result));
-    }
-
-    /// <summary>
-    /// Get all user related logs paginated
-    /// </summary>
-    /// <param name="queryParameters">Get all users related logs query parameters</param>
-    /// <returns>A paginated list of UserLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<UserLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var query = new GetAllUserLogsPaginated.Query()
-        {
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-            UserId = queryParameters.ObjectId,
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<UserLogDto>>.Succeed(result));
     }
 }

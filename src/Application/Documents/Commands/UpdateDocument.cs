@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -10,6 +11,7 @@ using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Documents.Commands;
@@ -50,12 +52,14 @@ public class UpdateDocument
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<UpdateDocument> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UpdateDocument> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<DocumentDto> Handle(Command request, CancellationToken cancellationToken)
@@ -110,6 +114,12 @@ public class UpdateDocument
             var result = _context.Documents.Update(document);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            using (Logging.PushProperties(nameof(Document), result.Entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogUpdateDocument(result.Entity.Id.ToString());
+            }
+
             return _mapper.Map<DocumentDto>(result.Entity);
         }
 

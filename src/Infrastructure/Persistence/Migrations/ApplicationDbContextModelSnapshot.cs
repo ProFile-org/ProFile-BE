@@ -23,6 +23,43 @@ namespace Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Application.Common.Models.Log", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Event")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Level")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ObjectType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Template")
+                        .HasColumnType("text");
+
+                    b.Property<Instant?>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Logs");
+                });
+
             modelBuilder.Entity("Domain.Entities.Department", b =>
                 {
                     b.Property<Guid>("Id")
@@ -47,7 +84,20 @@ namespace Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<LocalDateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<LocalDateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("LastModifiedBy")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
@@ -55,16 +105,51 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("SizeInBytes")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("FileId")
                         .IsUnique();
 
+                    b.HasIndex("OwnerId");
+
                     b.ToTable("Entries");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Digital.EntryPermission", b =>
+                {
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AllowedOperations")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<LocalDateTime>("ExpiryDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsSharedRoot")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("EntryId", "EmployeeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EntryPermissions");
                 });
 
             modelBuilder.Entity("Domain.Entities.Digital.FileEntity", b =>
@@ -77,6 +162,9 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<string>("FileExtension")
+                        .HasColumnType("text");
+
                     b.Property<string>("FileType")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -85,23 +173,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Digital.UserGroup", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasAlternateKey("Name");
-
-                    b.ToTable("UserGroups");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
@@ -355,7 +426,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<Guid?>("EntryId")
+                    b.Property<Guid?>("FileId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("FolderId")
@@ -385,7 +456,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("EntryId")
+                    b.HasIndex("FileId")
                         .IsUnique();
 
                     b.HasIndex("FolderId");
@@ -750,28 +821,48 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Memberships", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserGroupId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("UserId", "UserGroupId");
-
-                    b.HasIndex("UserGroupId");
-
-                    b.ToTable("Memberships");
-                });
-
             modelBuilder.Entity("Domain.Entities.Digital.Entry", b =>
                 {
+                    b.HasOne("Domain.Entities.User", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Digital.FileEntity", "File")
                         .WithOne()
                         .HasForeignKey("Domain.Entities.Digital.Entry", "FileId");
 
+                    b.HasOne("Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("File");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Digital.EntryPermission", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Digital.Entry", "Entry")
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Entry");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
@@ -883,9 +974,9 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("DepartmentId");
 
-                    b.HasOne("Domain.Entities.Digital.Entry", "Entry")
+                    b.HasOne("Domain.Entities.Digital.FileEntity", "File")
                         .WithOne()
-                        .HasForeignKey("Domain.Entities.Physical.Document", "EntryId");
+                        .HasForeignKey("Domain.Entities.Physical.Document", "FileId");
 
                     b.HasOne("Domain.Entities.Physical.Folder", "Folder")
                         .WithMany("Documents")
@@ -897,7 +988,7 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Navigation("Department");
 
-                    b.Navigation("Entry");
+                    b.Navigation("File");
 
                     b.Navigation("Folder");
 
@@ -1021,21 +1112,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("Memberships", b =>
-                {
-                    b.HasOne("Domain.Entities.Digital.UserGroup", null)
-                        .WithMany()
-                        .HasForeignKey("UserGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Department", b =>

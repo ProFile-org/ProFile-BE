@@ -2,6 +2,7 @@
 using Api.Controllers.Payload.Requests.Lockers;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
@@ -58,10 +59,12 @@ public class LockersController : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<LockerDto>>>> GetAllPaginated(
         [FromQuery] GetAllLockersPaginatedQueryParameters queryParameters)
     {
+        var currentUserId = _currentUserService.GetId();
         var currentUserRole = _currentUserService.GetRole();
         var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetAllLockersPaginated.Query()
         {
+            CurrentUserId = currentUserId,
             CurrentUserRole = currentUserRole,
             CurrentUserDepartmentId = currentUserDepartmentId,
             RoomId = queryParameters.RoomId,
@@ -153,32 +156,5 @@ public class LockersController : ApiControllerBase
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
-    }
-    
-    /// <summary>
-    /// Get all logs related to locker
-    /// </summary>
-    /// <param name="queryParameters">Query parameters</param>
-    /// <returns>A list of LockerLogsDtos</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<PaginatedList<LockerLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
-    {
-        var currentUserRole = _currentUserService.GetRole();
-        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
-        var query = new GetAllLockerLogsPaginated.Query()
-        {
-            CurrentUserRole = currentUserRole,
-            CurrentUserDepartmentId = currentUserDepartmentId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-            LockerId = queryParameters.ObjectId
-        };
-        var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<LockerLogDto>>.Succeed(result));    
     }
 }

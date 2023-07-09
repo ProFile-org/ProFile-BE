@@ -1,7 +1,10 @@
 ﻿using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Logging;
+using Application.Common.Models.Dtos.Physical;
+using Application.Users.Queries;
 using AutoMapper;
 using Domain.Enums;
 using MediatR;
@@ -11,14 +14,15 @@ namespace Application.Borrows.Queries;
 
 public class GetAllRequestLogsPaginated
 {
-    public record Query : IRequest<PaginatedList<RequestLogDto>>
+    public record Query : IRequest<PaginatedList<LogDto>>
     {
+        public Guid? BorrowRequestId { get; set; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
     }
 
-    public class QueryHandler : IRequestHandler<Query, PaginatedList<RequestLogDto>>
+    public class QueryHandler : IRequestHandler<Query, PaginatedList<LogDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -29,30 +33,47 @@ public class GetAllRequestLogsPaginated
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<RequestLogDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<PaginatedList<LogDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var logs = _context.RequestLogs
-                .Include(x => x.ObjectId)
+            var logs = _context.Logs
+                .Where(x => x.ObjectType!.Equals("BorrowRequest"))
                 .AsQueryable();
+
+            if (request.BorrowRequestId is not null)
+            {
+                logs = logs.Where(x => x.ObjectId! == request.BorrowRequestId);
+            }
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
-                logs = logs.Where(x => 
-                    x.Action.Trim().ToLower().Contains(request.SearchTerm.Trim().ToLower()));
+                logs = logs.Where(x =>
+                    x.Message!.ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
 
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
-            var sizeNumber = request.Size is null or <= 0 ? 5 : request.Size;
+            var sizeNumber = request.Size is null or <= 0 ? 10 : request.Size;
 
             var count = await logs.CountAsync(cancellationToken);
             var list  = await logs
-                .OrderByDescending(x => x.Time)
+                .OrderByDescending(x => x.Time!)
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
 
-            var result = _mapper.Map<List<RequestLogDto>>(list);
+            var result = list.Select(x => new LogDto()
+                {
+                    Id = x.Id,
+                    Event = x.Event,
+                    Template = x.Template,
+                    Message = x.Message,
+                    Level = x.Level,
+                    ObjectType = x.ObjectType,
+                    User = _mapper.Map<UserDto>(_context.Users.FirstOrDefault(y => y.Id == x.UserId!)),
+                    ObjectId = x.ObjectId!,
+                    Time = x.Time?.ToDateTimeUtc(),
+                })
+                .ToList();
 
-            return new PaginatedList<RequestLogDto>(result, count, pageNumber.Value, sizeNumber.Value);
+                return new PaginatedList<LogDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }

@@ -1,9 +1,7 @@
-using Api.Controllers.Payload.Requests;
 using Api.Controllers.Payload.Requests.Documents;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Documents.Commands;
 using Application.Documents.Queries;
@@ -162,6 +160,7 @@ public class DocumentsController : ApiControllerBase
             DocumentType = request.DocumentType,
             FolderId = request.FolderId,
             ImporterId = request.ImporterId,
+            IsPrivate = request.IsPrivate,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<DocumentDto>.Succeed(result));
@@ -280,26 +279,29 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
-
+    
     /// <summary>
-    /// Get all log of document
+    /// Download a file linked with a document
     /// </summary>
-    /// <param name="queryParameters"></param>
-    /// <returns>Paginated list of DocumentLogDto</returns>
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("logs")]
+    /// <param name="documentId">Document id</param>
+    /// <returns>File</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{documentId:guid}/file")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<Result<PaginatedList<DocumentLogDto>>>> GetAllLogsPaginated(
-        [FromQuery] GetAllLogsPaginatedQueryParameters queryParameters)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadFile(
+        [FromRoute] Guid documentId)
     {
-        var query = new GetAllDocumentLogsPaginated.Query()
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new DownloadDocumentFile.Query()
         {
-            DocumentId = queryParameters.ObjectId,
-            SearchTerm = queryParameters.SearchTerm,
-            Page = queryParameters.Page,
-            Size = queryParameters.Size,
-        };        
+            CurrentUser = currentUser,
+            DocumentId = documentId,
+        };
         var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<DocumentLogDto>>.Succeed(result));
+        var content = new MemoryStream(result.FileData);
+        HttpContext.Response.ContentType = result.FileType;
+        return File(content, result.FileType, result.FileName);
     }
 }
