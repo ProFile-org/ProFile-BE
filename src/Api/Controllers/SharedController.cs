@@ -12,6 +12,7 @@ using FluentValidation.Results;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.Entries.GetAllEntriesPaginatedQueryParameters;
 
 namespace Api.Controllers;
 
@@ -136,8 +137,7 @@ public class SharedController : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
-}
-    
+
     /// <summary>
     /// 
     /// </summary>
