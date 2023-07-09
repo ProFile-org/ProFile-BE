@@ -65,6 +65,7 @@ public class ImportRequestsController : ApiControllerBase
         {
             CurrentUser = currentUser,
             SearchTerm = queryParameters.SearchTerm,
+            Statuses = queryParameters.Statuses,
             RoomId = queryParameters.RoomId,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
