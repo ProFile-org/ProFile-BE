@@ -72,7 +72,11 @@ public class GetAllBorrowRequestsPaginated
 
             if (request.CurrentUser.Role.IsEmployee())
             {
-                borrows = borrows.Where(x => x.CreatedBy! == request.CurrentUser.Id);
+
+                if (request.EmployeeId != request.CurrentUser.Id)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource");
+                }
 
                 if (request.RoomId is not null)
                 {
