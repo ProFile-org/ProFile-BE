@@ -65,4 +65,22 @@ public class SharedController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns> [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("entries/{entryId}/permissions")]
+    public async Task<ActionResult<Result<EntryPermissionDto>>> SharePermissions(
+        [FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetPermissions.Query
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<EntryPermissionDto>.Succeed(result));
+    }
 }
