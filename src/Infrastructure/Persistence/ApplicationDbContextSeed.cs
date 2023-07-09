@@ -6,6 +6,7 @@ using Infrastructure.Shared;
 using Microsoft.Extensions.Configuration;
 using NodaTime;
 using Serilog;
+using Serilog.Context;
 
 namespace Infrastructure.Persistence;
 
@@ -18,7 +19,7 @@ public class ApplicationDbContextSeed
         var securitySettings = configuration.GetSection(nameof(SecuritySettings)).Get<SecuritySettings>();
         try
         {
-            await TrySeedAsync(context, securitySettings!.Pepper);
+            await TrySeedAsync(context, securitySettings!.Pepper, logger);
         }
         catch (Exception ex)
         {
@@ -27,7 +28,7 @@ public class ApplicationDbContextSeed
         }
     }
 
-    private static async Task TrySeedAsync(ApplicationDbContext context, string pepper)
+    private static async Task TrySeedAsync(ApplicationDbContext context, string pepper, ILogger logger)
     {
         var department = new Department()
         {
@@ -117,7 +118,7 @@ public class ApplicationDbContextSeed
                 staffUser.Department = itDepartment;
                 await context.Users.AddAsync(staffUser);
             }
-            if (context.Staffs.All(s => s.Id != staff.Id))
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
             {
                 await context.Staffs.AddAsync(staff);
             }
@@ -135,7 +136,7 @@ public class ApplicationDbContextSeed
                 staffUser.Department = itDepartment;
                 await context.Users.AddAsync(staffUser);
             }
-            if (context.Staffs.All(s => s.Id != staff.Id))
+            if (context.Staffs.All(s => s.User.Username != staff.User.Username))
             {
                 await context.Staffs.AddAsync(staff);
             }

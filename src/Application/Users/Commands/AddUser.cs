@@ -1,6 +1,9 @@
+using System.Runtime.CompilerServices;
+using System.Text;
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Helpers;
 using Application.Identity;
@@ -12,7 +15,10 @@ using Domain.Events;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
+using Serilog.Context;
+using Serilog.Core.Enrichers;
 
 namespace Application.Users.Commands;
 
@@ -66,19 +72,21 @@ public class AddUser
         public string? Position { get; init; }
     }
 
-    public class AddUserCommandHandler : IRequestHandler<Command, UserDto>
+    public class CommandHandler : IRequestHandler<Command, UserDto>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ISecurityService _securityService;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<AddUser> _logger;
 
-        public AddUserCommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, ISecurityService securityService, IDateTimeProvider dateTimeProvider, ILogger<AddUser> logger)
         {
             _context = context;
             _mapper = mapper;
             _securityService = securityService;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<UserDto> Handle(Command request, CancellationToken cancellationToken)
@@ -131,7 +139,7 @@ public class AddUser
                 Created = localDateTimeNow,
                 CreatedBy = request.CurrentUser.Id,
             };
-            
+
            
             entity.AddDomainEvent(new UserCreatedEvent(entity, password));
             if (request.Role.IsStaff())
@@ -146,10 +154,14 @@ public class AddUser
                 UserId = request.CurrentUser.Id,
                 ObjectId = entity.Id,
                 Time = localDateTimeNow,
-                Action = UserLogMessages.Add(entity.Role),
+                Action = UserLogMessages.Add,
             };
             await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(User), entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAddUser(result.Entity.Username, result.Entity.Email, result.Entity.Role);
+            }
             return _mapper.Map<UserDto>(result.Entity);
         }
     }

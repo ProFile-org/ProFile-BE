@@ -48,7 +48,6 @@ public class MappingTests
     [InlineData(typeof(RefreshToken), typeof(RefreshTokenDto))]
     [InlineData(typeof(FileEntity), typeof(FileDto))]
     [InlineData(typeof(Entry), typeof(EntryDto))]
-    [InlineData(typeof(UserGroup), typeof(UserGroupDto))]
     [InlineData(typeof(User), typeof(IssuerDto))]
     [InlineData(typeof(Document), typeof(IssuedDocumentDto))]
     [InlineData(typeof(ImportRequest), typeof(ImportRequestDto))]

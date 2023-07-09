@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -11,6 +12,7 @@ using Domain.Exceptions;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Folders.Commands;
@@ -54,18 +56,21 @@ public class AddFolder
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<AddFolder> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<AddFolder> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var locker = await _context.Lockers
                 .Include(x => x.Room)
+                .ThenInclude(y => y.Department)
                 .FirstOrDefaultAsync(l => l.Id == request.LockerId, cancellationToken);
 
             if (locker is null)
@@ -117,6 +122,15 @@ public class AddFolder
             _context.Lockers.Update(locker);
             await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            using (Logging.PushProperties(nameof(Folder), result.Entity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogAddFolder(result.Entity.Id.ToString(),
+                    result.Entity.Locker.Id.ToString(),
+                    locker.Room.Id.ToString(),
+                    locker.Room.Department.Name);
+            }
+
             return _mapper.Map<FolderDto>(result.Entity);
         }
         

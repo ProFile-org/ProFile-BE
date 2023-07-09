@@ -1,6 +1,7 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
@@ -9,6 +10,7 @@ using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Folders.Commands;
@@ -27,12 +29,14 @@ public class RemoveFolder
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<RemoveFolder> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RemoveFolder> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<FolderDto> Handle(Command request, CancellationToken cancellationToken)
@@ -77,6 +81,15 @@ public class RemoveFolder
             locker.NumberOfFolders -= 1;
             await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            using (Logging.PushProperties(nameof(Folder), folder.Id, request.CurrentUser.Id))
+            {
+                _logger.LogRemoveFolder(folder.Id.ToString(),
+                    folder.Locker.Id.ToString(),
+                    folder.Locker.Room.Id.ToString(),
+                    folder.Locker.Room.Department.Name);
+            }
+
             return _mapper.Map<FolderDto>(result.Entity);
         }
 

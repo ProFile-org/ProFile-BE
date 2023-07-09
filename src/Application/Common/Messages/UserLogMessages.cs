@@ -2,15 +2,15 @@ namespace Application.Common.Messages;
 
 public static class UserLogMessages
 {
-    public static string Add(string role) => $"Added user with role {role}";
-    public const string Update = "Updated user";
+    public const string Add = "Added user {Username} with email {Email} of role {Role}";
+    public const string Update = "Updated user {Username} information";
     public const string Disable = "Disabled user";
 
     public static class Staff
     {
-        public const string AddStaff = "Added a new staff";
-        public static string AssignStaff(string roomId) => $"Assigned user to be staff of room {roomId}";
-        public const string RemoveFromRoom = "Removed staff from room";
+        public const string AddStaff = "Add a new staff with id {StaffId}";
+        public const string AssignStaff = "Assign staff {StaffId} to room {RoomId}";
+        public const string RemoveFromRoom = "Remove staff {StaffId} from room {RoomId}";
         public const string Remove = "Removed staff";
     }
 }
