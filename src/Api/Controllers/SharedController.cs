@@ -1,9 +1,11 @@
 using Api.Controllers.Payload.Requests.Entries;
+using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using Application.Entries.Queries;
 using Application.Identity;
+using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,12 +42,34 @@ public class SharedController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<EntryDto>>.Succeed(result)); 
     }
-
+    
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("entries/{entryId:guid}/shared-users")]
+    public async Task<ActionResult<PaginatedList<UserDto>>> GetSharedUsersFromASharedEntryPaginated(
+        [FromRoute] Guid entryId,
+        [FromQuery] GetAllSharedUsersFromASharedEntryPaginatedQueryParameters queryParameters)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetAllSharedUsersOfASharedEntryPaginated.Query()
+        {
+            CurrentUser = currentUser,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            SearchTerm = queryParameters.SearchTerm,
+            EntryId = entryId,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns> [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId}/permissions")]
     public async Task<ActionResult<Result<EntryPermissionDto>>> SharePermissions(
         [FromRoute] Guid entryId)
