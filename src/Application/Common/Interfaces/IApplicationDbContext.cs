@@ -21,9 +21,9 @@ public interface IApplicationDbContext
     public DbSet<Borrow> Borrows { get; }
     public DbSet<Permission> Permissions { get; }
     
-    public DbSet<UserGroup> UserGroups { get; }
     public DbSet<FileEntity> Files { get; }
     public DbSet<Entry> Entries { get; }
+    public DbSet<EntryPermission> EntryPermissions { get; }
     
     public DbSet<Log> Logs { get; }
 
