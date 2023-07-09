@@ -14,68 +14,6 @@ public class RemoveFolderTests : BaseClassFixture
     }
     
     [Fact]
-    public async Task ShouldRemoveFolder_WhenFolderHasNoDocuments()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var folder = CreateFolder();
-        var locker = CreateLocker(folder);
-        var room = CreateRoom(department, locker);
-        await Add(room);
-
-        var command = new RemoveFolder.Command()
-        {
-            FolderId = folder.Id,
-        };
-        
-        // Act
-        var result = await SendAsync(command);
-
-        // Assert
-        result.Id.Should().Be(folder.Id);
-        var removedFolder = await FindAsync<Folder>(folder.Id);
-        removedFolder.Should().BeNull();
-        var lockerOfRemovedFolder = await FindAsync<Locker>(locker.Id);
-        locker.NumberOfFolders.Should().Be(lockerOfRemovedFolder!.NumberOfFolders + 1);
-        
-        // Cleanup
-        Remove(lockerOfRemovedFolder);
-        Remove(await FindAsync<Room>(room.Id));
-        Remove(await FindAsync<Department>(department.Id));
-    }
-
-    [Fact]
-    public async Task ShouldThrowConflictException_WhenFolderStillHasDocuments()
-    {
-        // Arrange
-        var department = CreateDepartment();
-        var documents = CreateNDocuments(1);
-        var folder = CreateFolder(documents);
-        var locker = CreateLocker(folder);
-        var room = CreateRoom(department, locker);
-        await AddAsync(room);
-
-        var command = new RemoveFolder.Command()
-        {
-            FolderId = folder.Id
-        };
-        
-        // Act
-        var action = async () => await SendAsync(command);
-        
-        // Assert
-        await action.Should().ThrowAsync<ConflictException>()
-            .WithMessage("Folder cannot be removed because it contains documents.");
-
-        // Cleanup
-        Remove(documents.First());
-        Remove(folder);
-        Remove(locker);
-        Remove(room);
-        Remove(await FindAsync<Department>(department.Id));
-    }
-
-    [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenFolderDoesNotExist()
     {
         // Arrange

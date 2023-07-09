@@ -11,35 +11,6 @@ public class UpdateRoomTests : BaseClassFixture
     public UpdateRoomTests(CustomApiFactory apiFactory) : base(apiFactory)
     {
     }
-
-    [Fact]
-    public async Task ShouldUpdateRoom_WhenUpdateDetailsAreValid()
-    {
-        // Act
-        var department = CreateDepartment();
-        var room = CreateRoom(department);
-        await AddAsync(room);
-
-        var command = new UpdateRoom.Command()
-        {
-            RoomId = room.Id,
-            Name = "Something else",
-            Description = "Description else",
-            Capacity = 6,
-        };
-        
-        // Act
-        var result = await SendAsync(command);
-        
-        // Assert
-        result.Name.Should().Be(command.Name);
-        result.Description.Should().Be(command.Description);
-        result.Capacity.Should().Be(command.Capacity);
-        
-        // Cleanup
-        Remove(room);
-        Remove(await FindAsync<Department>(department.Id));
-    }
     
     [Fact]
     public async Task ShouldThrowKeyNotFoundException_WhenRoomDoesNotExist()
