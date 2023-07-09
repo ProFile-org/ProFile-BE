@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.DigitalFile;
+using Api.Controllers.Payload.Requests.Entries;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
@@ -85,6 +86,30 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
+    
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("{entryId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    
+    public async Task<ActionResult<Result<EntryDto>>> Update(
+        [FromRoute] Guid entryId, 
+        [FromBody] UpdateEntryRequest request)
+    {
+        var currentUserId = _currentUserService.GetId();
+        var command = new UpdateEntry.Command()
+        {
+            Name = request.Name,
+            EntryId = entryId,
+            CurrentUserId = currentUserId
+        };
+
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
 
     /// <summary>
     /// 
