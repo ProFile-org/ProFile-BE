@@ -91,6 +91,7 @@ public class BorrowsController : ApiControllerBase
             RoomId = queryParameters.RoomId,
             EmployeeId = queryParameters.EmployeeId,
             DocumentId = queryParameters.DocumentId,
+            Statuses = queryParameters.Statuses,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SortBy = queryParameters.SortBy,
