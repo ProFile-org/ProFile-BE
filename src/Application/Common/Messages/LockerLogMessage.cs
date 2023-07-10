@@ -2,7 +2,7 @@ namespace Application.Common.Messages;
 
 public static class LockerLogMessage
 {
-    public const string Add = "Added locker";
-    public const string Update = "Updated locker";
-    public const string Remove = "Removed locker";
+    public const string Add = "Add locker with id {LockerId} to room {RoomId} in Department {DepartmentName}";
+    public const string Update = "Update locker with id {LockerId} to room {RoomId} in Department {DepartmentName}";
+    public const string Remove = "Remove locker with id {LockerId} to room {RoomId} in Department {DepartmentName}";
 }

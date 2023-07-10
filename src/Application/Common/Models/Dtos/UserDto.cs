@@ -22,8 +22,6 @@ public class UserDto : BaseDto, IMapFrom<User>
     public DateTime? LastModified { get; set; }
     public Guid? LastModifiedBy { get; set; }
 
-    public IEnumerable<UserGroup> UserGroups { get; set; }
-
     public void Mapping(Profile profile)
     {
         profile.CreateMap<User, UserDto>()
