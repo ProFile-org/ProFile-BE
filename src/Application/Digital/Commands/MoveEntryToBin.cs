@@ -51,7 +51,7 @@ public class MoveEntryToBin
                 throw new ConflictException("Entry is already in bin.");
             }
 
-            if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
+            if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
             {
                 throw new NotAllowedException("You do not have permission to move this entry into bin.");
             }
