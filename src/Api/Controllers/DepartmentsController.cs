@@ -76,17 +76,17 @@ public class DepartmentsController : ApiControllerBase
     }
     
     /// <summary>
-    /// Get all documents
+    /// Get all departments
     /// </summary>
-    /// <returns>A list of DocumentDto</returns>
+    /// <returns>A list of DepartmentDto</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
+    public async Task<ActionResult<Result<ItemsResult<DepartmentDto>>>> GetAll()
     {
         var result = await Mediator.Send(new GetAllDepartments.Query());
-        return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
+        return Ok(Result<ItemsResult<DepartmentDto>>.Succeed(result));
     }
     
     /// <summary>
