@@ -17,4 +17,8 @@ public class UpdateLockerRequest
     /// New capacity of the locker to be updated
     /// </summary>
     public int Capacity { get; set; }
+    /// <summary>
+    /// Status of locker to be updated
+    /// </summary>
+    public bool IsAvailable { get; set; }
 }
