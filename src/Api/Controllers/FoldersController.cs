@@ -139,6 +139,7 @@ public class FoldersController : ApiControllerBase
     /// <param name="folderId">Id of the folder to be updated</param>
     /// <param name="request">Update folder details</param>
     /// <returns>A FolderDto of the updated folder</returns>
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff)]
     [HttpPut("{folderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
