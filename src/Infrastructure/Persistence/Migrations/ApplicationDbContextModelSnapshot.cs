@@ -112,6 +112,9 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("SizeInBytes")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
@@ -122,6 +125,31 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Entries");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Digital.EntryPermission", b =>
+                {
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AllowedOperations")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<LocalDateTime>("ExpiryDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsSharedRoot")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("EntryId", "EmployeeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EntryPermissions");
                 });
 
             modelBuilder.Entity("Domain.Entities.Digital.FileEntity", b =>
@@ -816,6 +844,25 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Digital.EntryPermission", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Digital.Entry", "Entry")
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Entry");
                 });
 
             modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>

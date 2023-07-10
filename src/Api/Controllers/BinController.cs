@@ -16,11 +16,11 @@ public class BinController : ApiControllerBase
     {
         _currentUserService = currentUserService;
     }
-    
+
     /// <summary>
-    /// 
+    /// Delete an entry
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="entryId"></param>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost("entries")]
@@ -35,6 +35,28 @@ public class BinController : ApiControllerBase
             EntryId = entryId,
         };
             
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="entryId"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpDelete("entries/{entryId:guid}")]
+    public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
+        [FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+
+        var command = new DeleteBinEntry.Command()
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+        };
+
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
