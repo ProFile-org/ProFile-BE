@@ -10,6 +10,7 @@ using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.DigitalFile.GetAllEntriesPaginatedQueryParameters;
 
 namespace Api.Controllers;
 
