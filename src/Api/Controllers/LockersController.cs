@@ -153,6 +153,7 @@ public class LockersController : ApiControllerBase
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
+            IsAvailable = request.IsAvailable,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));
