@@ -1,18 +1,16 @@
-using Api.Controllers.Payload.Requests.DigitalFile;
 using Api.Controllers.Payload.Requests.Entries;
 using Application.Common.Exceptions;
 using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Commands;
+using Application.Entries.Commands;
 using Application.Entries.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Application.Users.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.Entries.GetAllEntriesPaginatedQueryParameters;
 
 namespace Api.Controllers;
 
@@ -53,7 +51,7 @@ public class SharedController : ApiControllerBase
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
     public async Task<ActionResult<PaginatedList<EntryDto>>> GetAll(
-        [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters)
+        [FromQuery] GetAllSharedEntriesPaginatedQueryParameters queryParameters)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetAllSharedEntriesPaginated.Query()

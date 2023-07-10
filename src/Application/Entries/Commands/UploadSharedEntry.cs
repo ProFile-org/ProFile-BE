@@ -10,7 +10,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
-namespace Application.Digital.Commands;
+namespace Application.Entries.Commands;
 
 public class UploadSharedEntry
 {

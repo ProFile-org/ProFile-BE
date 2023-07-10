@@ -3,12 +3,11 @@ using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
-using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
-namespace Application.Digital.Commands;
+namespace Application.Entries.Commands;
 
 public class UpdateEntry
 {
