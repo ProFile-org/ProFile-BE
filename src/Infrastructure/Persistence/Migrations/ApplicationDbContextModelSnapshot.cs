@@ -112,6 +112,9 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("SizeInBytes")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
@@ -138,6 +141,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<LocalDateTime>("ExpiryDateTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsSharedRoot")
+                        .HasColumnType("boolean");
 
                     b.HasKey("EntryId", "EmployeeId");
 

@@ -33,5 +33,8 @@ public class EntryConfiguration : IEntityTypeConfiguration<Entry>
             .WithMany()
             .HasForeignKey(x => x.OwnerId)
             .IsRequired();
+
+        builder.Property(x => x.SizeInBytes)
+            .IsRequired(false);
     }
 }

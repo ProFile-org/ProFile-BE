@@ -60,15 +60,19 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomDto>>> GetRoomByDepartmentId(
+    public async Task<ActionResult<Result<ItemsResult<RoomDto>>>> GetRoomByDepartmentId(
         [FromRoute] Guid departmentId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetRoomByDepartmentId.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             DepartmentId = departmentId,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<RoomDto>.Succeed(result));
+        return Ok(Result<ItemsResult<RoomDto>>.Succeed(result));
     }
     
     /// <summary>

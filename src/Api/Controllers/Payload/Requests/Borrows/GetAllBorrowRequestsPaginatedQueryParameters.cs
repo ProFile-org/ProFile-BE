@@ -11,4 +11,5 @@ public class GetAllBorrowRequestsPaginatedQueryParameters : PaginatedQueryParame
     public Guid? RoomId { get; set; }
     public Guid? DocumentId { get; set; }
     public Guid? EmployeeId { get; set; }
+    public string[]? Statuses { get; init; }
 }
