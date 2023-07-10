@@ -1,7 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Commands;
+using Application.Entries.Commands;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;

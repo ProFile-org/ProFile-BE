@@ -1,4 +1,4 @@
-namespace Api.Controllers.Payload.Requests.DigitalFile;
+namespace Api.Controllers.Payload.Requests.Entries;
 
 public class ShareEntryPermissionRequest
 {

@@ -1,16 +1,15 @@
-using Api.Controllers.Payload.Requests.DigitalFile;
 using Api.Controllers.Payload.Requests.Entries;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Commands;
-using Application.Digital.Queries;
+using Application.Entries.Commands;
+using Application.Entries.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.DigitalFile.GetAllEntriesPaginatedQueryParameters;
+using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.Entries.GetAllEntriesPaginatedQueryParameters;
 
 namespace Api.Controllers;
 

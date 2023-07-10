@@ -1,13 +1,10 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
-using Application.Common.Models.Dtos;
 using Application.Common.Models.Operations;
-using AutoMapper;
-using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Digital.Commands;
+namespace Application.Entries.Commands;
 
 public class DownloadDigitalFile
 {
