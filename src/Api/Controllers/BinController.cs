@@ -23,6 +23,28 @@ public class BinController : ApiControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("entries/{entryId:guid}/restore")]
+    public async Task<ActionResult<Result<EntryDto>>> RestoreBinEntry(
+        [FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+
+        var command = new RestoreBinEntry.Command()
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+        };
+            
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpDelete("entries/{entryId:guid}")]
     public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
         [FromRoute] Guid entryId)

@@ -110,12 +110,12 @@ public class ExceptionMiddleware : IMiddleware
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
-
+    
     private static async void HandleNotChangedException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status204NoContent;
     }
-    
+
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {
         await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(Result<string>.Fail(ex)));
