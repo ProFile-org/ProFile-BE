@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NodaTime;
+using OneOf;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Infrastructure.Identity;
@@ -191,7 +192,7 @@ public class IdentityService : IIdentityService
         }
     }
 
-    public async Task<(AuthenticationResult, UserDto)> LoginAsync(string email, string password)
+    public async Task<OneOf<(AuthenticationResult, UserDto), string>> LoginAsync(string email, string password)
     {
         var user = _applicationDbContext.Users
             .Include(x => x.Department)
@@ -200,6 +201,30 @@ public class IdentityService : IIdentityService
         if (user is null || !user.PasswordHash.Equals(password.HashPasswordWith(user.PasswordSalt, _securitySettings.Pepper)))
         {
             throw new AuthenticationException("Username or password is invalid.");
+        }
+
+        if (!user.IsActivated)
+        {
+            var token = Guid.NewGuid().ToString();
+            var expirationDate = LocalDateTime.FromDateTime(DateTime.Now.AddDays(1));
+            var resetPasswordToken = new ResetPasswordToken()
+            {
+                User = user,
+                TokenHash = SecurityUtil.Hash(token),
+                ExpirationDate = expirationDate,
+                IsInvalidated = false,
+            };
+
+            var tokens = _authDbContext.ResetPasswordTokens.Where(x => x.User.Id == user.Id && !x.IsInvalidated);
+
+            foreach (var t in tokens)
+            {
+                t.IsInvalidated = true;
+            }
+            await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken);
+            await _authDbContext.SaveChangesAsync(CancellationToken.None);
+
+            return token;
         }
         
         var existedRefreshTokens = _authDbContext.RefreshTokens.Where(x => x.User.Email!.Equals(user.Email));
