@@ -50,7 +50,8 @@ public class GetAllDocumentsForEmployeePaginated
                 .Include(x => x.Department)
                 .Include(x => x.Folder)
                 .ThenInclude(y => y.Locker)
-                .ThenInclude(z => z.Room);
+                .ThenInclude(z => z.Room)
+                .Where(x => x.Status != DocumentStatus.Issued);
 
             if (request.IsPrivate)
             {

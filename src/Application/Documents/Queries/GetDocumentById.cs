@@ -7,6 +7,7 @@ using Application.Identity;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,11 @@ public class GetDocumentById
                 .FirstOrDefaultAsync(x => x.Id == request.DocumentId, cancellationToken);
             
             if (document is null)
+            {
+                throw new KeyNotFoundException("Document does not exist.");
+            }
+
+            if (request.CurrentUser.Role.IsEmployee() && document.Status == DocumentStatus.Issued)
             {
                 throw new KeyNotFoundException("Document does not exist.");
             }
