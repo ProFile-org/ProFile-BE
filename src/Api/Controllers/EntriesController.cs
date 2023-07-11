@@ -127,8 +127,10 @@ public class EntriesController  : ApiControllerBase
     public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllPaginated(
         [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters )
     {
+        var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetAllEntriesPaginated.Query()
         {
+            CurrentUser = currentUser,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             EntryPath = queryParameters.EntryPath,

@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
 using AutoMapper;
+using Domain.Entities;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public class GetAllEntriesPaginated
 
     public record Query : IRequest<PaginatedList<EntryDto>>
     {
+        public User CurrentUser { get; init; } = null!;
         public int? Page { get; init; }
         public int? Size { get; init; }
         public string? SortBy { get; init; }
@@ -46,8 +48,8 @@ public class GetAllEntriesPaginated
         public async Task<PaginatedList<EntryDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var entries = _context.Entries
-                .Where(x => x.Path.Equals(request.EntryPath))
-                .AsQueryable();
+                .Where(x => x.Path.Equals(request.EntryPath) &&
+                            x.OwnerId == request.CurrentUser.Id);
             
             var sortBy = request.SortBy;
             if (sortBy is null || !sortBy.MatchesPropertyName<EntryDto>())
