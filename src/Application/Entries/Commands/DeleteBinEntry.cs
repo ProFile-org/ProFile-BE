@@ -52,12 +52,12 @@ public class DeleteBinEntry
 
             if (!binCheck.Contains(BinString))
             {
-                throw new NotChangedException("Entry is not in bin.");
+                throw new UnauthorizedAccessException("Entry is not in bin.");
             }
             
             if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
             {
-                throw new NotAllowedException("You do not have the permission to delete this entry.");
+                throw new UnauthorizedAccessException("You do not have the permission to delete this entry.");
             }
             
             if (entry.IsDirectory)
