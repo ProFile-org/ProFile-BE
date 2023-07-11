@@ -57,7 +57,7 @@ public class RestoreBinEntry
 
             if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
             {
-                throw new NotAllowedException("You do not have the permission to restore this entry.");
+                throw new UnauthorizedAccessException("You do not have the permission to restore this entry.");
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
