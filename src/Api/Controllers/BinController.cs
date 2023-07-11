@@ -18,10 +18,10 @@ public class BinController : ApiControllerBase
     }
 
     /// <summary>
-    /// Delete an entry
+    /// Move an entry to bin
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost("entries")]
     public async Task<ActionResult<Result<EntryDto>>> MoveEntryToBin(
@@ -40,10 +40,10 @@ public class BinController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Restore an entry from bin
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("entries/{entryId:guid}/restore")]
     public async Task<ActionResult<Result<EntryDto>>> RestoreBinEntry(
@@ -61,11 +61,12 @@ public class BinController : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
     
+   
     /// <summary>
-    /// 
+    /// Remove an entry from bin
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="entryId"></param>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpDelete("entries/{entryId:guid}")]
     public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(

@@ -181,10 +181,10 @@ public class SharedController : ApiControllerBase
     /// <summary>
     /// Get a shared entry by Id
     /// </summary>
-    /// <returns>a paginated list of EntryDto</returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}")]
-    public async Task<ActionResult<PaginatedList<EntryDto>>> GetSharedEntryById(
+    public async Task<ActionResult<Result<EntryDto>>> GetSharedEntryById(
         [FromRoute] Guid entryId)
     {
         var currentUser = _currentUserService.GetCurrentUser();

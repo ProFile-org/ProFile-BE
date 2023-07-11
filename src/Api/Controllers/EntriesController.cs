@@ -139,8 +139,13 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
     }
+    
+    
+    /// <summary>
+    /// Get an entry by Id
+    /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("{entryId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
