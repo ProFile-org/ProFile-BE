@@ -58,7 +58,7 @@ public class CreateSharedEntry
                 .ThenInclude(y => y.Uploader)
                 .Include(x => x.Entry)
                 .ThenInclude(x => x.Owner)
-                .Where(x => x.EmployeeId == request.CurrentUser.Id 
+                .Where(x => x.EmployeeId == request.CurrentUser.Id
                             && x.AllowedOperations.Contains(EntryOperation.Edit.ToString()));
 
             var rootEntry = await permissions
@@ -74,7 +74,17 @@ public class CreateSharedEntry
             {
                 throw new ConflictException("This is a file.");
             }
-            
+
+            var permission = _context.EntryPermissions.FirstOrDefaultAsync(
+                x => x.EntryId == rootEntry.Id &&
+                     x.EmployeeId == request.CurrentUser.Id &&
+                     x.AllowedOperations.Contains(EntryOperation.Edit.ToString()), cancellationToken);
+
+            if (permission is null)
+            {
+                throw new UnauthorizedAccessException("User is not allowed to create an entry.");
+            }
+
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
             var entryPath = rootEntry.Path + "/" + request.Name.Trim();
             
