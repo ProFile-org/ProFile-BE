@@ -86,11 +86,12 @@ public class BinController : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
     
+   
     /// <summary>
-    /// 
+    /// Get entry in the bin by Id
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="entryId"></param>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}")]
     public async Task<ActionResult<Result<EntryDto>>> GetBinEntryById(
@@ -109,10 +110,10 @@ public class BinController : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    ///  Get all entry in the bin
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="queryParameters"></param>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
     public async Task<ActionResult<Result<EntryDto>>> GetAllBinEntriesPaginated(

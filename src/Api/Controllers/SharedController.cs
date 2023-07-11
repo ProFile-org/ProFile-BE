@@ -45,9 +45,9 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get all shared entries paginated
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
     public async Task<ActionResult<PaginatedList<EntryDto>>> GetAll(
@@ -69,7 +69,7 @@ public class SharedController : ApiControllerBase
 
 
     /// <summary>
-    ///  upload a file or create a directory to a shared entry
+    ///  Upload a file or create a directory to a shared entry
     /// </summary>
     /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
@@ -99,11 +99,11 @@ public class SharedController : ApiControllerBase
             });
         }
 
-        UploadSharedEntry.Command command;
+        CreateSharedEntry.Command command;
 
         if (request.IsDirectory)
         {
-            command = new UploadSharedEntry.Command()
+            command = new CreateSharedEntry.Command()
             {
                 Name = request.Name,
                 CurrentUser = currentUser,
@@ -121,7 +121,7 @@ public class SharedController : ApiControllerBase
             var lastDotIndex = request.File.FileName.LastIndexOf(".", StringComparison.Ordinal);
             var extension =
                 request.File.FileName.Substring(lastDotIndex + 1, request.File.FileName.Length - lastDotIndex - 1);
-            command = new UploadSharedEntry.Command()
+            command = new CreateSharedEntry.Command()
             {
                 CurrentUser =  currentUser,
                 EntryId = entryId,
@@ -137,9 +137,9 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get shared users from a shared entries paginated
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of UserDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}/shared-users")]
     public async Task<ActionResult<PaginatedList<UserDto>>> GetSharedUsersFromASharedEntryPaginated(
@@ -159,10 +159,13 @@ public class SharedController : ApiControllerBase
         return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 
     }
 
+
     /// <summary>
-    /// 
+    /// Share an entry to a user
     /// </summary>
-    /// <returns></returns> [RequiresRole(IdentityData.Roles.Employee)]
+    /// <param name="entryId"></param>
+    /// <returns>an EntryPermissionDto</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId}/permissions")]
     public async Task<ActionResult<Result<EntryPermissionDto>>> SharePermissions(
         [FromRoute] Guid entryId)
@@ -178,12 +181,12 @@ public class SharedController : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    /// Get shared entry by Id 
     /// </summary>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}")]
-    public async Task<ActionResult<PaginatedList<EntryDto>>> GetSharedEntryById(
+    public async Task<ActionResult<Result<EntryDto>>> GetSharedEntryById(
         [FromRoute] Guid entryId)
     {
         var currentUser = _currentUserService.GetCurrentUser();
