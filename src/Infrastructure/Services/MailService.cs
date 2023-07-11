@@ -17,7 +17,7 @@ public class MailService : IMailService
         _mailSettings = mailSettingsOptions.Value;
     }
 
-    public bool SendResetPasswordHtmlMail(string userEmail, string temporaryPassword, string resetPasswordTokenHash)
+    public bool SendResetPasswordHtmlMail(string userEmail, string temporaryPassword)
     {
         var data = new HtmlMailData()
         {
@@ -34,7 +34,6 @@ public class MailService : IMailService
             TemplateVariables = new TemplateVariables()
             {
                 UserEmail = userEmail,
-                ResetPasswordTokenHash = resetPasswordTokenHash,
                 UserPassword = temporaryPassword,
             },
         };

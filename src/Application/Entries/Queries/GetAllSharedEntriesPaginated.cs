@@ -67,7 +67,7 @@ public class GetAllSharedEntriesPaginated
                 var basePath = baseEntry.Path.Equals("/")
                     ? $"{baseEntry.Path}{baseEntry.Name}"
                     : $"{baseEntry.Path}/{baseEntry.Name}";
-                var pattern = $"{baseEntry.Path}/";
+                var pattern = $"{basePath}/";
 
                 entries = permissions
                     .Select(x => x.Entry)

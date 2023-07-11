@@ -6,6 +6,7 @@ using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Digital;
+using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -117,7 +118,20 @@ public class CreateSharedEntry
                 entity.File = fileEntity;
             }
             
+            
             var result = await _context.Entries.AddAsync(entity, cancellationToken);
+
+            var permissionEntity = new EntryPermission()
+            {
+                EntryId = result.Entity.Id,
+                Entry = result.Entity,
+                EmployeeId = request.CurrentUser.Id,
+                Employee = request.CurrentUser,
+                ExpiryDateTime = null,
+                AllowedOperations = $"{EntryOperation.View.ToString()},{EntryOperation.Edit.ToString()}"
+            };
+            
+            await _context.EntryPermissions.AddAsync(permissionEntity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entity.Id, request.CurrentUser.Id))
             {

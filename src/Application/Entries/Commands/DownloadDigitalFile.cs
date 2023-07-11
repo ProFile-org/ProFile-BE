@@ -69,7 +69,6 @@ public class DownloadDigitalFile
 
             var content = new MemoryStream(entry.File!.FileData);
             var fileType = entry.File!.FileType;
-            var fileExtension = entry.File!.FileExtension;
             var fileId = entry.File!.Id;
             
             using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUser.Id))
@@ -81,7 +80,7 @@ public class DownloadDigitalFile
             {
                 Content = content,
                 FileType = fileType,
-                FileName = $"{entry.Name}.{fileExtension}",
+                FileName = entry.Name,
             };
         }
     }
