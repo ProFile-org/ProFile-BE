@@ -199,5 +199,4 @@ public class EntriesController  : ApiControllerBase
         HttpContext.Response.ContentType = result.FileType;
         return File(result.Content, result.FileType, result.FileName);
     }
-
 }
