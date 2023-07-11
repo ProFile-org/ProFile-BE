@@ -14,7 +14,7 @@ using NodaTime;
 
 namespace Application.Entries.Commands;
 
-public class UploadDigitalFile {
+public class UploadEntry {
     public class Validator : AbstractValidator<Command>
     {
         public Validator()
@@ -26,7 +26,7 @@ public class UploadDigitalFile {
             
             RuleFor(x => x.Path)
                 .NotEmpty().WithMessage("File's path is required.")
-                .Matches("^(/(?!/)[a-z_.\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
+                .Matches("^(/(?!/)[a-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
     
@@ -46,9 +46,9 @@ public class UploadDigitalFile {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper; 
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<UploadDigitalFile> _logger;
+        private readonly ILogger<UploadEntry> _logger;
 
-        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadDigitalFile> logger)
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadEntry> logger)
         {
             _context = context;
             _mapper = mapper;

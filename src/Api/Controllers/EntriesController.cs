@@ -29,7 +29,7 @@ public class EntriesController  : ApiControllerBase
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpPost]
-    public async Task<ActionResult<Result<EntryDto>>> UploadDigitalFile(
+    public async Task<ActionResult<Result<EntryDto>>> UploadEntry(
         [FromForm] UploadDigitalFileRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
@@ -50,11 +50,11 @@ public class EntriesController  : ApiControllerBase
             });
         }
 
-        UploadDigitalFile.Command command;
+        UploadEntry.Command command;
 
         if (request.IsDirectory)
         {
-            command = new UploadDigitalFile.Command()
+            command = new UploadEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
@@ -72,7 +72,7 @@ public class EntriesController  : ApiControllerBase
             var lastDotIndex = request.File.FileName.LastIndexOf(".", StringComparison.Ordinal);
             var extension =
                 request.File.FileName.Substring(lastDotIndex + 1, request.File.FileName.Length - lastDotIndex - 1);
-            command = new UploadDigitalFile.Command()
+            command = new UploadEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
