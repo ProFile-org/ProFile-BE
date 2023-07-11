@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Logging;
 using Application.Common.Models.Operations;
+using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ public class DownloadDigitalFile
 {
     public record Command : IRequest<Result>
     {
-        public Guid CurrentUserId { get; init;}
+        public User CurrentUser { get; init; } = null!;
         public Guid EntryId { get; init; }
     }
 
@@ -51,11 +52,11 @@ public class DownloadDigitalFile
                 throw new ConflictException("Can not download folder.");
             }
             
-            if (entry.OwnerId != request.CurrentUserId)
+            if (entry.OwnerId != request.CurrentUser.Id)
             {
                 var permission = await _context.EntryPermissions.FirstOrDefaultAsync(
                     x => x.EntryId == request.EntryId 
-                         && x.EmployeeId == request.CurrentUserId, cancellationToken);
+                         && x.EmployeeId == request.CurrentUser.Id, cancellationToken);
 
                 if (permission is null ||
                     !permission.AllowedOperations
@@ -71,9 +72,9 @@ public class DownloadDigitalFile
             var fileExtension = entry.File!.FileExtension;
             var fileId = entry.File!.Id;
             
-            using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUserId))
+            using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUser.Id))
             {
-                _logger.LogDownLoadFile(request.CurrentUserId.ToString(), fileId.ToString());
+                _logger.LogDownLoadFile(request.CurrentUser.Username, fileId.ToString());
             }
             
             return new Result()

@@ -78,7 +78,7 @@ public class DeleteBinEntry
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
             {
-                _logger.LogDeleteBinEntry(request.CurrentUser.Id.ToString(), entry.Id.ToString());
+                _logger.LogDeleteBinEntry(request.CurrentUser.Username, entry.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }
