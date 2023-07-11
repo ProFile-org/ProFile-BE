@@ -2,9 +2,11 @@
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +14,7 @@ namespace Application.Users.Queries;
 
 public class GetAllSharedUsersOfASharedEntryPaginated
 {
-    public record Query : IRequest<PaginatedList<UserDto>>
+    public record Query : IRequest<PaginatedList<EntryPermissionDto>>
     {
         public User CurrentUser { get; init; } = null!;
         public Guid EntryId { get; init; }
@@ -21,7 +23,7 @@ public class GetAllSharedUsersOfASharedEntryPaginated
         public int? Size { get; init; }
     }
 
-    public class Handler : IRequestHandler<Query, PaginatedList<UserDto>>
+    public class Handler : IRequestHandler<Query, PaginatedList<EntryPermissionDto>>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -32,7 +34,7 @@ public class GetAllSharedUsersOfASharedEntryPaginated
             _context = context;
         }
 
-        public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<PaginatedList<EntryPermissionDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
@@ -51,25 +53,27 @@ public class GetAllSharedUsersOfASharedEntryPaginated
             {
                 throw new UnauthorizedAccessException("You do not have permission to view this shared entry's users.");
             }
-            
-            var sharedUsers = _context.EntryPermissions
-                .Where(x => x.EntryId == request.EntryId)
-                .Select(x => x.Employee);
+
+            var permissions = _context.EntryPermissions
+                .Include(x => x.Employee)
+                .Where(x => x.EntryId == request.EntryId);
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
-                sharedUsers = sharedUsers.Where(x =>
-                    x.Username.ToLower().Trim().Contains(request.SearchTerm.ToLower().Trim()));
+                permissions = permissions.Where(x =>
+                    x.Employee.Username.ToLower().Trim().Contains(request.SearchTerm.ToLower().Trim()));
             }
             
-            return await sharedUsers
-                .ListPaginateWithSortAsync<User, UserDto>(
-                    request.Page,
-                    request.Size,
-                    null,
-                    null,
-                    _mapper.ConfigurationProvider,
-                    cancellationToken);
+            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
+            var sizeNumber = request.Size is null or <= 0 ? 10 : request.Size;
+            
+            var count = await permissions.CountAsync(cancellationToken);
+            var list  = await permissions
+                .Paginate(pageNumber.Value, sizeNumber.Value)
+                .ToListAsync(cancellationToken);
+
+            var result = _mapper.Map<List<EntryPermissionDto>>(list);
+            return new PaginatedList<EntryPermissionDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
