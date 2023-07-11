@@ -50,7 +50,7 @@ public class GetBinEntryById
 
             if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
             {
-                throw new NotAllowedException("You do not have permission to view this entry");
+                throw new UnauthorizedAccessException("You do not have permission to view this entry");
             }
 
             return _mapper.Map<EntryDto>(entry);
