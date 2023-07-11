@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -102,21 +100,11 @@ public class AddRoom
 
             var result = await _context.Rooms.AddAsync(entity, cancellationToken);
 
-            var log = new RoomLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = entity.Id,
-                Time = localDateTimeNow,
-                Action = RoomLogMessage.Add,
-            };
-
             using (Logging.PushProperties(nameof(Room), entity.Id, request.CurrentUser.Id))
             {
                 _logger.LogAddRoom(result.Entity.Id.ToString(), department.Name);
             }
 
-            await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<RoomDto>(result.Entity);
         }

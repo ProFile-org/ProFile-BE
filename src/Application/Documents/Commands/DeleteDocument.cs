@@ -1,10 +1,8 @@
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -55,16 +53,7 @@ public class DeleteDocument
                 _context.Folders.Update(document.Folder);
             }
             
-            var log = new DocumentLog()
-            {
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = DocumentLogMessages.Delete,
-            };
             var result = _context.Documents.Remove(document);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Document), result.Entity.Id, request.CurrentUser.Id))

@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
@@ -87,27 +85,9 @@ public class AssignDocument
             folder.LastModified = localDateTimeNow;
             folder.LastModifiedBy = request.CurrentUser.Id;
 
-            var log = new DocumentLog()
-            {
-                ObjectId = importRequest.Document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = DocumentLogMessages.Import.Assign,
-            };
-            var folderLog = new FolderLog()
-            {
-                ObjectId = folder.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = FolderLogMessage.AssignDocument,
-            };
             _context.Documents.Update(importRequest.Document);
             var result = _context.ImportRequests.Update(importRequest);
             _context.Folders.Update(folder);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
-            await _context.FolderLogs.AddAsync(folderLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Document), importRequest.Document.Id, request.CurrentUser.Id))
             {
