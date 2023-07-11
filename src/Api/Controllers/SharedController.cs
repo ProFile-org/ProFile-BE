@@ -78,8 +78,8 @@ public class SharedController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<Result<EntryDto>>> CreateSharedEntry([
-        FromRoute] Guid entryId,
+    public async Task<ActionResult<Result<EntryDto>>> CreateSharedEntry(
+        [FromRoute] Guid entryId,
         [FromForm] UploadSharedEntryRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();

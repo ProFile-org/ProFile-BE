@@ -53,40 +53,25 @@ public class CreateSharedEntry
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var permissions = _context.EntryPermissions
+            var permission = await _context.EntryPermissions
                 .Include(x => x.Entry)
                 .ThenInclude(y => y.Uploader)
                 .Include(x => x.Entry)
                 .ThenInclude(x => x.Owner)
-                .Where(x => x.EmployeeId == request.CurrentUser.Id
-                            && x.AllowedOperations.Contains(EntryOperation.Edit.ToString()));
-
-            var rootEntry = await permissions
-                .Select(x => x.Entry)
-                .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
-
-            if (rootEntry is null)
-            {
-                throw new KeyNotFoundException("Entry does not exist.");
-            }
-
-            if (!rootEntry.IsDirectory)
-            {
-                throw new ConflictException("This is a file.");
-            }
-
-            var permission = _context.EntryPermissions.FirstOrDefaultAsync(
-                x => x.EntryId == rootEntry.Id &&
-                     x.EmployeeId == request.CurrentUser.Id &&
-                     x.AllowedOperations.Contains(EntryOperation.Edit.ToString()), cancellationToken);
-
+                .FirstOrDefaultAsync(x => x.EmployeeId == request.CurrentUser.Id &&
+                                          x.EntryId == request.EntryId, cancellationToken);
             if (permission is null)
             {
                 throw new UnauthorizedAccessException("User is not allowed to create an entry.");
             }
 
+            if (!permission.Entry.IsDirectory)
+            {
+                throw new ConflictException("This is a file.");
+            }
+
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
-            var entryPath = rootEntry.Path + "/" + request.Name.Trim();
+            var entryPath = permission.Entry.Path.Equals("/") ? permission.Entry.Path + permission.Entry.Name : $"{permission.Entry.Path}/{request.Name.Trim()}";
             
             var entity = new Entry()
             {
@@ -95,8 +80,8 @@ public class CreateSharedEntry
                 CreatedBy = request.CurrentUser.Id,
                 Uploader = request.CurrentUser,
                 Created = localDateTimeNow,
-                Owner = rootEntry.Owner,
-                OwnerId = rootEntry.Owner.Id,
+                Owner = permission.Entry.Owner,
+                OwnerId = permission.Entry.Owner.Id,
             };
 
             if (request.IsDirectory)
@@ -119,9 +104,6 @@ public class CreateSharedEntry
                     throw new ConflictException("File size must be lower than 20MB");
                 }
                 
-                var lastDotIndex = request.Name.LastIndexOf(".", StringComparison.Ordinal);
-                var fileExtension = request.Name.Substring(lastDotIndex + 1, request.Name.Length - lastDotIndex - 1);
-            
                 var fileEntity = new FileEntity()
                 {
                     FileData = request.FileData.ToArray(),
