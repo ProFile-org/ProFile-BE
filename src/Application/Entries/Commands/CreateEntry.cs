@@ -14,7 +14,7 @@ using NodaTime;
 
 namespace Application.Entries.Commands;
 
-public class UploadEntry {
+public class CreateEntry {
     public class Validator : AbstractValidator<Command>
     {
         public Validator()
@@ -22,10 +22,11 @@ public class UploadEntry {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
             RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Entry's name is required.")
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
             
             RuleFor(x => x.Path)
-                .NotEmpty().WithMessage("File's path is required.")
+                .NotEmpty().WithMessage("Entry's path is required.")
                 .Matches("^(/(?!/)[a-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
@@ -46,9 +47,9 @@ public class UploadEntry {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper; 
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<UploadEntry> _logger;
+        private readonly ILogger<CreateEntry> _logger;
 
-        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadEntry> logger)
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CreateEntry> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -122,7 +123,7 @@ public class UploadEntry {
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entryEntity.Id, request.CurrentUser.Id))
             {
-                _logger.LogUploadDigitalFile(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
+                _logger.LogCreateEntry(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

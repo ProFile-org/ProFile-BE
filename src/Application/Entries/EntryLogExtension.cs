@@ -19,10 +19,10 @@ public static partial class EntryLogExtension
     public static partial void LogUpdateEntry(this ILogger logger, string userId, string entryId);
     
     [LoggerMessage(Level = LogLevel.Information, Message = EntryLogMessages.UploadDigitalFile, EventId = EventId.Add)]
-    public static partial void LogUploadDigitalFile(this ILogger logger, string userId, string entryId);
+    public static partial void LogCreateEntry(this ILogger logger, string userId, string entryId);
     
     [LoggerMessage(Level = LogLevel.Information, Message = EntryLogMessages.UploadSharedEntry, EventId = EventId.Add)]
-    public static partial void LogUploadSharedEntry(this ILogger logger, string userId, string entryId);
+    public static partial void LogCreateSharedEntry(this ILogger logger, string userId, string entryId);
     
     [LoggerMessage(Level = LogLevel.Information, Message = EntryLogMessages.DeleteBinEntry, EventId = EventId.Remove)]
     public static partial void LogDeleteBinEntry(this ILogger logger, string userId, string entryId);

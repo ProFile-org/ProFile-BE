@@ -50,11 +50,11 @@ public class EntriesController  : ApiControllerBase
             });
         }
 
-        UploadEntry.Command command;
+        CreateEntry.Command command;
 
         if (request.IsDirectory)
         {
-            command = new UploadEntry.Command()
+            command = new CreateEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
@@ -72,7 +72,7 @@ public class EntriesController  : ApiControllerBase
             var lastDotIndex = request.File.FileName.LastIndexOf(".", StringComparison.Ordinal);
             var extension =
                 request.File.FileName.Substring(lastDotIndex + 1, request.File.FileName.Length - lastDotIndex - 1);
-            command = new UploadEntry.Command()
+            command = new CreateEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
