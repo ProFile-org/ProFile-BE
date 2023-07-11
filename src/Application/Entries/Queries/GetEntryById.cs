@@ -27,6 +27,7 @@ public class GetEntryById
         public async Task<EntryDto> Handle(Query request, CancellationToken cancellationToken)
         {
             var entry = await _context.Entries
+                .Include(x => x.File)
                 .Include(x => x.Uploader)
                 .ThenInclude(x => x.Department)
                 .Include(x => x.Owner)
