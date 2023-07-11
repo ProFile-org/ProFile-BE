@@ -2,11 +2,9 @@ using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -45,6 +43,7 @@ public class UpdateFolder
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
 
     public class CommandHandler : IRequestHandler<Command, FolderDto>
@@ -98,17 +97,9 @@ public class UpdateFolder
             folder.Capacity = request.Capacity;
             folder.LastModified = localDateTimeNow;
             folder.LastModifiedBy = request.CurrentUser.Id;
+            folder.IsAvailable = request.IsAvailable;
             
-            var log = new FolderLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = folder.Id,
-                Time = localDateTimeNow,
-                Action = FolderLogMessage.Update,
-            };
             var result = _context.Folders.Update(folder);
-            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Folder), folder.Id, request.CurrentUser.Id))

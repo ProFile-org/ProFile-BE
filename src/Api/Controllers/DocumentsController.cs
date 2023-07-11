@@ -25,7 +25,7 @@ public class DocumentsController : ApiControllerBase
     /// </summary>
     /// <param name="documentId">Id of the document to be retrieved</param>
     /// <returns>A DocumentDto of the retrieved document</returns>
-    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Staff)]
+    [RequiresRole(IdentityData.Roles.Admin, IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("{documentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

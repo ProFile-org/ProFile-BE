@@ -5,6 +5,7 @@ using Application.Common.Models.Dtos.ImportDocument;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ public class GetAllImportRequestsPaginated
     {
         public User CurrentUser { get; init; } = null!;
         public Guid? RoomId { get; init; }
+        public string[]? Statuses { get; init; }
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -54,33 +56,45 @@ public class GetAllImportRequestsPaginated
                 }
             }
             
-            if (request.CurrentUser.Role.IsEmployee())
-            {
-                if (request.RoomId is null)
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-
-                var room = await _context.Rooms
-                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
-                var roomDoesNotExist = room is null;
-                
-                if (roomDoesNotExist
-                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-            }
-            
             var importRequests = _context.ImportRequests
                 .Include(x => x.Document)
                 .Include(x => x.Room)
                 .ThenInclude(x => x.Department)
                 .AsQueryable();
+
+            if (request.CurrentUser.Role.IsEmployee())
+            {
+                importRequests = importRequests.Where(x => x.CreatedBy! == request.CurrentUser.Id);
+                if (request.RoomId is not null)
+                {
+                    var room = await _context.Rooms
+                        .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                    var roomDoesNotExist = room is null;
+                    
+                    if (roomDoesNotExist
+                        || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                    {
+                        throw new UnauthorizedAccessException("User can not access this resource.");
+                    }
+                }
+            }
             
             if (request.RoomId is not null)
             {
                 importRequests = importRequests.Where(x => x.RoomId == request.RoomId);
+            }
+
+            if (request.Statuses is not null)
+            {
+                var statuses = request.Statuses.Aggregate(new List<ImportRequestStatus>(),
+                    (statuses, currentStatus) =>
+                    {
+                        if (!Enum.TryParse<ImportRequestStatus>(currentStatus, true, out var validStatus)) return statuses;
+                    
+                        statuses.Add(validStatus);
+                        return statuses;
+                    });
+                importRequests = importRequests.Where(x => statuses.Contains(x.Status));
             }
             
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
@@ -88,7 +102,6 @@ public class GetAllImportRequestsPaginated
                 importRequests = importRequests.Where(x =>
                     x.Document.Title.ToLower().Contains(request.SearchTerm.ToLower()));
             }
-            
             
             return await importRequests
                 .ListPaginateWithSortAsync<ImportRequest, ImportRequestDto>(

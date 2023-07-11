@@ -7,6 +7,7 @@ using Application.Identity;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,26 +51,39 @@ public class GetDocumentById
             {
                 throw new KeyNotFoundException("Document does not exist.");
             }
-            
-            if (ViolateConstraints(request.CurrentUser, document))
+
+            if (request.CurrentUser.Role.IsEmployee() && document.Status == DocumentStatus.Issued)
             {
+                throw new KeyNotFoundException("Document does not exist.");
+            }
+
+            if (ViolateConstraintForStaffAndEmployee(request.CurrentUser, document)) {
                 throw new UnauthorizedAccessException("You don't have permission to view this document.");
             }
-            
+
             return _mapper.Map<DocumentDto>(document);
         }
 
-        private bool ViolateConstraints(User user, Document document)
-            => IsStaffAndNotInSameDepartment(user, document)
-               || IsEmployeeAndDoesNotHasReadPermission(user, document);
-
-        private static bool IsStaffAndNotInSameDepartment(User user, Document document)
-            => user.Role.IsStaff()
-               && user.Department!.Id != document.Department!.Id;
+        private bool ViolateConstraintForStaffAndEmployee(User user, Document document)
+            => !IsInSameDepartment(user, document)
+               && document.IsPrivate
+               && ( IsStaffAndNotInSameRoom(user, document)
+               || IsEmployeeAndDoesNotHasReadPermission(user, document) );
+        
+        private bool IsStaffAndNotInSameRoom(User user, Document document)
+        {
+            var staff = _context.Staffs.FirstOrDefault(x => x.Id == user.Id);
+            return user.Role.IsStaff()  
+                    && staff is not null 
+                    && !staff.Room!.Id.Equals(document.Folder?.Locker.Room.Id);
+        }
 
         private bool IsEmployeeAndDoesNotHasReadPermission(User user, Document document)
             => user.Role.IsEmployee()
                && document.ImporterId != user.Id
                && !_permissionManager.IsGranted(document.Id, DocumentOperation.Read, user.Id);
+
+        private bool IsInSameDepartment(User user, Document document)
+            => user.Department == document.Department;
     }
 }

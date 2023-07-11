@@ -1,9 +1,6 @@
-﻿using Api.Controllers.Payload.Requests;
-using Api.Controllers.Payload.Requests.Lockers;
+﻿using Api.Controllers.Payload.Requests.Lockers;
 using Application.Common.Interfaces;
 using Application.Common.Models;
-using Application.Common.Models.Dtos;
-using Application.Common.Models.Dtos.Logging;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
 using Application.Lockers.Commands;
@@ -153,6 +150,7 @@ public class LockersController : ApiControllerBase
             Name = request.Name,
             Description = request.Description,
             Capacity = request.Capacity,
+            IsAvailable = request.IsAvailable,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<LockerDto>.Succeed(result));

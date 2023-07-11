@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -61,16 +59,7 @@ public class RemoveStaffFromRoom
             _context.Rooms.Update(staff.Room!);
             staff.Room = null;
             
-            var log = new UserLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = staff.User.Id,
-                Time = localDateTimeNow,
-                Action = UserLogMessages.Staff.RemoveFromRoom,
-            };
             var result = _context.Staffs.Update(staff);
-            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(User), result.Entity.Id, request.CurrentUser.Id))
             {

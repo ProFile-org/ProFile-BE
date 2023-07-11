@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
@@ -42,6 +40,7 @@ public class UpdateLocker
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, LockerDto>
@@ -88,19 +87,9 @@ public class UpdateLocker
             locker.Capacity = request.Capacity;
             locker.LastModified = localDateTimeNow;
             locker.LastModifiedBy = request.CurrentUser.Id;
+            locker.IsAvailable = request.IsAvailable;
             
-
-
-            var log = new LockerLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = locker.Id,
-                Time = localDateTimeNow,
-                Action = LockerLogMessage.Update,
-            };
             var result = _context.Lockers.Update(locker);
-            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))

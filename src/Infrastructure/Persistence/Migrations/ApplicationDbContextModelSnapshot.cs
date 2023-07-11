@@ -112,6 +112,9 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long?>("SizeInBytes")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
@@ -138,6 +141,9 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<LocalDateTime>("ExpiryDateTime")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsSharedRoot")
+                        .HasColumnType("boolean");
 
                     b.HasKey("EntryId", "EmployeeId");
 
@@ -167,180 +173,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("BaseFolderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BaseFolderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DocumentLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.FolderLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("BaseLockerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BaseLockerId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("FolderLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.LockerLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("BaseRoomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BaseRoomId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LockerLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.RequestLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RequestLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.RoomLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RoomLogs");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.UserLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ObjectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<LocalDateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserLogs");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>
@@ -857,90 +689,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("Entry");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.DocumentLog", b =>
-                {
-                    b.HasOne("Domain.Entities.Physical.Folder", "BaseFolder")
-                        .WithMany()
-                        .HasForeignKey("BaseFolderId");
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BaseFolder");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.FolderLog", b =>
-                {
-                    b.HasOne("Domain.Entities.Physical.Locker", "BaseLocker")
-                        .WithMany()
-                        .HasForeignKey("BaseLockerId");
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BaseLocker");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.LockerLog", b =>
-                {
-                    b.HasOne("Domain.Entities.Physical.Room", "BaseRoom")
-                        .WithMany()
-                        .HasForeignKey("BaseRoomId");
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BaseRoom");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.RequestLog", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.RoomLog", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Logging.UserLog", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Physical.Borrow", b =>

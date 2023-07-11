@@ -7,4 +7,5 @@ public class GetAllImportRequestsPaginatedQueryParameters : PaginatedQueryParame
 {
     public string? SearchTerm { get; set; }
     public Guid? RoomId { get; set; }
+    public string[]? Statuses { get; set; }
 }

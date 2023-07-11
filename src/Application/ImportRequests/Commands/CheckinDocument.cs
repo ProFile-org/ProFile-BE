@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
@@ -79,26 +77,8 @@ public class CheckinDocument
             importRequest.LastModified = localDateTimeNow;
             importRequest.LastModifiedBy = request.CurrentUser.Id;
             
-            var log = new DocumentLog()
-            {
-                User =  request.CurrentUser,
-                UserId =  request.CurrentUser.Id,
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Import.Checkin,
-            };
-            var importLog = new RequestLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                Action = RequestLogMessages.CheckInImport,
-            };
             var result = _context.Documents.Update(document);
             _context.ImportRequests.Update(importRequest);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
-            await _context.RequestLogs.AddAsync(importLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Document), document.Id, request.CurrentUser.Id))
             {
@@ -112,6 +92,6 @@ public class CheckinDocument
         }
 
         private static bool StatusesAreNotValid(DocumentStatus documentStatus, ImportRequestStatus importRequestStatus)
-            => documentStatus is not DocumentStatus.Issued || importRequestStatus is not ImportRequestStatus.Approved;
+            => documentStatus is not DocumentStatus.Issued || importRequestStatus is not ImportRequestStatus.Assigned;
     }
 }

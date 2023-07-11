@@ -1,12 +1,9 @@
-using System.Runtime.InteropServices;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using Application.Common.Models.Operations;
 using AutoMapper;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Events;
 using Domain.Statuses;
@@ -160,16 +157,7 @@ public class BorrowDocument
                 entity.Status = BorrowRequestStatus.Approved;
             }
 
-            var log = new DocumentLog()
-            {
-                UserId = user.Id,
-                User = user,
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.NewBorrowRequest,
-            };
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("Request", document.Id, user.Id))
             {
