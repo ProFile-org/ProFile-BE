@@ -103,7 +103,8 @@ public class AssignDocument
                 UserId = request.CurrentUser.Id,
                 Action = FolderLogMessage.AssignDocument,
             };
-            var result = _context.Documents.Update(importRequest.Document);
+            _context.Documents.Update(importRequest.Document);
+            var result = _context.ImportRequests.Update(importRequest);
             _context.Folders.Update(folder);
             await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.FolderLogs.AddAsync(folderLog, cancellationToken);

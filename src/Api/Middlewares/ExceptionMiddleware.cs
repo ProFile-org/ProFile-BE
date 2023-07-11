@@ -35,6 +35,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(InvalidOperationException), HandleInvalidOperationException },
             { typeof(AuthenticationException), HandleAuthenticationException },
             { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
+            { typeof(NotChangedException), HandleNotChangedException },
         };
     }
 
@@ -108,6 +109,11 @@ public class ExceptionMiddleware : IMiddleware
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private static async void HandleNotChangedException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status204NoContent;
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)

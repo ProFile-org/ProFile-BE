@@ -42,6 +42,7 @@ public class UpdateLocker
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, LockerDto>
@@ -88,6 +89,7 @@ public class UpdateLocker
             locker.Capacity = request.Capacity;
             locker.LastModified = localDateTimeNow;
             locker.LastModifiedBy = request.CurrentUser.Id;
+            locker.IsAvailable = request.IsAvailable;
             
 
 

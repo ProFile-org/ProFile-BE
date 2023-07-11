@@ -60,29 +60,33 @@ public class DepartmentsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Result<RoomDto>>> GetRoomByDepartmentId(
+    public async Task<ActionResult<Result<ItemsResult<RoomDto>>>> GetRoomByDepartmentId(
         [FromRoute] Guid departmentId)
     {
+        var currentUserRole = _currentUserService.GetRole();
+        var currentUserDepartmentId = _currentUserService.GetDepartmentId();
         var query = new GetRoomByDepartmentId.Query()
         {
+            CurrentUserRole = currentUserRole,
+            CurrentUserDepartmentId = currentUserDepartmentId,
             DepartmentId = departmentId,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<RoomDto>.Succeed(result));
+        return Ok(Result<ItemsResult<RoomDto>>.Succeed(result));
     }
     
     /// <summary>
-    /// Get all documents
+    /// Get all departments
     /// </summary>
-    /// <returns>A list of DocumentDto</returns>
+    /// <returns>A list of DepartmentDto</returns>
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<Result<IEnumerable<DepartmentDto>>>> GetAll()
+    public async Task<ActionResult<Result<ItemsResult<DepartmentDto>>>> GetAll()
     {
         var result = await Mediator.Send(new GetAllDepartments.Query());
-        return Ok(Result<IEnumerable<DepartmentDto>>.Succeed(result));
+        return Ok(Result<ItemsResult<DepartmentDto>>.Succeed(result));
     }
     
     /// <summary>

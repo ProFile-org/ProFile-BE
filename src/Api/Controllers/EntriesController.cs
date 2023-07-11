@@ -1,13 +1,15 @@
-using Api.Controllers.Payload.Requests.DigitalFile;
+using Api.Controllers.Payload.Requests.Entries;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Commands;
+using Application.Entries.Commands;
+using Application.Entries.Queries;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GetAllEntriesPaginatedQueryParameters = Api.Controllers.Payload.Requests.Entries.GetAllEntriesPaginatedQueryParameters;
 
 namespace Api.Controllers;
 
@@ -84,4 +86,120 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
+    
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("{entryId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    
+    public async Task<ActionResult<Result<EntryDto>>> Update(
+        [FromRoute] Guid entryId, 
+        [FromBody] UpdateEntryRequest request)
+    {
+        var currentUserId = _currentUserService.GetId();
+        var command = new UpdateEntry.Command()
+        {
+            Name = request.Name,
+            EntryId = entryId,
+            CurrentUserId = currentUserId
+        };
+
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllPaginated(
+        [FromQuery] GetAllEntriesPaginatedQueryParameters queryParameters )
+    {
+        var query = new GetAllEntriesPaginated.Query()
+        {
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+            EntryPath = queryParameters.EntryPath,
+            SortBy = queryParameters.SortBy,
+            SortOrder = queryParameters.SortOrder
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
+    }
+    /// <param name="entryId"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{entryId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Result<EntryDto>>> GetById([FromRoute] Guid entryId)
+    {
+        var query = new GetEntryById.Query()
+        {
+            EntryId = entryId
+        };
+
+        var result = await Mediator.Send(query);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPut("{entryId:guid}/permissions")]
+    public async Task<ActionResult<Result<EntryPermissionDto>>> ManagePermission(
+        [FromRoute] Guid entryId,
+        [FromBody] ShareEntryPermissionRequest request)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var command = new ShareEntry.Command
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+            UserId = request.UserId,
+            ExpiryDate = request.ExpiryDate,
+            CanView = request.CanView,
+            CanUpload = request.CanUpload,
+            CanDownload = request.CanDownload,
+            CanChangePermission = request.CanChangePermission,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryPermissionDto>.Succeed(result));
+    }
+
+    /// <summary>
+    /// Download a file
+    /// </summary>
+    /// <param name="entryId"></param>
+    /// <returns>The download file</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{entryId:guid}/file")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DownloadFile([FromRoute] Guid entryId)
+    {
+        var currentUserId = _currentUserService.GetId();
+        var command = new DownloadDigitalFile.Command()
+        {
+            CurrentUserId = currentUserId,
+            EntryId = entryId
+        };
+
+        var result = await Mediator.Send(command);
+        HttpContext.Response.ContentType = result.FileType;
+        return File(result.Content, result.FileType, result.FileName);
+    }
+
 }

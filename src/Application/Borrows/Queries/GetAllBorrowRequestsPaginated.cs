@@ -23,7 +23,7 @@ public class GetAllBorrowRequestsPaginated
         public int? Size { get; init; }
         public string? SortBy { get; init; }
         public string? SortOrder { get; init; }
-        public string? Status { get; init; }
+        public string[]? Statuses { get; init; }
     }
     
     public class QueryHandler : IRequestHandler<Query, PaginatedList<BorrowDto>>
@@ -58,29 +58,6 @@ public class GetAllBorrowRequestsPaginated
                 }
             }
 
-            if (request.CurrentUser.Role.IsEmployee())
-            {
-                if (request.RoomId is null)
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-
-                if (request.EmployeeId != request.CurrentUser.Id)
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource");
-                }
-
-                var room = await _context.Rooms
-                    .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
-                var roomDoesNotExist = room is null;
-
-                if (roomDoesNotExist
-                    || RoomIsNotInSameDepartment(request.CurrentUser, room!))
-                {
-                    throw new UnauthorizedAccessException("User can not access this resource.");
-                }
-            }
-
             var borrows = _context.Borrows.AsQueryable();
 
             borrows = borrows
@@ -93,6 +70,28 @@ public class GetAllBorrowRequestsPaginated
                 .ThenInclude(t => t.Room)
                 .ThenInclude(s => s.Department);
 
+            if (request.CurrentUser.Role.IsEmployee())
+            {
+
+                if (request.EmployeeId != request.CurrentUser.Id)
+                {
+                    throw new UnauthorizedAccessException("User can not access this resource");
+                }
+
+                if (request.RoomId is not null)
+                {
+                    var room = await _context.Rooms
+                        .FirstOrDefaultAsync(x => x.Id == request.RoomId, cancellationToken);
+                    var roomDoesNotExist = room is null;
+
+                    if (roomDoesNotExist
+                        || RoomIsNotInSameDepartment(request.CurrentUser, room!))
+                    {
+                        throw new UnauthorizedAccessException("User can not access this resource.");
+                    }
+                }
+            }
+            
             if (request.RoomId is not null)
             {
                 borrows = borrows.Where(x => x.Document.Folder!.Locker.Room.Id == request.RoomId);
@@ -108,19 +107,17 @@ public class GetAllBorrowRequestsPaginated
                 borrows = borrows.Where(x => x.Document.Id == request.DocumentId);
             }
 
-            if (request.Status is not null)
+            if (request.Statuses is not null)
             {
-                var statuses = request.Status.Split(",");
-                var enums = new List<BorrowRequestStatus>();
-                foreach (var status in statuses)
-                {
-                    if (Enum.TryParse(status, true, out BorrowRequestStatus s))
+                var statuses = request.Statuses.Aggregate(new List<BorrowRequestStatus>(),
+                    (statuses, currentStatus) =>
                     {
-                        enums.Add(s);
-                    }
-                }
-
-                borrows = borrows.Where(x => enums.Contains(x.Status));
+                        if (!Enum.TryParse<BorrowRequestStatus>(currentStatus, true, out var validStatus)) return statuses;
+                        
+                        statuses.Add(validStatus);
+                        return statuses;
+                    });
+                borrows = borrows.Where(x => statuses.Contains(x.Status));
             }
             
             var sortBy = request.SortBy;

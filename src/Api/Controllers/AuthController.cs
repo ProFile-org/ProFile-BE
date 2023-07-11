@@ -5,6 +5,7 @@ using Api.Controllers.Payload.Responses;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
+using Application.Users.Queries;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,26 +33,41 @@ public class AuthController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Result<LoginResult>>> Login([FromBody] LoginModel loginModel)
+    public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
     {
         var result = await _identityService.LoginAsync(loginModel.Email, loginModel.Password);
-        
-        SetRefreshToken(result.AuthResult.RefreshToken);
-        SetJweToken(result.AuthResult.Token, result.AuthResult.RefreshToken);
 
-        var loginResult = new LoginResult()
-        {
-            Id = result.UserCredentials.Id,
-            Username = result.UserCredentials.Username,
-            Email = result.UserCredentials.Email,
-            Department = result.UserCredentials.Department,
-            Position = result.UserCredentials.Position,
-            Role = result.UserCredentials.Role,
-            FirstName = result.UserCredentials.FirstName,
-            LastName = result.UserCredentials.LastName,
-        };
-        
-        return Ok(Result<LoginResult>.Succeed(loginResult));
+        return result.Match<IActionResult>(loginSuccess =>
+            {
+                SetRefreshToken(loginSuccess.AuthResult.RefreshToken);
+                SetJweToken(loginSuccess.AuthResult.Token, loginSuccess.AuthResult.RefreshToken);
+
+                var loginResult = new LoginResult()
+                {
+                    Id = loginSuccess.UserCredentials.Id,
+                    Username = loginSuccess.UserCredentials.Username,
+                    Email = loginSuccess.UserCredentials.Email,
+                    Department = loginSuccess.UserCredentials.Department,
+                    Position = loginSuccess.UserCredentials.Position,
+                    Role = loginSuccess.UserCredentials.Role,
+                    FirstName = loginSuccess.UserCredentials.FirstName,
+                    LastName = loginSuccess.UserCredentials.LastName,
+                };
+
+                return Ok(Result<LoginResult>.Succeed(loginResult));
+            },
+            token =>
+            {
+                var r = new Result<NotActivatedLoginResult>
+                {
+                    Data = new NotActivatedLoginResult()
+                    {
+                        Token = token,
+                    }
+                };
+                return Unauthorized(r);
+            });
+
     }
     
     /// <summary>

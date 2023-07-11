@@ -1,0 +1,175 @@
+using System.Configuration;
+using Application.Common.Exceptions;
+using Application.Common.Interfaces;
+using Application.Common.Models.Dtos.Digital;
+using Application.Common.Models.Operations;
+using AutoMapper;
+using Domain.Entities;
+using Domain.Entities.Digital;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using NodaTime;
+
+namespace Application.Entries.Commands;
+
+public class ShareEntry
+{
+    public record Command : IRequest<EntryPermissionDto>
+    {
+        public User CurrentUser { get; init; } = null!;
+        public Guid EntryId { get; init; }
+        public Guid UserId { get; init; }
+        public DateTime ExpiryDate { get; init; }
+        public bool CanView { get; init; }
+        public bool CanUpload { get; init; }
+        public bool CanDownload { get; init; }
+        public bool CanChangePermission { get; init; }
+    }
+    
+    public class CommandHandler : IRequestHandler<Command, EntryPermissionDto>
+    {
+        private readonly IApplicationDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
+
+        public CommandHandler(IApplicationDbContext applicationDbContext, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        {
+            _context = applicationDbContext;
+            _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
+        }
+        
+        public async Task<EntryPermissionDto> Handle(Command request, CancellationToken cancellationToken)
+        {
+            var entry = await _context.Entries
+                .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
+            
+            if (entry is null)
+            {
+                throw new KeyNotFoundException("Entry does not exist.");
+            }
+
+            var canChangeEntryPermission = _context.EntryPermissions.Any(x =>
+                x.EntryId == request.EntryId
+                && x.EmployeeId == request.CurrentUser.Id
+                && x.AllowedOperations.Contains(EntryOperation.ChangePermission.ToString()));
+            
+            if (entry.OwnerId != request.CurrentUser.Id && !canChangeEntryPermission)
+            {
+                throw new UnauthorizedAccessException("You are not allow to change permission of this entry.");
+            }
+            
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == request.UserId, cancellationToken);
+
+            if (user is null)
+            {
+                throw new KeyNotFoundException("User does not exist.");
+            }
+
+            if (user.Id == entry.OwnerId)
+            {
+                throw new ConflictException("You can not modify owner's permission.");
+            }
+
+            if (request.ExpiryDate < _dateTimeProvider.DateTimeNow)
+            {
+                throw new ConflictException("Expiry date cannot be in the past.");
+            }
+
+            var allowOperations = GenerateAllowOperations(request, entry.IsDirectory);
+            
+            await GrantOrRevokePermission(entry, user, allowOperations, request.ExpiryDate, true, cancellationToken);
+
+            if (entry.IsDirectory)
+            {
+                // Update permissions for child Entries
+                var path = entry.Path.Equals("/") ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
+                var pattern = $"{path}/%";
+                var childEntries = _context.Entries
+                    .Where(x => (x.Path.Equals(path) || EF.Functions.Like(x.Path, pattern))
+                                && x.OwnerId == entry.OwnerId)
+                    .ToList();
+                foreach (var childEntry in childEntries)
+                {
+                    var childAllowOperations = GenerateAllowOperations(request, childEntry.IsDirectory);
+                    await GrantOrRevokePermission(childEntry, user, childAllowOperations, request.ExpiryDate, false, cancellationToken);
+                }
+            }
+            await _context.SaveChangesAsync(cancellationToken);
+            
+            var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
+                    x.EntryId == request.EntryId
+                    && x.EmployeeId == request.UserId, cancellationToken);
+            return _mapper.Map<EntryPermissionDto>(result);
+        }
+
+        private async Task GrantOrRevokePermission(
+            Entry entry,
+            User user,
+            string allowOperations,
+            DateTime expiryDate,
+            bool isSharedRoot,
+            CancellationToken cancellationToken)
+        {
+            var existedPermission = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
+                    x.EntryId == entry.Id
+                    && x.EmployeeId == user.Id, cancellationToken);
+            
+            if (existedPermission is null)
+            {
+                var entryPermission = new EntryPermission
+                {
+                    EmployeeId = user.Id,
+                    EntryId = entry.Id,
+                    AllowedOperations = allowOperations,
+                    ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate),
+                    IsSharedRoot = isSharedRoot,
+                    Employee = user,
+                    Entry = entry,
+                };
+                await _context.EntryPermissions.AddAsync(entryPermission, cancellationToken);
+            }
+            else if (allowOperations.Equals(string.Empty))
+            {
+                _context.EntryPermissions.Remove(existedPermission);
+            }
+            else
+            {
+                existedPermission.AllowedOperations = allowOperations;
+                existedPermission.ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate);
+                _context.EntryPermissions.Update(existedPermission);
+            }
+        }
+
+        private static string GenerateAllowOperations(Command request, bool isDirectory)
+        {
+            var allowOperations = new CommaDelimitedStringCollection();
+
+            if (request.CanView)
+            {
+                allowOperations.Add(EntryOperation.View.ToString());
+            }
+            else
+            {
+                return string.Empty;
+            }
+            
+            if (request is { CanView: true, CanUpload: true } && isDirectory)
+            {
+                allowOperations.Add(EntryOperation.Upload.ToString());
+            }
+            
+            if (request is { CanView: true, CanDownload: true } && !isDirectory)
+            {
+                allowOperations.Add(EntryOperation.Download.ToString());
+            }
+            
+            if (request is { CanView: true, CanChangePermission: true })
+            {
+                allowOperations.Add(EntryOperation.ChangePermission.ToString());
+            }
+
+            return allowOperations.ToString();
+        }
+    }
+}

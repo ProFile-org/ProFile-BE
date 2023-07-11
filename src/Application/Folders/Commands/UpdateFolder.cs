@@ -45,6 +45,7 @@ public class UpdateFolder
         public string Name { get; init; } = null!;
         public string? Description { get; init; }
         public int Capacity { get; init; }
+        public bool IsAvailable { get; init; }
     }
 
     public class CommandHandler : IRequestHandler<Command, FolderDto>
@@ -98,6 +99,7 @@ public class UpdateFolder
             folder.Capacity = request.Capacity;
             folder.LastModified = localDateTimeNow;
             folder.LastModifiedBy = request.CurrentUser.Id;
+            folder.IsAvailable = request.IsAvailable;
             
             var log = new FolderLog()
             {
