@@ -23,10 +23,10 @@ public class EntriesController  : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    ///  Upload a file or create a directory
     /// </summary>
     /// <param name="request"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpPost]
     public async Task<ActionResult<Result<EntryDto>>> UploadEntry(
@@ -87,6 +87,12 @@ public class EntriesController  : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
     
+    /// <summary>
+    /// Update an entry
+    /// </summary>
+    /// <param name="entryId"></param>
+    /// <param name="request"></param>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("{entryId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -112,9 +118,9 @@ public class EntriesController  : ApiControllerBase
     
 
     /// <summary>
-    /// 
+    /// Get all entries paginated
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -133,8 +139,13 @@ public class EntriesController  : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
     }
+    
+    
+    /// <summary>
+    /// Get an entry by Id
+    /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("{entryId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -151,10 +162,10 @@ public class EntriesController  : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    /// Share an entry
     /// </summary>
     /// <param name="request"></param>
-    /// <returns></returns>
+    /// <returns>an EntryPermissionDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("{entryId:guid}/permissions")]
     public async Task<ActionResult<Result<EntryPermissionDto>>> ManagePermission(

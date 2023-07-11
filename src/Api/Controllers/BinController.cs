@@ -20,10 +20,10 @@ public class BinController : ApiControllerBase
     }
 
     /// <summary>
-    /// Delete an entry
+    /// Move an entry to bin
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPost("entries")]
     public async Task<ActionResult<Result<EntryDto>>> MoveEntryToBin(
@@ -42,10 +42,10 @@ public class BinController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Restore an entry from bin
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpPut("entries/{entryId:guid}/restore")]
     public async Task<ActionResult<Result<EntryDto>>> RestoreBinEntry(
@@ -63,11 +63,12 @@ public class BinController : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
     
+   
     /// <summary>
-    /// 
+    /// Remove an entry from bin
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="entryId"></param>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpDelete("entries/{entryId:guid}")]
     public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
@@ -85,11 +86,12 @@ public class BinController : ApiControllerBase
         return Ok(Result<EntryDto>.Succeed(result));
     }
     
+   
     /// <summary>
-    /// 
+    /// Get entry in the bin by Id
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="entryId"></param>
+    /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}")]
     public async Task<ActionResult<Result<EntryDto>>> GetBinEntryById(
@@ -108,13 +110,13 @@ public class BinController : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    ///  Get all entry in the bin
     /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <param name="queryParameters"></param>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
-    public async Task<ActionResult<Result<EntryDto>>> GetAllBinEntriesPaginated(
+    public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllBinEntriesPaginated(
         [FromQuery] GetAllBinEntriesPaginatedQueryParameters queryParameters)
     {
         var currentUser = _currentUserService.GetCurrentUser();
