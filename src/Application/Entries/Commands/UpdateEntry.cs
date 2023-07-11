@@ -4,6 +4,7 @@ using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Digital;
 using FluentValidation;
 using MediatR;
@@ -29,7 +30,7 @@ public class UpdateEntry
     
     public record Command : IRequest<EntryDto>
     {
-        public Guid CurrentUserId { get; init; }
+        public User CurrentUser { get; init; } = null!;
         public Guid EntryId { get; init; }
         public string Name { get; init; } = null!;
     }
@@ -60,11 +61,11 @@ public class UpdateEntry
                 throw new KeyNotFoundException("Entry does not exist.");
             }
             
-            if (entry.OwnerId != request.CurrentUserId)
+            if (entry.OwnerId != request.CurrentUser.Id)
             {
                 var permission = await _context.EntryPermissions.FirstOrDefaultAsync(
                     x => x.EntryId == request.EntryId
-                         && x.EmployeeId == request.CurrentUserId, cancellationToken);
+                         && x.EmployeeId == request.CurrentUser.Id, cancellationToken);
 
                 if (permission is null ||
                     !permission.AllowedOperations
@@ -89,13 +90,13 @@ public class UpdateEntry
             
             entry.Name = request.Name;
             entry.LastModified = localDateTimeNow;
-            entry.LastModifiedBy = request.CurrentUserId;
+            entry.LastModifiedBy = request.CurrentUser.Id;
 
             var result = _context.Entries.Update(entry);
             await _context.SaveChangesAsync(cancellationToken);
-            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUserId))
+            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
             {
-                _logger.LogUpdateEntry(request.CurrentUserId.ToString(), entry.Id.ToString());
+                _logger.LogUpdateEntry(request.CurrentUser.Username, entry.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

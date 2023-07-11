@@ -98,12 +98,12 @@ public class EntriesController  : ApiControllerBase
         [FromRoute] Guid entryId, 
         [FromBody] UpdateEntryRequest request)
     {
-        var currentUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new UpdateEntry.Command()
         {
             Name = request.Name,
             EntryId = entryId,
-            CurrentUserId = currentUserId
+            CurrentUser = currentUser
         };
 
         var result = await Mediator.Send(command);
@@ -188,10 +188,10 @@ public class EntriesController  : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DownloadFile([FromRoute] Guid entryId)
     {
-        var currentUserId = _currentUserService.GetId();
+        var currentUser = _currentUserService.GetCurrentUser();
         var command = new DownloadDigitalFile.Command()
         {
-            CurrentUserId = currentUserId,
+            CurrentUser = currentUser,
             EntryId = entryId
         };
 

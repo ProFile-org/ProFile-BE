@@ -106,7 +106,7 @@ public class ShareEntry
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
             {
-                _logger.LogShareEntry(request.CurrentUser.Id.ToString(), entry.Id.ToString(), request.UserId.ToString());
+                _logger.LogShareEntry(request.CurrentUser.Username, entry.Id.ToString(), user.Username);
             }
             var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == request.EntryId

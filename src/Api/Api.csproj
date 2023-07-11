@@ -24,8 +24,4 @@
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Controllers\Payload\Requests\DigitalFile" />
-    </ItemGroup>
-
 </Project>

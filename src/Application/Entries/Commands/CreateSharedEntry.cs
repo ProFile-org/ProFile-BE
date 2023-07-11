@@ -129,7 +129,7 @@ public class CreateSharedEntry
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entity.Id, request.CurrentUser.Id))
             {
-                _logger.LogCreateSharedEntry(request.CurrentUser.Id.ToString(), entity.Id.ToString());
+                _logger.LogCreateSharedEntry(request.CurrentUser.Username, entity.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

@@ -91,7 +91,7 @@ public class MoveEntryToBin
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUser.Id))
             {
-                _logger.LogMoveEntryToBin(request.CurrentUser.Id.ToString(), entry.Id.ToString());
+                _logger.LogMoveEntryToBin(request.CurrentUser.Username, entry.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

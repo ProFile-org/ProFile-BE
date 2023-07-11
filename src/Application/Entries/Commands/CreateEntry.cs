@@ -123,7 +123,7 @@ public class CreateEntry {
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entryEntity.Id, request.CurrentUser.Id))
             {
-                _logger.LogCreateEntry(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
+                _logger.LogCreateEntry(request.CurrentUser.Username, entryEntity.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }
