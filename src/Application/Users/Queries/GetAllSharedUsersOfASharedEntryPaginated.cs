@@ -46,8 +46,8 @@ public class GetAllSharedUsersOfASharedEntryPaginated
                 .FirstOrDefaultAsync(x => x.EntryId == request.EntryId
                                           && x.EmployeeId == request.CurrentUser.Id, cancellationToken);
 
-            if (permission is null || !permission.AllowedOperations.Contains(EntryOperation.View.ToString()) ||
-                entry.OwnerId != request.CurrentUser.Id)
+            if ((permission is null || !permission.AllowedOperations.Contains(EntryOperation.View.ToString())) &&
+                (entry.OwnerId != request.CurrentUser.Id))
             {
                 throw new UnauthorizedAccessException("You do not have permission to view this shared entry's users.");
             }
