@@ -116,7 +116,7 @@ public class BinController : ApiControllerBase
     /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
-    public async Task<ActionResult<Result<EntryDto>>> GetAllBinEntriesPaginated(
+    public async Task<ActionResult<Result<PaginatedList<EntryDto>>>> GetAllBinEntriesPaginated(
         [FromQuery] GetAllBinEntriesPaginatedQueryParameters queryParameters)
     {
         var currentUser = _currentUserService.GetCurrentUser();
