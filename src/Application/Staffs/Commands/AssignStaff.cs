@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -90,17 +88,8 @@ public class AssignStaff
             room.LastModified = localDateTimeNow;
             room.LastModifiedBy = request.CurrentUser.Id;
             
-            var log = new UserLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = staff.User.Id,
-                Time = localDateTimeNow,
-                Action = UserLogMessages.Staff.AssignStaff,
-            };
             _context.Rooms.Update(room);
             var result = _context.Staffs.Update(staff);
-            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Staff), staff.Id, request.CurrentUser.Id))
             {

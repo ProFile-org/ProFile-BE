@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -70,19 +68,10 @@ public class RemoveLocker
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
-            var log = new LockerLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = locker.Id,
-                Time = localDateTimeNow,
-                Action = LockerLogMessage.Remove,
-            };
             var room = locker.Room;
             var result = _context.Lockers.Remove(locker);
             room.NumberOfLockers -= 1;
             _context.Rooms.Update(room);
-            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Locker), locker.Id, request.CurrentUser.Id))
             {

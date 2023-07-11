@@ -1,16 +1,12 @@
-using System.Runtime.CompilerServices;
-using System.Text;
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Helpers;
 using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Events;
 using FluentValidation;
 using MediatR;
@@ -148,15 +144,6 @@ public class AddUser
             }
             var result = await _context.Users.AddAsync(entity, cancellationToken);
             
-            var log = new UserLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = entity.Id,
-                Time = localDateTimeNow,
-                Action = UserLogMessages.Add,
-            };
-            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(User), entity.Id, request.CurrentUser.Id))
             {

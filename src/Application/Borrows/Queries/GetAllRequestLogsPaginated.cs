@@ -2,8 +2,6 @@
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
-using Application.Common.Models.Dtos.Logging;
-using Application.Common.Models.Dtos.Physical;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Enums;

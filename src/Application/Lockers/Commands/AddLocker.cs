@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Exceptions;
 using FluentValidation;
@@ -100,17 +98,8 @@ public class AddLocker
             
             var result = await _context.Lockers.AddAsync(entity, cancellationToken);
            
-            var log = new LockerLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = entity.Id,
-                Time = localDateTimeNow,
-                Action = LockerLogMessage.Add,
-            };
             room.NumberOfLockers += 1;
             _context.Rooms.Update(room);
-            await _context.LockerLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Locker), result.Entity.Id, request.CurrentUser.Id))
             {

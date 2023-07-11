@@ -2,11 +2,9 @@ using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -69,17 +67,8 @@ public class RemoveFolder
             
             var locker = folder.Locker;
 
-            var log = new FolderLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = folder.Id,
-                Time = localDateTimeNow,
-                Action = FolderLogMessage.Remove,
-            };
             var result = _context.Folders.Remove(folder);
             locker.NumberOfFolders -= 1;
-            await _context.FolderLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Folder), folder.Id, request.CurrentUser.Id))

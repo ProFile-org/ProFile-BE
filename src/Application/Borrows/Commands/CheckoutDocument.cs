@@ -5,7 +5,6 @@ using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -86,17 +85,8 @@ public class CheckoutDocument
             borrowRequest.Document.Status = DocumentStatus.Borrowed;
             borrowRequest.Document.LastModified = localDateTimeNow;
             borrowRequest.Document.LastModifiedBy = request.CurrentStaff.Id;
-            var log = new DocumentLog()
-            {
-                ObjectId = borrowRequest.Document.Id,
-                UserId =  request.CurrentStaff.Id,
-                User =  request.CurrentStaff,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.Checkout,
-            };
             var result = _context.Borrows.Update(borrowRequest);
             _context.Documents.Update(borrowRequest.Document);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentStaff.Id))
             {

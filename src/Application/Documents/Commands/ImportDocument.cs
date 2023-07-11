@@ -1,13 +1,10 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
-using Application.Common.Models.Dtos.ImportDocument;
 using Application.Common.Models.Dtos.Physical;
 using Application.ImportRequests;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using MediatR;
@@ -114,19 +111,9 @@ public class ImportDocument
                 Created = localDateTimeNow,
                 CreatedBy = request.CurrentUser.Id,
             };
-            var log = new DocumentLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = entity.Id,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Import.NewImport,
-            };
-
             var result = await _context.Documents.AddAsync(entity, cancellationToken);
             folder.NumberOfDocuments += 1;
             _context.Folders.Update(folder);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Document), result.Entity.Id, request.CurrentUser.Id))
             {
