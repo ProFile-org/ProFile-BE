@@ -1,10 +1,8 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
-using Domain.Entities.Logging;
 using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -61,18 +59,9 @@ public class CancelBorrowRequest
 
             var currentUser = await _context.Users
                 .FirstOrDefaultAsync(x => x.Id == request.CurrentUserId, cancellationToken);
-            var log = new DocumentLog()
-            {
-                ObjectId = borrowRequest.Document.Id,
-                UserId = currentUser!.Id,
-                User = currentUser,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.Cancel,
-            };
 
             borrowRequest.Status = BorrowRequestStatus.Cancelled;
             var result = _context.Borrows.Update(borrowRequest);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
             {

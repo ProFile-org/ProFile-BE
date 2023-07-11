@@ -3,7 +3,6 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Domain.Entities;
 using Domain.Entities.Digital;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Infrastructure.Common;
 using MediatR;
@@ -40,14 +39,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IAuthDbCon
     public DbSet<ResetPasswordToken> ResetPasswordTokens => Set<ResetPasswordToken>();
     
     public DbSet<Log> Logs => Set<Log>();
-    
-    public DbSet<RoomLog> RoomLogs => Set<RoomLog>();
-    public DbSet<LockerLog> LockerLogs => Set<LockerLog>();
-    public DbSet<FolderLog> FolderLogs => Set<FolderLog>();
-    public DbSet<DocumentLog> DocumentLogs => Set<DocumentLog>();
-    public DbSet<RequestLog> RequestLogs => Set<RequestLog>();
-    public DbSet<UserLog> UserLogs => Set<UserLog>();
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

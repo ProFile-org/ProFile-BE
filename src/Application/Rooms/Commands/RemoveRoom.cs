@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -74,16 +72,6 @@ public class RemoveRoom
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
             var result = _context.Rooms.Remove(room);
-
-            var log = new RoomLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = room.Id,
-                Time = localDateTimeNow,
-                Action = RoomLogMessage.Remove,
-            };
-            await _context.RoomLogs.AddAsync(log, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 

@@ -39,7 +39,6 @@ public class DownloadDigitalFile
         {
             var entry = await _context.Entries
                 .Include(x => x.File)
-                .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)
@@ -61,7 +60,7 @@ public class DownloadDigitalFile
                 if (permission is null ||
                     !permission.AllowedOperations
                         .Split(",")
-                        .Contains(EntryOperation.Download.ToString()))
+                        .Contains(EntryOperation.View.ToString()))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }

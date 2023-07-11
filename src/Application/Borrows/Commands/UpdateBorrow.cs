@@ -1,12 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
-using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
 using MediatR;
@@ -113,16 +110,7 @@ public class UpdateBorrow
             borrowRequest.LastModified = localDateTimeNow;
             borrowRequest.LastModifiedBy = request.CurrentUser.Id;
             
-            var log = new DocumentLog()
-            {
-                UserId = request.CurrentUser.Id,
-                User = request.CurrentUser,
-                ObjectId = borrowRequest.Document.Id,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.UpdateBorrow,
-            };
             var result = _context.Borrows.Update(borrowRequest);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUser.Id))
