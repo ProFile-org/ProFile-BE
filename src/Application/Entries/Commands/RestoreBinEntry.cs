@@ -1,11 +1,13 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Entries.Commands;
@@ -24,12 +26,13 @@ public class RestoreBinEntry
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
         private const string BinString = "_bin";
-        
-        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        private readonly ILogger<RestoreBinEntry> _logger;
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<RestoreBinEntry> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
@@ -129,6 +132,10 @@ public class RestoreBinEntry
 
             var result = _context.Entries.Update(entry);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
+            {
+                _logger.LogRestoreBinEntry(request.CurrentUser.Id.ToString(), entry.Id.ToString());
+            }
             return _mapper.Map<EntryDto>(result.Entity);
         }
     }

@@ -1,6 +1,7 @@
 using System.Configuration;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Domain.Entities;
 using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Entries.Commands;
@@ -31,12 +33,14 @@ public class ShareEntry
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<ShareEntry> _logger;
 
-        public CommandHandler(IApplicationDbContext applicationDbContext, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext applicationDbContext, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<ShareEntry> logger)
         {
             _context = applicationDbContext;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
         
         public async Task<EntryPermissionDto> Handle(Command request, CancellationToken cancellationToken)
@@ -96,7 +100,10 @@ public class ShareEntry
                 }
             }
             await _context.SaveChangesAsync(cancellationToken);
-            
+            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
+            {
+                _logger.LogShareEntry(request.CurrentUser.Id.ToString(), entry.Id.ToString(), request.UserId.ToString());
+            }
             var result = await _context.EntryPermissions.FirstOrDefaultAsync(x =>
                     x.EntryId == request.EntryId
                     && x.EmployeeId == request.UserId, cancellationToken);
