@@ -2,11 +2,9 @@ using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
 using Application.Common.Messages;
-using Application.Identity;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -85,16 +83,7 @@ public class UpdateUser
             user.LastModified = localDateTimeNow;
             user.LastModifiedBy = request.CurrentUser.Id;
             
-            var log = new UserLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = user.Id,
-                Time = localDateTimeNow,
-                Action = UserLogMessages.Update,
-            };
             var result = _context.Users.Update(user);
-            await _context.UserLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(User), result.Entity.Id, request.CurrentUser.Id))
             {

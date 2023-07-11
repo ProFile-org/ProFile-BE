@@ -2,10 +2,8 @@ using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
-using Domain.Entities.Logging;
 using Domain.Enums;
 using Domain.Statuses;
 using MediatR;
@@ -105,24 +103,6 @@ public class ApproveOrRejectBorrowRequest
                     && (x.DueTime > localDateTimeNow
                         || x.Status == BorrowRequestStatus.Overdue));
 
-            var log = new DocumentLog()
-            {
-                ObjectId = borrowRequest.Document.Id,
-                UserId = currentUser!.Id,
-                User = currentUser,
-                Time = localDateTimeNow,
-                Action = DocumentLogMessages.Borrow.Approve,
-            };
-            var requestLog = new RequestLog()
-            {
-                ObjectId = borrowRequest.Document.Id,
-                Type = RequestType.Borrow,
-                UserId = currentUser.Id,
-                User = currentUser,
-                Time = localDateTimeNow,
-                Action = RequestLogMessages.ApproveBorrow,
-            };
-
             if (request.Decision.IsApproval())
             {
                 foreach (var existedBorrow in existedBorrows)
@@ -147,8 +127,6 @@ public class ApproveOrRejectBorrowRequest
             if (request.Decision.IsRejection())
             {
                 borrowRequest.Status = BorrowRequestStatus.Rejected;
-                log.Action = DocumentLogMessages.Borrow.Reject;
-                requestLog.Action = RequestLogMessages.RejectBorrow;
 
                 using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
                 {
@@ -158,11 +136,9 @@ public class ApproveOrRejectBorrowRequest
 
             borrowRequest.StaffReason = request.StaffReason;
             borrowRequest.LastModified = localDateTimeNow;
-            borrowRequest.LastModifiedBy = currentUser.Id;
+            borrowRequest.LastModifiedBy = request.CurrentUserId;
             
             var result = _context.Borrows.Update(borrowRequest);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
-            await _context.RequestLogs.AddAsync(requestLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<BorrowDto>(result.Entity);
         }

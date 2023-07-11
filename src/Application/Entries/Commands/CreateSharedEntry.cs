@@ -14,7 +14,7 @@ using NodaTime;
 
 namespace Application.Entries.Commands;
 
-public class UploadSharedEntry
+public class CreateSharedEntry
 {
     public class Validator : AbstractValidator<Command>
     {
@@ -42,8 +42,8 @@ public class UploadSharedEntry
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<UploadSharedEntry> _logger;
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadSharedEntry> logger)
+        private readonly ILogger<CreateSharedEntry> _logger;
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CreateSharedEntry> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -59,7 +59,7 @@ public class UploadSharedEntry
                 .Include(x => x.Entry)
                 .ThenInclude(x => x.Owner)
                 .Where(x => x.EmployeeId == request.CurrentUser.Id 
-                            && x.AllowedOperations.Contains(EntryOperation.Upload.ToString()));
+                            && x.AllowedOperations.Contains(EntryOperation.Edit.ToString()));
 
             var rootEntry = await permissions
                 .Select(x => x.Entry)
@@ -129,7 +129,7 @@ public class UploadSharedEntry
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entity.Id, request.CurrentUser.Id))
             {
-                _logger.LogUploadSharedEntry(request.CurrentUser.Id.ToString(), entity.Id.ToString());
+                _logger.LogCreateSharedEntry(request.CurrentUser.Id.ToString(), entity.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

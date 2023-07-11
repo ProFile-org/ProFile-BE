@@ -5,6 +5,7 @@ using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities.Digital;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,18 @@ namespace Application.Entries.Commands;
 
 public class UpdateEntry
 {
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleLevelCascadeMode = CascadeMode.Stop;
+            
+            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Entry's name is required.")
+                .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
+        }
+    }
+    
     public record Command : IRequest<EntryDto>
     {
         public Guid CurrentUserId { get; init; }
@@ -56,7 +69,7 @@ public class UpdateEntry
                 if (permission is null ||
                     !permission.AllowedOperations
                         .Split(",")
-                        .Contains(EntryOperation.Upload.ToString()))
+                        .Contains(EntryOperation.Edit.ToString()))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }

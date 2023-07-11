@@ -29,7 +29,7 @@ public class EntriesController  : ApiControllerBase
     /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpPost]
-    public async Task<ActionResult<Result<EntryDto>>> UploadDigitalFile(
+    public async Task<ActionResult<Result<EntryDto>>> UploadEntry(
         [FromForm] UploadDigitalFileRequest request)
     {
         var currentUser = _currentUserService.GetCurrentUser();
@@ -50,11 +50,11 @@ public class EntriesController  : ApiControllerBase
             });
         }
 
-        UploadDigitalFile.Command command;
+        CreateEntry.Command command;
 
         if (request.IsDirectory)
         {
-            command = new UploadDigitalFile.Command()
+            command = new CreateEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
@@ -72,7 +72,7 @@ public class EntriesController  : ApiControllerBase
             var lastDotIndex = request.File.FileName.LastIndexOf(".", StringComparison.Ordinal);
             var extension =
                 request.File.FileName.Substring(lastDotIndex + 1, request.File.FileName.Length - lastDotIndex - 1);
-            command = new UploadDigitalFile.Command()
+            command = new CreateEntry.Command()
             {
                 CurrentUser =  currentUser,
                 Path = request.Path,
@@ -180,9 +180,7 @@ public class EntriesController  : ApiControllerBase
             UserId = request.UserId,
             ExpiryDate = request.ExpiryDate,
             CanView = request.CanView,
-            CanUpload = request.CanUpload,
-            CanDownload = request.CanDownload,
-            CanChangePermission = request.CanChangePermission,
+            CanEdit = request.CanEdit,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<EntryPermissionDto>.Succeed(result));
@@ -212,5 +210,4 @@ public class EntriesController  : ApiControllerBase
         HttpContext.Response.ContentType = result.FileType;
         return File(result.Content, result.FileType, result.FileName);
     }
-
 }

@@ -1,12 +1,10 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -74,22 +72,9 @@ public class ShareDocument
             
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
-            var log = new DocumentLog()
-            {
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = string.Empty,
-            };
-
             await HandlePermissionGrantOrRevoke(request.CanRead, document, DocumentOperation.Read, user, request.ExpiryDate.ToLocalTime(), request.CurrentUser.Id, cancellationToken);
             await HandlePermissionGrantOrRevoke(request.CanBorrow, document, DocumentOperation.Borrow, user, request.ExpiryDate.ToLocalTime(), request.CurrentUser.Id, cancellationToken);
 
-            if (!string.IsNullOrEmpty(log.Action))
-            {
-                await _applicationDbContext.DocumentLogs.AddAsync(log, cancellationToken);
-            }
             await _applicationDbContext.SaveChangesAsync(cancellationToken);
             return _mapper.Map<DocumentDto>(document);
         }
@@ -137,8 +122,6 @@ public class ShareDocument
                     case DocumentOperation.Borrow:
                         _logger.LogGrantPermission(DocumentOperation.Borrow.ToString(), user.Username);
                         break;
-                    default:
-                        break;
                 }
             }
         }
@@ -162,8 +145,6 @@ public class ShareDocument
                         break;
                     case DocumentOperation.Borrow:
                         _logger.LogRevokePermission(DocumentOperation.Borrow.ToString(), user.Username);
-                        break;
-                    default:
                         break;
                 }
             }

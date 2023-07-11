@@ -14,7 +14,7 @@ using NodaTime;
 
 namespace Application.Entries.Commands;
 
-public class UploadDigitalFile {
+public class CreateEntry {
     public class Validator : AbstractValidator<Command>
     {
         public Validator()
@@ -22,11 +22,12 @@ public class UploadDigitalFile {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
             RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Entry's name is required.")
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
             
             RuleFor(x => x.Path)
-                .NotEmpty().WithMessage("File's path is required.")
-                .Matches("^(/(?!/)[a-z_.\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
+                .NotEmpty().WithMessage("Entry's path is required.")
+                .Matches("^(/(?!/)[A-Za-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
     
@@ -46,9 +47,9 @@ public class UploadDigitalFile {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper; 
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogger<UploadDigitalFile> _logger;
+        private readonly ILogger<CreateEntry> _logger;
 
-        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadDigitalFile> logger)
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<CreateEntry> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -122,7 +123,7 @@ public class UploadDigitalFile {
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entryEntity.Id, request.CurrentUser.Id))
             {
-                _logger.LogUploadDigitalFile(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
+                _logger.LogCreateEntry(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

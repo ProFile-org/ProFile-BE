@@ -57,7 +57,7 @@ public class MoveEntryToBin
 
             if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
             {
-                throw new NotAllowedException("You do not have permission to move this entry into bin.");
+                throw new UnauthorizedAccessException("You do not have permission to move this entry into bin.");
             }
 
             var ownerUsername = entry.Owner.Username;
