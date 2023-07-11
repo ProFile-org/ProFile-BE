@@ -42,8 +42,7 @@ public class GetPermissions
             if (entry.OwnerId == request.CurrentUser.Id)
             {
                 return CreateEntryPermissionDto(entry.Id, entry.OwnerId,
-                    true, true, true, true,
-                    false);
+                    true, true, false);
             }
 
             var permission = await _context.EntryPermissions
@@ -54,8 +53,7 @@ public class GetPermissions
             if (permission is null)
             {
                 return CreateEntryPermissionDto(entry.Id, request.CurrentUser.Id,
-                    false, false, false, false,
-                    false);
+                    false, false, false);
             }
 
             return _mapper.Map<EntryPermissionDto>(permission);
@@ -63,7 +61,7 @@ public class GetPermissions
 
         private static EntryPermissionDto CreateEntryPermissionDto(
             Guid entryId, Guid userId,
-            bool canView, bool canUpload, bool canDownload, bool canChangePermission,
+            bool canView, bool canEdit,
             bool isSharedRoot)
         {
             return new EntryPermissionDto
@@ -71,9 +69,7 @@ public class GetPermissions
                 EmployeeId = userId,
                 EntryId = entryId,
                 CanView = canView,
-                CanUpload = canUpload,
-                CanDownload = canDownload,
-                CanChangePermission = canChangePermission,
+                CanEdit = canEdit,
                 IsSharedRoot = isSharedRoot,
             };
         }

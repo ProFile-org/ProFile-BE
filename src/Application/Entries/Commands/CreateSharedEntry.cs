@@ -59,7 +59,7 @@ public class CreateSharedEntry
                 .Include(x => x.Entry)
                 .ThenInclude(x => x.Owner)
                 .Where(x => x.EmployeeId == request.CurrentUser.Id 
-                            && x.AllowedOperations.Contains(EntryOperation.Upload.ToString()));
+                            && x.AllowedOperations.Contains(EntryOperation.Edit.ToString()));
 
             var rootEntry = await permissions
                 .Select(x => x.Entry)
