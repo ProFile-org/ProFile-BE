@@ -54,6 +54,38 @@ public class BinController : ApiControllerBase
         var currentUser = _currentUserService.GetCurrentUser();
 
         var command = new RestoreBinEntry.Command()
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+        };
+            
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpDelete("entries/{entryId:guid}")]
+    public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
+        [FromRoute] Guid entryId)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+
+        var command = new DeleteBinEntry.Command()
+        {
+            CurrentUser = currentUser,
+            EntryId = entryId,
+        };
+
+        var result = await Mediator.Send(command);
+        return Ok(Result<EntryDto>.Succeed(result));
+    }
+    
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="request"></param>
@@ -70,7 +102,7 @@ public class BinController : ApiControllerBase
             CurrentUser = currentUser,
             EntryId = entryId,
         };
-        
+
         var result = await Mediator.Send(command);
         return Ok(Result<EntryDto>.Succeed(result));
     }
@@ -99,19 +131,5 @@ public class BinController : ApiControllerBase
 
         var result = await Mediator.Send(command);
         return Ok(Result<PaginatedList<EntryDto>>.Succeed(result));
-    [HttpDelete("entries/{entryId:guid}")]
-    public async Task<ActionResult<Result<EntryDto>>> DeleteBinEntry(
-        [FromRoute] Guid entryId)
-    {
-        var currentUser = _currentUserService.GetCurrentUser();
-
-        var command = new DeleteBinEntry.Command()
-        {
-            CurrentUser = currentUser,
-            EntryId = entryId,
-        };
-
-        var result = await Mediator.Send(command);
-        return Ok(Result<EntryDto>.Succeed(result));
     }
 }
