@@ -1,10 +1,13 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using Application.Common.Models.Operations;
 using AutoMapper;
+using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Entries.Commands;
@@ -23,12 +26,14 @@ public class UpdateEntry
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<UpdateEntry> _logger;
 
-        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public CommandHandler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UpdateEntry> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
@@ -75,7 +80,10 @@ public class UpdateEntry
 
             var result = _context.Entries.Update(entry);
             await _context.SaveChangesAsync(cancellationToken);
-
+            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUserId))
+            {
+                _logger.LogUpdateEntry(request.CurrentUserId.ToString(), entry.Id.ToString());
+            }
             return _mapper.Map<EntryDto>(result.Entity);
         }
     }

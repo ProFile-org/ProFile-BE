@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using Application.Helpers;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Domain.Entities.Digital;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace Application.Entries.Commands;
@@ -44,12 +46,14 @@ public class UploadDigitalFile {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper; 
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<UploadDigitalFile> _logger;
 
-        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public Handler(IApplicationDbContext context, IMapper mapper, IDateTimeProvider dateTimeProvider, ILogger<UploadDigitalFile> logger)
         {
             _context = context;
             _mapper = mapper;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
         
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
@@ -116,7 +120,10 @@ public class UploadDigitalFile {
             
             var result = await _context.Entries.AddAsync(entryEntity, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            
+            using (Logging.PushProperties(nameof(Entry), entryEntity.Id, request.CurrentUser.Id))
+            {
+                _logger.LogUploadDigitalFile(request.CurrentUser.Id.ToString(), entryEntity.Id.ToString());
+            }
             return _mapper.Map<EntryDto>(result.Entity);
         }
     }

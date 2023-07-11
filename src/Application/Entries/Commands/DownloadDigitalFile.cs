@@ -1,8 +1,10 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Operations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Entries.Commands;
 
@@ -25,10 +27,12 @@ public class DownloadDigitalFile
     public class CommandHandler : IRequestHandler<Command, Result>
     {
         private readonly IApplicationDbContext _context;
+        private readonly ILogger<DownloadDigitalFile> _logger;
 
-        public CommandHandler(IApplicationDbContext context)
+        public CommandHandler(IApplicationDbContext context, ILogger<DownloadDigitalFile> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
@@ -66,6 +70,12 @@ public class DownloadDigitalFile
             var content = new MemoryStream(entry.File!.FileData);
             var fileType = entry.File!.FileType;
             var fileExtension = entry.File!.FileExtension;
+            var fileId = entry.File!.Id;
+            
+            using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUserId))
+            {
+                _logger.LogDownLoadFile(request.CurrentUserId.ToString(), fileId.ToString());
+            }
             
             return new Result()
             {

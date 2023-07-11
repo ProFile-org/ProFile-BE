@@ -1,10 +1,13 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models.Dtos.Digital;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Entities.Digital;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Entries.Commands;
 
@@ -22,12 +25,14 @@ public class DeleteBinEntry
         private readonly IMapper _mapper;
         private readonly IDateTimeProvider _dateTimeProvider;
         private const string BinString = "_bin";
+        private readonly ILogger<DeleteBinEntry> _logger;
 
-        public Handler(IMapper mapper, IApplicationDbContext context, IDateTimeProvider dateTimeProvider)
+        public Handler(IMapper mapper, IApplicationDbContext context, IDateTimeProvider dateTimeProvider, ILogger<DeleteBinEntry> logger)
         {
             _mapper = mapper;
             _context = context;
             _dateTimeProvider = dateTimeProvider;
+            _logger = logger;
         }
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
@@ -71,6 +76,10 @@ public class DeleteBinEntry
 
             var result = _context.Entries.Remove(entry);
             await _context.SaveChangesAsync(cancellationToken);
+            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
+            {
+                _logger.LogDeleteBinEntry(request.CurrentUser.Id.ToString(), entry.Id.ToString());
+            }
             return _mapper.Map<EntryDto>(result.Entity);
         }
     }
