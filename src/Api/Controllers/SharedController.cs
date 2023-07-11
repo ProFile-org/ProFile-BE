@@ -24,10 +24,10 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Download a shared file
     /// </summary>
     /// <param name="entryId"></param>
-    /// <returns></returns>
+    /// <returns>the download file</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}/file")]
     public async Task<ActionResult> DownloadSharedFile([FromRoute] Guid entryId)
@@ -45,9 +45,9 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    ///  Get all shared entries paginated
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
     public async Task<ActionResult<PaginatedList<EntryDto>>> GetAll(
@@ -69,7 +69,7 @@ public class SharedController : ApiControllerBase
 
 
     /// <summary>
-    ///  upload a file or create a directory to a shared entry
+    ///  Upload a file or create a directory to a shared entry
     /// </summary>
     /// <returns>an EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
@@ -137,9 +137,9 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get shared users from a shared entry
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of UserDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}/shared-users")]
     public async Task<ActionResult<PaginatedList<UserDto>>> GetSharedUsersFromASharedEntryPaginated(
@@ -160,9 +160,10 @@ public class SharedController : ApiControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get permissions for a shared entry
     /// </summary>
-    /// <returns></returns> [RequiresRole(IdentityData.Roles.Employee)]
+    /// <returns>an EntryPermissionDto</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId}/permissions")]
     public async Task<ActionResult<Result<EntryPermissionDto>>> SharePermissions(
         [FromRoute] Guid entryId)
@@ -178,9 +179,9 @@ public class SharedController : ApiControllerBase
     }
     
     /// <summary>
-    /// 
+    /// Get a shared entry by Id
     /// </summary>
-    /// <returns></returns>
+    /// <returns>a paginated list of EntryDto</returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}")]
     public async Task<ActionResult<PaginatedList<EntryDto>>> GetSharedEntryById(
