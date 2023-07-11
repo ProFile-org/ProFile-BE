@@ -27,7 +27,7 @@ public class CreateEntry {
             
             RuleFor(x => x.Path)
                 .NotEmpty().WithMessage("Entry's path is required.")
-                .Matches("^(/(?!/)[a-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
+                .Matches("^(/(?!/)[A-Za-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
     
