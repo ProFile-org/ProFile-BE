@@ -26,27 +26,6 @@ public class SharedController : ApiControllerBase
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="entryId"></param>
-    /// <returns></returns>
-    [RequiresRole(IdentityData.Roles.Employee)]
-    [HttpGet("entries/{entryId:guid}/file")]
-    public async Task<ActionResult> DownloadSharedFile([FromRoute] Guid entryId)
-    {
-        var currentUser = _currentUserService.GetCurrentUser();
-        var query = new DownloadSharedEntry.Query()
-        {
-            CurrentUser = currentUser,
-            EntryId = entryId,
-        };
-        var result = await Mediator.Send(query);
-        var content = new MemoryStream(result.FileData);
-        HttpContext.Response.ContentType = result.FileType;
-        return File(content, result.FileType, result.FileName);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries")]
