@@ -39,7 +39,6 @@ public class DownloadDigitalFile
         {
             var entry = await _context.Entries
                 .Include(x => x.File)
-                .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
             if (entry is null)

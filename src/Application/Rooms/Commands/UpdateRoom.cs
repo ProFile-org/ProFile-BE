@@ -1,11 +1,9 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -95,16 +93,6 @@ public class UpdateRoom
 
             _context.Rooms.Entry(room).State = EntityState.Modified;
 
-            var log = new RoomLog()
-            {
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                ObjectId = room.Id,
-                Time = localDateTimeNow,
-                Action = RoomLogMessage.Update,
-            };
-
-            await _context.RoomLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Room), room.Id, request.CurrentUser.Id))

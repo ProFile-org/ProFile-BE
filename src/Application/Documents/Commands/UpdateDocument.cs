@@ -2,11 +2,9 @@ using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.Physical;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using FluentValidation;
 using MediatR;
@@ -103,16 +101,7 @@ public class UpdateDocument
             document.LastModified = localDateTimeNow;
             document.LastModifiedBy = request.CurrentUser.Id;
 
-            var log = new DocumentLog()
-            {
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = DocumentLogMessages.Update,
-            };
             var result = _context.Documents.Update(document);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             using (Logging.PushProperties(nameof(Document), result.Entity.Id, request.CurrentUser.Id))

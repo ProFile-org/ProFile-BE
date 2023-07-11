@@ -57,7 +57,7 @@ public class DeleteBinEntry
             
             if (!entry.Owner.Username.Equals(request.CurrentUser.Username))
             {
-                throw new NotAllowedException("You do not have the permission to delete this entry.");
+                throw new UnauthorizedAccessException("You do not have the permission to delete this entry.");
             }
             
             if (entry.IsDirectory)

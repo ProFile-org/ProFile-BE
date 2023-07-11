@@ -1,7 +1,6 @@
 using Application.Common.Models;
 using Domain.Entities;
 using Domain.Entities.Digital;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,13 +25,6 @@ public interface IApplicationDbContext
     public DbSet<EntryPermission> EntryPermissions { get; }
     
     public DbSet<Log> Logs { get; }
-
-    public DbSet<RoomLog> RoomLogs { get; }
-    public DbSet<LockerLog> LockerLogs { get; }
-    public DbSet<FolderLog> FolderLogs { get; }
-    public DbSet<DocumentLog> DocumentLogs { get; }
-    public DbSet<RequestLog> RequestLogs { get; }
-    public DbSet<UserLog> UserLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

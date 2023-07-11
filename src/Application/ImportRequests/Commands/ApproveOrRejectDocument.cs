@@ -2,11 +2,9 @@ using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
-using Application.Common.Messages;
 using Application.Common.Models.Dtos.ImportDocument;
 using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Logging;
 using Domain.Entities.Physical;
 using Domain.Statuses;
 using FluentValidation;
@@ -96,29 +94,9 @@ public class ApproveOrRejectDocument
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
 
-            var log = new DocumentLog()
-            {
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = DocumentLogMessages.Import.Approve,
-            };
-
-            var requestLog = new RequestLog()
-            {
-                ObjectId = document.Id,
-                Time = localDateTimeNow,
-                User = request.CurrentUser,
-                UserId = request.CurrentUser.Id,
-                Action = RequestLogMessages.ApproveImport,
-            };
-
             if (request.Decision.IsApproval())
             {
                 importRequest.Status = ImportRequestStatus.Approved;
-                log.Action = DocumentLogMessages.Import.Approve;
-                requestLog.Action = RequestLogMessages.ApproveImport;
 
                 using (Logging.PushProperties(nameof(Document), document.Id, request.CurrentUser.Id))
                 {
@@ -134,8 +112,6 @@ public class ApproveOrRejectDocument
             {
                 importRequest.Status = ImportRequestStatus.Rejected;
                 _context.Documents.Remove(importRequest.Document);
-                log.Action = DocumentLogMessages.Import.Reject;
-                requestLog.Action = RequestLogMessages.RejectImport;
 
                 using (Logging.PushProperties(nameof(Document), document.Id, request.CurrentUser.Id))
                 {
@@ -152,8 +128,6 @@ public class ApproveOrRejectDocument
             importRequest.LastModifiedBy = request.CurrentUser.Id;
 
             var result = _context.ImportRequests.Update(importRequest);
-            await _context.DocumentLogs.AddAsync(log, cancellationToken);
-            await _context.RequestLogs.AddAsync(requestLog, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return _mapper.Map<ImportRequestDto>(result.Entity);
         }
