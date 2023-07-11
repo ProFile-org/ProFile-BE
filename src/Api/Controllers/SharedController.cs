@@ -121,7 +121,7 @@ public class SharedController : ApiControllerBase
     /// <returns></returns>
     [RequiresRole(IdentityData.Roles.Employee)]
     [HttpGet("entries/{entryId:guid}/shared-users")]
-    public async Task<ActionResult<PaginatedList<UserDto>>> GetSharedUsersFromASharedEntryPaginated(
+    public async Task<ActionResult<PaginatedList<EntryPermissionDto>>> GetSharedUsersFromASharedEntryPaginated(
         [FromRoute] Guid entryId,
         [FromQuery] GetAllSharedUsersFromASharedEntryPaginatedQueryParameters queryParameters)
     {
@@ -135,7 +135,7 @@ public class SharedController : ApiControllerBase
             EntryId = entryId,
         };
         var result = await Mediator.Send(query);
-        return Ok(Result<PaginatedList<UserDto>>.Succeed(result)); 
+        return Ok(Result<PaginatedList<EntryPermissionDto>>.Succeed(result)); 
     }
 
     /// <summary>

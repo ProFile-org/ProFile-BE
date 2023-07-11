@@ -1,6 +1,8 @@
 using Application.Common.Mappings;
 using Application.Common.Models.Operations;
+using Application.Users.Queries;
 using AutoMapper;
+using Domain.Entities;
 using Domain.Entities.Digital;
 
 namespace Application.Common.Models.Dtos.Digital;
@@ -12,6 +14,8 @@ public class EntryPermissionDto : IMapFrom<EntryPermission>
     public bool CanView { get; set; }
     public bool CanEdit { get; set; }
     public bool IsSharedRoot { get; set; }
+
+    public UserDto Employee { get; set; } = null!;
 
     public void Mapping(Profile profile)
     {
