@@ -23,9 +23,7 @@ public class ShareEntry
         public Guid UserId { get; init; }
         public DateTime ExpiryDate { get; init; }
         public bool CanView { get; init; }
-        public bool CanUpload { get; init; }
-        public bool CanDownload { get; init; }
-        public bool CanChangePermission { get; init; }
+        public bool CanEdit { get; init; }
     }
     
     public class CommandHandler : IRequestHandler<Command, EntryPermissionDto>
@@ -56,7 +54,7 @@ public class ShareEntry
             var canChangeEntryPermission = _context.EntryPermissions.Any(x =>
                 x.EntryId == request.EntryId
                 && x.EmployeeId == request.CurrentUser.Id
-                && x.AllowedOperations.Contains(EntryOperation.ChangePermission.ToString()));
+                && x.AllowedOperations.Contains(EntryOperation.Edit.ToString()));
             
             if (entry.OwnerId != request.CurrentUser.Id && !canChangeEntryPermission)
             {
@@ -80,7 +78,7 @@ public class ShareEntry
                 throw new ConflictException("Expiry date cannot be in the past.");
             }
 
-            var allowOperations = GenerateAllowOperations(request, entry.IsDirectory);
+            var allowOperations = GenerateAllowOperations(request);
             
             await GrantOrRevokePermission(entry, user, allowOperations, request.ExpiryDate, true, cancellationToken);
 
@@ -95,7 +93,7 @@ public class ShareEntry
                     .ToList();
                 foreach (var childEntry in childEntries)
                 {
-                    var childAllowOperations = GenerateAllowOperations(request, childEntry.IsDirectory);
+                    var childAllowOperations = GenerateAllowOperations(request);
                     await GrantOrRevokePermission(childEntry, user, childAllowOperations, request.ExpiryDate, false, cancellationToken);
                 }
             }
@@ -136,7 +134,7 @@ public class ShareEntry
                 };
                 await _context.EntryPermissions.AddAsync(entryPermission, cancellationToken);
             }
-            else if (allowOperations.Equals(string.Empty))
+            else if (string.IsNullOrEmpty(allowOperations))
             {
                 _context.EntryPermissions.Remove(existedPermission);
             }
@@ -148,7 +146,7 @@ public class ShareEntry
             }
         }
 
-        private static string GenerateAllowOperations(Command request, bool isDirectory)
+        private static string GenerateAllowOperations(Command request)
         {
             var allowOperations = new CommaDelimitedStringCollection();
 
@@ -161,19 +159,9 @@ public class ShareEntry
                 return string.Empty;
             }
             
-            if (request is { CanView: true, CanUpload: true } && isDirectory)
+            if (request is { CanView: true, CanEdit: true })
             {
-                allowOperations.Add(EntryOperation.Upload.ToString());
-            }
-            
-            if (request is { CanView: true, CanDownload: true } && !isDirectory)
-            {
-                allowOperations.Add(EntryOperation.Download.ToString());
-            }
-            
-            if (request is { CanView: true, CanChangePermission: true })
-            {
-                allowOperations.Add(EntryOperation.ChangePermission.ToString());
+                allowOperations.Add(EntryOperation.Edit.ToString());
             }
 
             return allowOperations.ToString();

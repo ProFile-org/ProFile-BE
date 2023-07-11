@@ -61,7 +61,7 @@ public class DownloadDigitalFile
                 if (permission is null ||
                     !permission.AllowedOperations
                         .Split(",")
-                        .Contains(EntryOperation.Download.ToString()))
+                        .Contains(EntryOperation.View.ToString()))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }

@@ -169,9 +169,7 @@ public class EntriesController  : ApiControllerBase
             UserId = request.UserId,
             ExpiryDate = request.ExpiryDate,
             CanView = request.CanView,
-            CanUpload = request.CanUpload,
-            CanDownload = request.CanDownload,
-            CanChangePermission = request.CanChangePermission,
+            CanEdit = request.CanEdit,
         };
         var result = await Mediator.Send(command);
         return Ok(Result<EntryPermissionDto>.Succeed(result));

@@ -56,7 +56,7 @@ public class UpdateEntry
                 if (permission is null ||
                     !permission.AllowedOperations
                         .Split(",")
-                        .Contains(EntryOperation.Upload.ToString()))
+                        .Contains(EntryOperation.Edit.ToString()))
                 {
                     throw new UnauthorizedAccessException("User cannot access this resource.");
                 }
