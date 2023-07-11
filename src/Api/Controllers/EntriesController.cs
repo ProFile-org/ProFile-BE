@@ -3,7 +3,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Commands;
+using Application.Entries.Commands;
 using Application.Identity;
 using FluentValidation.Results;
 using Infrastructure.Identity.Authorization;

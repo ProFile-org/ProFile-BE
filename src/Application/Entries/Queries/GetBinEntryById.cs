@@ -6,7 +6,7 @@ using Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Digital.Queries;
+namespace Application.Entries.Queries;
 
 public class GetBinEntryById
 {

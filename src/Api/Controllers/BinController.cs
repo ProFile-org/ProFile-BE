@@ -2,7 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.Digital;
-using Application.Digital.Queries;
+using Application.Entries.Queries;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;

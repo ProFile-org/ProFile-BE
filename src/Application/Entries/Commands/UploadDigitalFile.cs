@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
-namespace Application.Digital.Commands;
+namespace Application.Entries.Commands;
 
 public class UploadDigitalFile {
     public class Validator : AbstractValidator<Command>
