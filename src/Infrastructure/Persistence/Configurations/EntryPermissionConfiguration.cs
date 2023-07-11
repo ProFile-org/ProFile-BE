@@ -15,5 +15,8 @@ public class EntryPermissionConfiguration : IEntityTypeConfiguration<EntryPermis
 
         builder.Property(x => x.IsSharedRoot)
             .IsRequired();
+
+        builder.Property(x => x.ExpiryDateTime)
+            .IsRequired(false);
     }
 }

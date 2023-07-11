@@ -21,7 +21,7 @@ public class ShareEntry
         public User CurrentUser { get; init; } = null!;
         public Guid EntryId { get; init; }
         public Guid UserId { get; init; }
-        public DateTime ExpiryDate { get; init; }
+        public DateTime? ExpiryDate { get; init; }
         public bool CanView { get; init; }
         public bool CanEdit { get; init; }
     }
@@ -79,8 +79,14 @@ public class ShareEntry
             }
 
             var allowOperations = GenerateAllowOperations(request);
+
+
+            var isShareRoot = !await _context.EntryPermissions
+                .AnyAsync(x => (x.Entry.Path == "/" ? x.Entry.Path + x.Entry.Name : x.Entry.Path + "/" + x.Entry.Name) == entry.Path
+                               && x.EmployeeId == request.UserId
+                               && x.Entry.FileId == null, cancellationToken);
             
-            await GrantOrRevokePermission(entry, user, allowOperations, request.ExpiryDate, true, cancellationToken);
+            await GrantOrRevokePermission(entry, user, allowOperations, request.ExpiryDate, isShareRoot, cancellationToken);
 
             if (entry.IsDirectory)
             {
@@ -112,7 +118,7 @@ public class ShareEntry
             Entry entry,
             User user,
             string allowOperations,
-            DateTime expiryDate,
+            DateTime? expiryDate,
             bool isSharedRoot,
             CancellationToken cancellationToken)
         {
@@ -122,12 +128,13 @@ public class ShareEntry
             
             if (existedPermission is null)
             {
+                if (string.IsNullOrEmpty(allowOperations)) return;
                 var entryPermission = new EntryPermission
                 {
                     EmployeeId = user.Id,
                     EntryId = entry.Id,
                     AllowedOperations = allowOperations,
-                    ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate),
+                    ExpiryDateTime = expiryDate is null ? null : LocalDateTime.FromDateTime(expiryDate.Value),
                     IsSharedRoot = isSharedRoot,
                     Employee = user,
                     Entry = entry,
@@ -141,7 +148,7 @@ public class ShareEntry
             else
             {
                 existedPermission.AllowedOperations = allowOperations;
-                existedPermission.ExpiryDateTime = LocalDateTime.FromDateTime(expiryDate);
+                existedPermission.ExpiryDateTime = expiryDate is null ? null : LocalDateTime.FromDateTime(expiryDate.Value);
                 _context.EntryPermissions.Update(existedPermission);
             }
         }
