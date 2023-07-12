@@ -51,7 +51,7 @@ public class BorrowsController : ApiControllerBase
     /// Get a borrow request by id
     /// </summary>
     /// <returns>A BorrowDto of the retrieved borrow</returns>
-    [RequiresRole(IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
+    [RequiresRole(IdentityData.Roles.Admin ,IdentityData.Roles.Staff, IdentityData.Roles.Employee)]
     [HttpGet("{borrowId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
