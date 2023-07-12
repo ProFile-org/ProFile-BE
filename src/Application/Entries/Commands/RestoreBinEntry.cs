@@ -86,6 +86,11 @@ public class RestoreBinEntry
                 {
                     continue;
                 }
+
+                if (currentPath.Equals("/") && node.Equals(""))
+                {
+                    continue;
+                }
                 
                 var entrySearch = await _context.Entries.FirstOrDefaultAsync(x => x.Path.Equals(currentPath) 
                     && x.Name.Equals(node), cancellationToken);
