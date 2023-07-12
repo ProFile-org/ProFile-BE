@@ -45,8 +45,6 @@ public class DeleteDocument
                 throw new KeyNotFoundException("Document does not exist.");
             }
 
-            var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
-
             if (document.Folder is not null)
             {
                 document.Folder.NumberOfDocuments -= 1;

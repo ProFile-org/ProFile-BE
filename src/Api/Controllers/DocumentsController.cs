@@ -304,4 +304,37 @@ public class DocumentsController : ApiControllerBase
         HttpContext.Response.ContentType = result.FileType;
         return File(content, result.FileType, result.FileName);
     }
+
+    /// <summary>
+    /// Upload a file to link with a document
+    /// </summary>
+    /// <param name="documentId">Document id</param>
+    /// <param name="file"></param>
+    /// <returns>File</returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpPost("{documentId:guid}/file")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DocumentDto>> UploadFile(
+        [FromRoute] Guid documentId,
+        IFormFile file)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var fileData = new MemoryStream();
+        await file.CopyToAsync(fileData);
+        var lastDotIndex = file.FileName.LastIndexOf(".", StringComparison.Ordinal);
+        var extension = file.FileName.Substring(lastDotIndex + 1, file.FileName.Length - lastDotIndex - 1);
+
+        var command = new UploadFileToDocument.Command()
+        {
+            CurrentUser = currentUser,
+            DocumentId = documentId,
+            FileData = fileData,
+            FileType = file.ContentType,
+            FileExtension = extension,
+        };
+        var result = await Mediator.Send(command);
+        return Ok(Result<DocumentDto>.Succeed(result));
+    }
 }
