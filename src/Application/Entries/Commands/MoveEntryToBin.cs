@@ -76,9 +76,15 @@ public class MoveEntryToBin
                 var permissions = _context.EntryPermissions.Where(x => ids.Contains(x.EntryId));
                 _context.EntryPermissions.RemoveRange(permissions);
 
+                var c = entry.Path.Length;
                 foreach (var childEntry in childEntries)
                 {
-                    var childBinPath = ownerUsername + BinString + childEntry.Path;
+                    var childBinPath = ownerUsername + BinString;
+                    if (!entry.Path.Equals("/"))
+                    {
+                        childBinPath += childEntry.Path[c..];
+                    } // /x /x abc  /x/abc de => _bin + /x abc  _bin/x/abc de
+                    childEntry.OldPath = childEntry.Path;
                     childEntry.Path = childBinPath;
                     childEntry.LastModified = localDateTimeNow;
                     childEntry.LastModifiedBy = request.CurrentUser.Id;
@@ -86,7 +92,8 @@ public class MoveEntryToBin
                 }
             }
             
-            var binPath = ownerUsername + BinString + entryPath;
+            var binPath = $"{ownerUsername}{BinString}";
+            entry.OldPath = entry.Path;
             entry.Path = binPath;
             entry.LastModified = localDateTimeNow;
             entry.LastModifiedBy = request.CurrentUser.Id;

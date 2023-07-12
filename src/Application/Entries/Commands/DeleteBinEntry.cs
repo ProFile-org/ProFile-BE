@@ -48,9 +48,10 @@ public class DeleteBinEntry
 
             var entryPath = entry.Path;
             var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
-            var binCheck = entryPath.Substring(0, firstSlashIndex);
+            var binCheck = firstSlashIndex < 0 ? entryPath : entryPath.Substring(0, firstSlashIndex);
 
-            if (!binCheck.Contains(BinString))
+            var path1 = request.CurrentUser.Username + BinString;
+            if (!binCheck.Equals(path1))
             {
                 throw new NotChangedException("Entry is not in bin.");
             }

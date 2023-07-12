@@ -105,6 +105,9 @@ namespace Infrastructure.Persistence.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("OldPath")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
 

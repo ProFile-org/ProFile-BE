@@ -48,14 +48,15 @@ public class RestoreBinEntry
 
             var entryPath = entry.Path;
             var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
-            var binCheck = entryPath.Substring(0, firstSlashIndex);
+            var binCheck = firstSlashIndex < 0 ? entryPath : entryPath.Substring(0, firstSlashIndex);
 
-            if (!binCheck.Contains(BinString))
+            var path1 = request.CurrentUser.Username + BinString;
+            if (!binCheck.Equals(path1))
             {
                 throw new NotChangedException("Entry is not in bin.");
             }
 
-            if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
+            if (entry.Owner.Id != request.CurrentUser.Id)
             {
                 throw new UnauthorizedAccessException("You do not have the permission to restore this entry.");
             }
@@ -78,7 +79,7 @@ public class RestoreBinEntry
                 return _mapper.Map<EntryDto>(dupeResult.Entity);
             }
 
-            var splitPath = entry.Path.Split("/");
+            var splitPath = entry.OldPath!.Split("/");
             var currentPath = "/";
             foreach (var node in splitPath)
             {
@@ -97,6 +98,7 @@ public class RestoreBinEntry
                 
                 if (entrySearch is not null)
                 {
+                    currentPath = currentPath.Equals("/") ? currentPath + node : currentPath + "/" + node;
                     continue;
                 }
 
@@ -125,13 +127,15 @@ public class RestoreBinEntry
                 foreach (var childEntry in childEntries)
                 {
                     childEntry.Path = childEntry.Path.Replace(binCheck, "");
+                    childEntry.OldPath = null;
                     childEntry.LastModified = localDateTimeNow;
                     childEntry.LastModifiedBy = request.CurrentUser.Id;
                     _context.Entries.Update(childEntry);
                 }
             }
             
-            entry.Path = entryPath.Replace(binCheck, "");
+            entry.Path = entry.OldPath;
+            entry.OldPath = null;
             entry.LastModified = localDateTimeNow;
             entry.LastModifiedBy = request.CurrentUser.Id;
 

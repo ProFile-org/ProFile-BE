@@ -36,15 +36,23 @@ public class GetAllBinEntriesPaginated
 
         public async Task<PaginatedList<EntryDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var realPath = $"{request.CurrentUser.Username}_bin{request.EntryPath}";
-            var count1 = $"{request.CurrentUser.Username}_bin".Length;
+            var path = $"{request.CurrentUser.Username}_bin";
+            var count1 = path.Length;
+
+            if (!request.EntryPath.Equals("/"))
+            {
+                path += request.EntryPath;
+            }
 
             var entries = _context.Entries
                 .Include(x => x.Owner)
                 .Include(x => x.File)
-                .AsQueryable()
                 .Where(x => x.Owner.Id == request.CurrentUser.Id
-                            && x.Path == realPath);
+                && x.Path == path);
+
+            
+            // var realPath = $"{request.CurrentUser.Username}_bin{request.EntryPath}";
+
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
@@ -69,7 +77,7 @@ public class GetAllBinEntriesPaginated
                 .Paginate(pageNumber.Value, sizeNumber.Value)
                 .ToListAsync(cancellationToken);
             
-            list.ForEach(x => x.Path = x.Path[count1..]);
+            list.ForEach(x => { x.Path = x.Path.Length == count1 ? "/" : x.Path[count1..]; });
 
             var result = _mapper.Map<List<EntryDto>>(list);
             return new PaginatedList<EntryDto>(result, count, pageNumber.Value, sizeNumber.Value);
