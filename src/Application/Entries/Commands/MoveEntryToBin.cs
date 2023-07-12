@@ -72,6 +72,10 @@ public class MoveEntryToBin
                     x.Path.Trim().Equals(path)
                     || EF.Functions.Like(x.Path, pattern));
 
+                var ids = childEntries.Select(x => x.Id);
+                var permissions = _context.EntryPermissions.Where(x => ids.Contains(x.EntryId));
+                _context.EntryPermissions.RemoveRange(permissions);
+
                 foreach (var childEntry in childEntries)
                 {
                     var childBinPath = ownerUsername + BinString + childEntry.Path;
@@ -86,7 +90,10 @@ public class MoveEntryToBin
             entry.Path = binPath;
             entry.LastModified = localDateTimeNow;
             entry.LastModifiedBy = request.CurrentUser.Id;
-            
+
+            var entryPermissions = _context.EntryPermissions.Where(x => x.EntryId == entry.Id);
+            _context.EntryPermissions.RemoveRange(entryPermissions);
+
             var result = _context.Entries.Update(entry);
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(entry), entry.Id, request.CurrentUser.Id))
