@@ -53,6 +53,8 @@ public class GetBinEntryById
                 throw new UnauthorizedAccessException("You do not have permission to view this entry");
             }
 
+            entry.Path = entry.Path[binCheck.Length..];
+
             return _mapper.Map<EntryDto>(entry);
         }
     }

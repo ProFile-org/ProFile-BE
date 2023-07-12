@@ -124,6 +124,7 @@ public class BinController : ApiControllerBase
         var command = new GetAllBinEntriesPaginated.Query()
         {
             CurrentUser = currentUser,
+            EntryPath = queryParameters.EntryPath,
             Page = queryParameters.Page,
             Size = queryParameters.Size,
             SearchTerm = queryParameters.SearchTerm,

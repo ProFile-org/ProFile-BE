@@ -15,6 +15,7 @@ public class GetAllBinEntriesPaginated
     public record Query : IRequest<PaginatedList<EntryDto>>
     {
         public User CurrentUser { get; init; } = null!;
+        public string EntryPath { get; init; } = null!;
         public string? SearchTerm { get; init; }
         public int? Page { get; init; }
         public int? Size { get; init; }
@@ -35,13 +36,15 @@ public class GetAllBinEntriesPaginated
 
         public async Task<PaginatedList<EntryDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var pattern = $"{request.CurrentUser.Username}_bin/%";
+            var realPath = $"{request.CurrentUser.Username}_bin{request.EntryPath}";
+            var count1 = $"{request.CurrentUser.Username}_bin".Length;
 
             var entries = _context.Entries
                 .Include(x => x.Owner)
+                .Include(x => x.File)
                 .AsQueryable()
-                .Where(x => x.Owner.Username.Equals(request.CurrentUser.Username)
-                && EF.Functions.Like(x.Path, pattern));
+                .Where(x => x.Owner.Id == request.CurrentUser.Id
+                            && x.Path == realPath);
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
@@ -49,14 +52,27 @@ public class GetAllBinEntriesPaginated
                     x.Name.Contains(request.SearchTerm.Trim()));
             }
 
-            return await entries
-                .ListPaginateWithSortAsync<Entry, EntryDto>(
-                    request.Page,
-                    request.Size,
-                    request.SortBy,
-                    request.SortOrder,
-                    _mapper.ConfigurationProvider,
-                    cancellationToken);
+            var sortBy = request.SortBy;
+            
+            if (sortBy is null || !sortBy.MatchesPropertyName<EntryDto>())
+            {
+                sortBy = nameof(EntryDto.Id);
+            }
+
+            var sortOrder = request.SortOrder ?? "asc";
+            var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
+            var sizeNumber = request.Size is null or <= 0 ? 10 : request.Size;
+            
+            var count = await entries.CountAsync(cancellationToken);
+            var list  = await entries
+                .OrderByCustom(sortBy, sortOrder)
+                .Paginate(pageNumber.Value, sizeNumber.Value)
+                .ToListAsync(cancellationToken);
+            
+            list.ForEach(x => x.Path = x.Path[count1..]);
+
+            var result = _mapper.Map<List<EntryDto>>(list);
+            return new PaginatedList<EntryDto>(result, count, pageNumber.Value, sizeNumber.Value);
         }
     }
 }
