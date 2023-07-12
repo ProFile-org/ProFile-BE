@@ -5,6 +5,7 @@ using Application.Identity;
 using AutoMapper;
 using Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Queries;
 
@@ -35,6 +36,7 @@ public class GetAllUsersPaginated
         public async Task<PaginatedList<UserDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var users = _context.Users
+                .Include(x => x.Department)
                 .Where(x => !x.Role.Equals(IdentityData.Roles.Admin));
 
             // Filter by department
