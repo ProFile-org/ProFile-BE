@@ -2,7 +2,7 @@ using Domain.Common;
 
 namespace Domain.Entities.Physical;
 
-public class Locker : BaseEntity
+public class Locker : BaseAuditableEntity
 {
     public string Name { get; set; } = null!;
     public string? Description { get; set; }

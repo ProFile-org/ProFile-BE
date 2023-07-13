@@ -1,3 +1,4 @@
+using Application.Common.Models.Dtos;
 using Application.Users.Queries;
 
 namespace Api.Controllers.Payload.Responses;

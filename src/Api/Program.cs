@@ -2,7 +2,6 @@ using Api;
 using Api.Extensions;
 using Application;
 using Infrastructure;
-using Infrastructure.Persistence;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,17 +16,12 @@ try
     
     builder.Services.AddApplicationServices();
     builder.Services.AddInfrastructureServices(builder.Configuration);
-    builder.Services.AddApiServices();
-    
+    builder.Services.AddApiServices(builder.Configuration);
     var app = builder.Build();
     
-    app.UseInfrastructure();
+    app.UseInfrastructure(builder.Configuration);
 
-    app.MigrateDatabase<ApplicationDbContext>((context, _) =>
-        {
-            ApplicationDbContextSeed.Seed(context, builder.Configuration, Log.Logger).Wait();
-        })
-        .Run();
+    app.Run();
 }
 catch (Exception ex)
 {

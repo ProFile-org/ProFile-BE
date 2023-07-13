@@ -25,7 +25,7 @@ CMD ["dotnet", "test", "--logger:trx"]
 # Publish stage
 FROM build AS publish
 WORKDIR /app/src/Api
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish -c Release --no-restore -o /app/publish
 
 # Final stage
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS runtime

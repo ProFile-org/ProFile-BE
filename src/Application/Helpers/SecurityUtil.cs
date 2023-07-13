@@ -19,4 +19,11 @@ public static class SecurityUtil
             
         return stringBuilder.ToString();
     }
+
+    public static string HashPasswordWith(this string input, string salt, string pepper)
+    {
+        pepper = Convert.ToBase64String(Encoding.UTF8.GetBytes(pepper)); 
+        salt = Convert.ToBase64String(Encoding.UTF8.GetBytes(salt));
+        return Hash(salt + input + pepper);
+    }
 }

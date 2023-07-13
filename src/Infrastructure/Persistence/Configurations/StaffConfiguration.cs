@@ -22,6 +22,6 @@ public class StaffConfiguration : IEntityTypeConfiguration<Staff>
         builder.HasOne(x => x.Room)
             .WithOne(x => x.Staff)
             .HasForeignKey<Staff>("RoomId")
-            .IsRequired();
+            .IsRequired(false);
     }
 }

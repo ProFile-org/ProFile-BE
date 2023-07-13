@@ -40,6 +40,10 @@ public class JweAuthenticationHandler : AuthenticationHandler<JweAuthenticationO
             var claimsPrincipal = handler.ValidateToken(token,
                 Options.TokenValidationParameters, out var validatedToken);
 
+            if (claimsPrincipal.Claims.Single(x => x.Type.Equals("isActive")).Value.Equals(false.ToString()))
+            {
+                return AuthenticateResult.Fail("User is not active.");
+            }
             Context.User = claimsPrincipal;
             
             return validatedToken is null

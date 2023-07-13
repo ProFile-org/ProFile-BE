@@ -23,7 +23,6 @@ public static class HostExtensions
 
         try
         {
-            logger.LogInformation("Migrating database..");
             context?.Database.Migrate();
             logger.LogInformation("Migrated successfully");
             seeder(context!, services);
