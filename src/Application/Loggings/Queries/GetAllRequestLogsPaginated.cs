@@ -4,11 +4,10 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Users.Queries;
 using AutoMapper;
-using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Borrows.Queries;
+namespace Application.Loggings.Queries;
 
 public class GetAllRequestLogsPaginated
 {
