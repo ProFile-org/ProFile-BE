@@ -20,7 +20,7 @@ public class GetAllEntriesPaginated
             
             RuleFor(x => x.EntryPath)
                 .NotEmpty().WithMessage("File's path is required.")
-                .Matches("^(/(?!/)[A-Za-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
+                .Matches("^(/(?!/)[\\p{L}A-Za-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
         }
     }
 
