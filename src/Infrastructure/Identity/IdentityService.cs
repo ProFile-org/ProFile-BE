@@ -2,7 +2,7 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Security.Cryptography;
+using System.Text;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
@@ -27,8 +27,6 @@ public class IdentityService : IIdentityService
     private readonly JweSettings _jweSettings;
     private readonly IApplicationDbContext _applicationDbContext;
     private readonly IAuthDbContext _authDbContext;
-    private readonly RSA _encryptionKey;
-    private readonly ECDsa _signingKey;
     private readonly IMapper _mapper;
     private readonly SecuritySettings _securitySettings;
 
@@ -37,8 +35,6 @@ public class IdentityService : IIdentityService
         IOptions<JweSettings> jweSettingsOptions, 
         IApplicationDbContext applicationDbContext, 
         IAuthDbContext authDbContext, 
-        RSA encryptionKey, 
-        ECDsa signingKey, 
         IMapper mapper, 
         IOptions<SecuritySettings> securitySettingsOptions)
     {
@@ -46,8 +42,6 @@ public class IdentityService : IIdentityService
         _jweSettings = jweSettingsOptions.Value;
         _applicationDbContext = applicationDbContext;
         _authDbContext = authDbContext; 
-        _encryptionKey = encryptionKey;
-        _signingKey = signingKey;
         _mapper = mapper;
         _securitySettings = securitySettingsOptions.Value;
     }
@@ -324,16 +318,16 @@ public class IdentityService : IIdentityService
             new("departmentId", user.Department is not null ? user.Department.Id.ToString() : Guid.Empty.ToString()),
             new("isActive", user.IsActive.ToString()),
         };
-        var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
-        var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};
 
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jweSettings.SigningKeyId));
+        var encryptingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jweSettings.EncryptionKeyId));
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Subject = new ClaimsIdentity(authClaims),
             SigningCredentials = 
-                new SigningCredentials(privateSigningKey, SecurityAlgorithms.EcdsaSha256),
+                new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
             EncryptingCredentials = 
-                new EncryptingCredentials(publicEncryptionKey, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512),
+                new EncryptingCredentials(encryptingKey, SecurityAlgorithms.Aes256KW, SecurityAlgorithms.Aes256CbcHmacSha512),
             Expires = utcNow.Add(_jweSettings.TokenLifetime),
         };
 

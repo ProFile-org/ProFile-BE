@@ -1,13 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+using System.Text;
 using Application.Common.Interfaces;
-using Application.Common.Models;
 using Infrastructure.Identity;
 using Infrastructure.Identity.Authentication;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.Shared;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,12 +62,6 @@ public static class ConfigureServices
             options.RefreshTokenLifetimeInDays = jweSettings.RefreshTokenLifetimeInDays;
         });
 
-        var encryptionKey = RSA.Create(3072);
-        var signingKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
-
-        var privateEncryptionKey = new RsaSecurityKey(encryptionKey) {KeyId = jweSettings!.EncryptionKeyId};
-        var publicSigningKey = new ECDsaSecurityKey(ECDsa.Create(signingKey.ExportParameters(false))) {KeyId = jweSettings.SigningKeyId};
-
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
@@ -78,14 +70,12 @@ public static class ConfigureServices
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero,
             // public key for signing
-            IssuerSigningKey = publicSigningKey,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jweSettings!.SigningKeyId)),
 
             // private key for encryption
-            TokenDecryptionKey = privateEncryptionKey,
+            TokenDecryptionKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jweSettings.EncryptionKeyId)),
         };
         
-        services.AddSingleton(encryptionKey);
-        services.AddSingleton(signingKey);
         services.AddSingleton(tokenValidationParameters);
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         services.AddAuthentication(JweAuthenticationOptions.DefaultScheme)
