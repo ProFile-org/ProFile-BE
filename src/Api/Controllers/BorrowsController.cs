@@ -7,6 +7,7 @@ using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Common.Models.Dtos.Physical;
 using Application.Identity;
+using Application.Loggings.Queries;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

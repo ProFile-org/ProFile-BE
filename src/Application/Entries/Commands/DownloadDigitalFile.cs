@@ -80,7 +80,7 @@ public class DownloadDigitalFile
             {
                 Content = content,
                 FileType = fileType,
-                FileName = entry.Name,
+                FileName = $"{entry.Name}.{entry.File.FileExtension}",
             };
         }
     }
