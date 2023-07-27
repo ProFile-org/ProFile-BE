@@ -60,12 +60,12 @@ public class CreateEntry {
         
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var baseDirectory = await _context.Entries.AnyAsync(
+            var baseDirectoryExists = await _context.Entries.AnyAsync(
                 x => request.Path.Trim().ToLower()
                         .Equals((x.Path.Equals("/") ? (x.Path + x.Name) : (x.Path + "/" + x.Name)).ToLower())
                     && x.FileId == null && x.OwnerId == request.CurrentUser.Id, cancellationToken);
 
-            if (!request.Path.Equals("/") && !baseDirectory)
+            if (!request.Path.Equals("/") && !baseDirectoryExists)
             {
                 throw new ConflictException("Base directory does not exist.");
             }
