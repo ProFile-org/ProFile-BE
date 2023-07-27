@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Domain.Statuses;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
@@ -20,7 +21,8 @@ public class BackgroundWorkers : BackgroundService
             var workers = new List<Task>
             {
                 DisposeExpiredEntries(TimeSpan.FromSeconds(10), stoppingToken),
-                DisposeExpiredPermissions(TimeSpan.FromSeconds(10), stoppingToken)
+                DisposeExpiredPermissions(TimeSpan.FromSeconds(10), stoppingToken),
+                HandleOverdueRequest(TimeSpan.FromMinutes(2),stoppingToken),
             };
 
             await Task.WhenAll(workers.ToArray());
@@ -48,6 +50,27 @@ public class BackgroundWorkers : BackgroundService
 
         var expiredPermissions = context.Permissions.Where(x => x.ExpiryDateTime < localDateTimeNow);
         context.Permissions.RemoveRange(expiredPermissions);
+        await context.SaveChangesAsync(stoppingToken);
+        await Task.Delay(delay, stoppingToken);
+    }
+
+    private async Task HandleOverdueRequest(TimeSpan delay, CancellationToken stoppingToken)
+    {
+        var localDateTimeNow = LocalDateTime.FromDateTime(DateTime.Now);
+        using var scope = _serviceProvider.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+        var overdueRequests = context.Borrows
+            .Where(x => x.Status != BorrowRequestStatus.Overdue
+                        && x.Status == BorrowRequestStatus.CheckedOut
+                        && x.DueTime < localDateTimeNow)
+            .ToList();
+
+        foreach (var request in overdueRequests)
+        {
+            request.Status = BorrowRequestStatus.Overdue;
+        }
+        context.Borrows.UpdateRange(overdueRequests);
+
         await context.SaveChangesAsync(stoppingToken);
         await Task.Delay(delay, stoppingToken);
     }
