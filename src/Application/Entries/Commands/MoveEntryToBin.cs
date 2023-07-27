@@ -46,15 +46,6 @@ public class MoveEntryToBin
                 throw new KeyNotFoundException("Entry does not exist.");
             }
 
-            var entryPath = entry.Path;
-            var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
-            var binCheck = entryPath.Substring(0, firstSlashIndex);
-
-            if (binCheck.Contains(BinString))
-            {
-                throw new ConflictException("Entry is already in bin.");
-            }
-
             if (!entry.Owner.Id.Equals(request.CurrentUser.Id))
             {
                 throw new UnauthorizedAccessException("You do not have permission to move this entry into bin.");
@@ -80,10 +71,10 @@ public class MoveEntryToBin
                 foreach (var childEntry in childEntries)
                 {
                     var childBinPath = ownerUsername + BinString;
-                    if (!entry.Path.Equals("/"))
+                    if (!childEntry.Path.Equals("/"))
                     {
-                        childBinPath += childEntry.Path[c..];
-                    } // /x /x abc  /x/abc de => _bin + /x abc  _bin/x/abc de
+                        childBinPath += $"/{childEntry.Path[c..]}";
+                    }
                     childEntry.OldPath = childEntry.Path;
                     childEntry.Path = childBinPath;
                     childEntry.LastModified = localDateTimeNow;
