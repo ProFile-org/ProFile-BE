@@ -47,7 +47,7 @@ public class GetAllLogsPaginated
 
             if (!(request.SearchTerm is null || request.SearchTerm.Trim().Equals(string.Empty)))
             {
-                logs = logs.Where(x => x.Message!.Contains(request.SearchTerm.Trim().ToLower()));
+                logs = logs.Where(x => x.Message!.Trim().ToLower().Contains(request.SearchTerm.Trim().ToLower()));
             }
             
             var pageNumber = request.Page is null or <= 0 ? 1 : request.Page;
