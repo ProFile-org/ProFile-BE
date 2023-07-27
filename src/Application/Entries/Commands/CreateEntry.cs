@@ -25,7 +25,7 @@ public class CreateEntry {
                 .NotEmpty().WithMessage("Entry's name is required.")
                 .Matches("^[\\p{L}A-Za-z_.\\s\\-0-9]*$").WithMessage("Invalid name format.")
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
-            
+
             RuleFor(x => x.Path)
                 .NotEmpty().WithMessage("Entry's path is required.")
                 .Matches("^(/(?!/)[\\p{L}A-Za-z_.\\s\\-0-9]*)+(?<!/)$|^/$").WithMessage("Invalid path format.");
