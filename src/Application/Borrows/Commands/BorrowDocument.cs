@@ -150,7 +150,7 @@ public class BorrowDocument
             if (document.IsPrivate)
             {
                 var isGranted = _permissionManager.IsGranted(request.DocumentId, DocumentOperation.Borrow, request.BorrowerId);
-                if (!isGranted)
+                if (document.ImporterId != request.BorrowerId && !isGranted)
                 {
                     throw new UnauthorizedAccessException("You don't have permission to borrow this document.");
                 }
