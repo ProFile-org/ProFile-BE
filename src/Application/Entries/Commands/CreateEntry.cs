@@ -32,9 +32,9 @@ public class CreateEntry {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
             RuleFor(x => x.FileExtension)
-                .Must(extension =>
+                .Must((command, extension) =>
                 {
-                    if (!_allowedExtensions.Contains(extension))
+                    if (!command.IsDirectory && !_allowedExtensions.Contains(extension))
                     {
                         throw new ConflictException("This file is not supported.");
                     }
