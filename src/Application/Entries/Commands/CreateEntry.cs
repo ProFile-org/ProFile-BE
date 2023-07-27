@@ -17,13 +17,33 @@ namespace Application.Entries.Commands;
 public class CreateEntry {
     public class Validator : AbstractValidator<Command>
     {
+        private readonly string[] _allowedExtensions =
+        {
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "ppt",
+            "pptx",
+        };
         public Validator()
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
+            RuleFor(x => x.FileExtension)
+                .Must(extension =>
+                {
+                    if (!_allowedExtensions.Contains(extension))
+                    {
+                        throw new ConflictException("This file is not supported.");
+                    }
+                    return true;
+                });
+            
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Entry's name is required.")
-                .Matches("^[\\p{L}A-Za-z_.\\s\\-0-9]*$").WithMessage("Invalid name format.")
+                .Matches("^[\\p{L}A-Za-z()_.\\s\\-0-9]*$").WithMessage("Invalid name format.")
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
 
             RuleFor(x => x.Path)

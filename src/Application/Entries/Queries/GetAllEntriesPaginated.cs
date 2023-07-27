@@ -48,6 +48,7 @@ public class GetAllEntriesPaginated
         public async Task<PaginatedList<EntryDto>> Handle(Query request, CancellationToken cancellationToken)
         {
             var entries = _context.Entries
+                .Include(x => x.File)
                 .Where(x => x.Path.Equals(request.EntryPath) &&
                             x.OwnerId == request.CurrentUser.Id);
             
