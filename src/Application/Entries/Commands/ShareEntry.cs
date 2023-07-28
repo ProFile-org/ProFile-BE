@@ -7,6 +7,7 @@ using Application.Common.Models.Operations;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Digital;
+using Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -102,6 +103,15 @@ public class ShareEntry
                     var childAllowOperations = GenerateAllowOperations(request);
                     await GrantOrRevokePermission(childEntry, user, childAllowOperations, request.ExpiryDate, false, cancellationToken);
                 }
+            }
+
+            if (request.CanView)
+            {
+                var p = "view";
+                if (request.CanEdit) p = "edit";
+                entry.AddDomainEvent(new ShareEntryEvent(entry.Name,
+                    request.CurrentUser.FirstName + request.CurrentUser.LastName,
+                    entry.Owner.FirstName + entry.Owner.LastName, user.Email, entry.IsDirectory, p, entry.Id.ToString()));
             }
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))

@@ -108,7 +108,7 @@ public static class ConfigureServices
             options.Token = mailSettings!.Token;
             options.SenderEmail = mailSettings!.SenderEmail;
             options.SenderName = mailSettings!.SenderName;
-            options.TemplateUuid = mailSettings!.TemplateUuid;
+            options.TemplateUuids = mailSettings!.TemplateUuids;
         });
         
         services.AddTransient<IMailService, MailService>();

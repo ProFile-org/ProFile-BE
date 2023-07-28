@@ -6,5 +6,12 @@ public class MailSettings
     public string Token { get; set; }
     public string SenderName { get; set; }
     public string SenderEmail { get; set; }
-    public string TemplateUuid { get; set; }
+    
+    public Template TemplateUuids { get; set; }
+}
+
+public class Template
+{
+    public string ResetPassword { get; set; }
+    public string ShareEntry { get; set; }
 }
