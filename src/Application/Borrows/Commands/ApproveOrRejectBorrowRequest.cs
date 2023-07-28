@@ -120,7 +120,7 @@ public class ApproveOrRejectBorrowRequest
 
                 using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
                 {
-                    _logger.LogApproveBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                    Common.Extensions.Logging.BorrowLogExtensions.LogApproveBorrowRequest(_logger, borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
                 }
             }
 
@@ -130,7 +130,7 @@ public class ApproveOrRejectBorrowRequest
 
                 using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
                 {
-                    _logger.LogRejectBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                    Common.Extensions.Logging.BorrowLogExtensions.LogRejectBorrowRequest(_logger, borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
                 }
             }
 

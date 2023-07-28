@@ -90,7 +90,7 @@ public class CheckoutDocument
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentStaff.Id))
             {
-                _logger.LogCheckoutDocument(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                Common.Extensions.Logging.BorrowLogExtensions.LogCheckoutDocument(_logger, borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
             }
             return _mapper.Map<BorrowDto>(result.Entity);
         }

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using EventId = Application.Common.Logging.EventId;
 
-namespace Application.Entries;
+namespace Application.Common.Extensions.Logging;
 
 public static partial class EntryLogExtension
 {

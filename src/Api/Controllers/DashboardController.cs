@@ -19,6 +19,8 @@ public class DashboardController : ApiControllerBase
 
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost("import-documents")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<Result<List<GetImportDocuments.Result>>>> GetImportDocuments(GetImportedDocumentsMetricsRequest request)
     {
         var query = new GetImportDocuments.Query()
