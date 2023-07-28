@@ -31,7 +31,7 @@ public class RequestCreatedHandler : INotificationHandler<RequestCreated>
         if (staff is not null)
         {
             _mailService.SendCreateRequestHtmlMail(notification.UserName, notification.RequestType, notification.Operation,
-                notification.DocumentTitle, notification.Reason, notification.DocumentId, staff.User.Email);
+                notification.DocumentTitle, notification.Reason, notification.RequestId, staff.User.Email);
         }
     }
 }

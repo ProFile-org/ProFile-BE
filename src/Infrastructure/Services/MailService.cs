@@ -108,7 +108,7 @@ public class MailService : IMailService
             {
                 new (){ Email = email },
             },
-            TemplateUuid = _mailSettings.TemplateUuids.ShareEntry,
+            TemplateUuid = _mailSettings.TemplateUuids.Request,
             TemplateVariables = new CreateRequestTemplateVariables()
             {
                 Operation = operation,
@@ -117,7 +117,7 @@ public class MailService : IMailService
                 UserName = userName,
                 Id = documentId.ToString(),
                 RequestType = requestType,
-                Path = requestType.Equals("borrow request") ? "import/manage" : "requests"
+                Path = !requestType.Equals("borrow request") ? "import/manage" : "requests"
             },
         };
         

@@ -14,4 +14,5 @@ public class Template
 {
     public string ResetPassword { get; set; }
     public string ShareEntry { get; set; }
+    public string Request { get; set; }
 }

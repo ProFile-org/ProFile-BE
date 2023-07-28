@@ -157,9 +157,10 @@ public class BorrowDocument
                 entity.Status = BorrowRequestStatus.Approved;
             }
 
-            entity.AddDomainEvent(new RequestCreated($"{user.FirstName} {user.LastName}", "borrow request", "borrow",
-                document.Title, document.Id, request.BorrowReason));
+            
             var result = await _context.Borrows.AddAsync(entity, cancellationToken);
+            entity.AddDomainEvent(new RequestCreated($"{user.FirstName} {user.LastName}", "borrow request", "borrow",
+                document.Title, entity.Id, request.BorrowReason, document.Id));
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("Request", document.Id, user.Id))
             {
