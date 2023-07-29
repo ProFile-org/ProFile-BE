@@ -32,8 +32,8 @@ public class ResetPasswordTemplateVariables
 {
     [JsonPropertyName("user_email")]
     public string UserEmail { get; set; }
-    [JsonPropertyName("reset_password_token_hash")]
-    public string ResetPasswordTokenHash { get; set; }
+    [JsonPropertyName("token_hash")]
+    public string TokenHash { get; set; }
     [JsonPropertyName("user_password")]
     public string UserPassword { get; set; }
 }
