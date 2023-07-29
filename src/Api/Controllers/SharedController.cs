@@ -144,7 +144,7 @@ public class SharedController : ApiControllerBase
     [HttpGet("entries/{entryId:guid}/shared-users")]
     public async Task<ActionResult<PaginatedList<EntryPermissionDto>>> GetSharedUsersFromASharedEntryPaginated(
         [FromRoute] Guid entryId,
-        [FromQuery] GetAllSharedUsersFromASharedEntryPaginatedQueryParameters queryParameters)
+        [FromQuery] GetAllSharedUsersPaginatedQueryParameters queryParameters)
     {
         var currentUser = _currentUserService.GetCurrentUser();
         var query = new GetAllSharedUsersOfASharedEntryPaginated.Query()

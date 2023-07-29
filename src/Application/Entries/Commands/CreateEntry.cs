@@ -17,13 +17,33 @@ namespace Application.Entries.Commands;
 public class CreateEntry {
     public class Validator : AbstractValidator<Command>
     {
+        private readonly string[] _allowedExtensions =
+        {
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "ppt",
+            "pptx",
+        };
         public Validator()
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
             
+            RuleFor(x => x.FileExtension)
+                .Must((command, extension) =>
+                {
+                    if (!command.IsDirectory && !_allowedExtensions.Contains(extension))
+                    {
+                        throw new ConflictException("This file is not supported.");
+                    }
+                    return true;
+                });
+            
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Entry's name is required.")
-                .Matches("^[\\p{L}A-Za-z_.\\s\\-0-9]*$").WithMessage("Invalid name format.")
+                .Matches("^[\\p{L}A-Za-z()_.\\s\\-0-9]*$").WithMessage("Invalid name format.")
                 .MaximumLength(256).WithMessage("Name cannot exceed 256 characters.");
 
             RuleFor(x => x.Path)
@@ -62,8 +82,8 @@ public class CreateEntry {
         {
             var baseDirectoryExists = await _context.Entries.AnyAsync(
                 x => request.Path.Trim().ToLower()
-                         .Equals((x.Path.Equals("/") ? (x.Path + x.Name) : (x.Path + "/" + x.Name)).ToLower())
-                     && x.FileId == null, cancellationToken);
+                        .Equals((x.Path.Equals("/") ? (x.Path + x.Name) : (x.Path + "/" + x.Name)).ToLower())
+                    && x.FileId == null && x.OwnerId == request.CurrentUser.Id, cancellationToken);
 
             if (!request.Path.Equals("/") && !baseDirectoryExists)
             {
@@ -87,9 +107,10 @@ public class CreateEntry {
             if (request.IsDirectory)
             {
                 var entry = await _context.Entries.FirstOrDefaultAsync(
-                    x => x.Name.Trim().Equals(request.Name.Trim())
-                         && x.Path.Trim().Equals(request.Path.Trim())
-                    && x.FileId == null, cancellationToken);
+                    x => x.Name.Trim().Equals(request.Name.Trim()) 
+                         && x.Path.Trim().Equals(request.Path.Trim()) 
+                         && x.FileId == null 
+                         && x.OwnerId == request.CurrentUser.Id, cancellationToken);
             
                 if (entry is not null)
                 {
@@ -98,14 +119,42 @@ public class CreateEntry {
             }
             else
             {
-                // Make this dynamic
+                var entries = _context.Entries.AsQueryable()
+                    .Where(x => x.Name.Trim().Substring(0, request.Name.Trim().Length).Equals(request.Name.Trim())
+                             && x.Path.Trim().Equals(request.Path.Trim())
+                             && x.FileId != null
+                             && x.OwnerId == request.CurrentUser.Id);
+                
                 if (request.FileData!.Length > FileUtil.ToByteFromMb(20))
                 {
                     throw new ConflictException("File size must be lower than 20MB");
                 }
+                
+                if (entries.Any())
+                {
+                    var i = 0;
+                    while (true)
+                    {
+                        var temp = "";
+                        if (i == 0)
+                        {
+                            temp = entryEntity.Name;
+                        }
+                        else
+                        {
+                            temp = $"{entryEntity.Name} ({i})";
+                        }
+                        var checkEntry = await entries.AnyAsync(x => x.Name.Equals(temp),cancellationToken);
 
-                var lastDotIndex = request.Name.LastIndexOf(".", StringComparison.Ordinal);
-                var fileExtension = request.Name.Substring(lastDotIndex + 1, request.Name.Length - lastDotIndex - 1);
+                        if (!checkEntry)
+                        {
+                            entryEntity.Name = temp;
+                            break;
+                        }
+
+                        i++;
+                    }
+                }
             
                 var fileEntity = new FileEntity()
                 {

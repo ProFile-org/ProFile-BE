@@ -37,16 +37,16 @@ public class RestoreBinEntry
 
         public async Task<EntryDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var entry = await _context.Entries
+            var binEntry = await _context.Entries
                 .Include(x => x.Owner)
                 .FirstOrDefaultAsync(x => x.Id == request.EntryId, cancellationToken);
 
-            if (entry is null)
+            if (binEntry is null)
             {
                 throw new KeyNotFoundException("Entry does not exist.");
             }
 
-            var entryPath = entry.Path;
+            var entryPath = binEntry.Path;
             var firstSlashIndex = entryPath.IndexOf("/", StringComparison.Ordinal);
             var binCheck = firstSlashIndex < 0 ? entryPath : entryPath.Substring(0, firstSlashIndex);
 
@@ -56,7 +56,7 @@ public class RestoreBinEntry
                 throw new NotChangedException("Entry is not in bin.");
             }
 
-            if (entry.Owner.Id != request.CurrentUser.Id)
+            if (binEntry.Owner.Id != request.CurrentUser.Id)
             {
                 throw new UnauthorizedAccessException("You do not have the permission to restore this entry.");
             }
@@ -66,20 +66,16 @@ public class RestoreBinEntry
             var entryCheckPath = entryPath.Replace(binCheck, "");
 
             var entryCheck = await _context.Entries.FirstOrDefaultAsync(x =>
-                (x.Path.Equals("/") ? x.Path + x.Name : x.Path + "/" + x.Name).Equals(entryCheckPath.Equals("/") ? 
-                    entryCheckPath + entry.Name : entryCheckPath + "/" + entry.Name), cancellationToken);
+                (x.Path.Equals("/") ? x.Path + x.Name : x.Path + "/" + x.Name).Equals(entryCheckPath + "/" + binEntry.Name)
+                    && x.OwnerId == request.CurrentUser.Id
+                    && ((x.FileId != null &&  binEntry.FileId != null) || (x.FileId == null &&  binEntry.FileId == null)), cancellationToken);
 
             if (entryCheck is not null)
             {
-                entryCheck.LastModified = localDateTimeNow;
-                entryCheck.LastModifiedBy = request.CurrentUser.Id;
-                var dupeResult = _context.Entries.Update(entryCheck);
-                _context.Entries.Remove(entry);
-                await _context.SaveChangesAsync(cancellationToken);
-                return _mapper.Map<EntryDto>(dupeResult.Entity);
+                throw new ConflictException("Entry already exists outside of bin.");
             }
 
-            var splitPath = entry.OldPath!.Split("/");
+            var splitPath = binEntry.OldPath!.Split("/");
             var currentPath = "/";
             foreach (var node in splitPath)
             {
@@ -116,9 +112,9 @@ public class RestoreBinEntry
                 currentPath = currentPath.Equals("/") ? currentPath + node : currentPath + "/" + node;
             }
             
-            if (entry.IsDirectory)
+            if (binEntry.IsDirectory)
             {
-                var path = entry.Path[^1].Equals('/') ? entry.Path + entry.Name : $"{entry.Path}/{entry.Name}";
+                var path = binEntry.Path[^1].Equals('/') ? binEntry.Path + binEntry.Name : $"{binEntry.Path}/{binEntry.Name}";
                 var pattern = $"{path}/%";
                 var childEntries = _context.Entries.Where(x => 
                     x.Path.Trim().Equals(path)
@@ -134,16 +130,16 @@ public class RestoreBinEntry
                 }
             }
             
-            entry.Path = entry.OldPath;
-            entry.OldPath = null;
-            entry.LastModified = localDateTimeNow;
-            entry.LastModifiedBy = request.CurrentUser.Id;
+            binEntry.Path = binEntry.OldPath;
+            binEntry.OldPath = null;
+            binEntry.LastModified = localDateTimeNow;
+            binEntry.LastModifiedBy = request.CurrentUser.Id;
 
-            var result = _context.Entries.Update(entry);
+            var result = _context.Entries.Update(binEntry);
             await _context.SaveChangesAsync(cancellationToken);
-            using (Logging.PushProperties(nameof(Entry), entry.Id, request.CurrentUser.Id))
+            using (Logging.PushProperties(nameof(Entry), binEntry.Id, request.CurrentUser.Id))
             {
-                _logger.LogRestoreBinEntry(request.CurrentUser.Username, entry.Id.ToString());
+                _logger.LogRestoreBinEntry(request.CurrentUser.Username, binEntry.Id.ToString());
             }
             return _mapper.Map<EntryDto>(result.Entity);
         }

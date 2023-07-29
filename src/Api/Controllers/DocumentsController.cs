@@ -1,4 +1,5 @@
 using Api.Controllers.Payload.Requests.Documents;
+using Api.Controllers.Payload.Requests.Users;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
@@ -279,7 +280,33 @@ public class DocumentsController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<DocumentDto>.Succeed(result));
     }
+
     
+    /// <summary>
+    /// Get shared users from a shared document paginated
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="queryParameters"></param>
+    /// <returns></returns>
+    [RequiresRole(IdentityData.Roles.Employee)]
+    [HttpGet("{documentId:guid}/shared-users")]
+    public async Task<ActionResult<PaginatedList<PermissionDto>>> GetSharedUsersByDocumentId(
+        [FromRoute] Guid documentId,
+        [FromQuery] GetAllSharedUsersPaginatedQueryParameters queryParameters)
+    {
+        var currentUser = _currentUserService.GetCurrentUser();
+        var query = new GetAllSharedUsersOfDocumentPaginated.Query()
+        {
+            CurrentUser = currentUser,
+            DocumentId = documentId,
+            SearchTerm = queryParameters.SearchTerm,
+            Page = queryParameters.Page,
+            Size = queryParameters.Size,
+        };
+        var result = await Mediator.Send(query);
+        return Ok(Result<PaginatedList<PermissionDto>>.Succeed(result));
+    }
+
     /// <summary>
     /// Download a file linked with a document
     /// </summary>
