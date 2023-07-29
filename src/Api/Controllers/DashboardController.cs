@@ -1,6 +1,7 @@
 using Api.Controllers.Payload.Requests.Dashboard;
 using Application.Common.Interfaces;
 using Application.Common.Models;
+using Application.Common.Models.Dtos.DashBoard;
 using Application.Dashboards.Queries;
 using Application.Identity;
 using Infrastructure.Identity.Authorization;
@@ -21,7 +22,8 @@ public class DashboardController : ApiControllerBase
     [HttpPost("import-documents")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Result<List<GetImportDocuments.Result>>>> GetImportDocuments(GetImportedDocumentsMetricsRequest request)
+    public async Task<ActionResult<Result<List<MetricResultDto>>>> GetImportDocuments(
+        [FromBody] GetImportedDocumentsMetricsRequest request)
     {
         var query = new GetImportDocuments.Query()
         {
@@ -30,6 +32,22 @@ public class DashboardController : ApiControllerBase
         };
 
         var result = await Mediator.Send(query);
-        return Ok(Result<List<GetImportDocuments.Result>>.Succeed(result));
+        return Ok(Result<List<MetricResultDto>>.Succeed(result));
+    }
+
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpPost("logins")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<Result<MetricResultDto>>> GetLoggedInUsers(
+        [FromBody] DateTime date)
+    {
+        var query = new GetLoggedInUser.Query()
+        {
+            Date = date
+        };
+    
+        var result = await Mediator.Send(query);
+        return Ok(Result<MetricResultDto>.Succeed(result));
     }
 }

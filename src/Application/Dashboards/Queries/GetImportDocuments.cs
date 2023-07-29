@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Models.Dtos.DashBoard;
 using Domain.Statuses;
 using FluentValidation;
 using MediatR;
@@ -22,33 +23,25 @@ public class GetImportDocuments
                 .NotEmpty().WithMessage("End date can not be empty.");
         }
     }
-    public class Result
-    {
-        public string Label { get; set; }
-        public int Value { get; set; }
-    }
-
-    public record Query : IRequest<List<Result>>
+    public record Query : IRequest<List<MetricResultDto>>
     {
         public DateTime StartDate { get; init; }
         public DateTime EndDate { get; init; }
 
     }
 
-    public class QueryHandler : IRequestHandler<Query, List<Result>>
+    public class QueryHandler : IRequestHandler<Query, List<MetricResultDto>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public QueryHandler(IApplicationDbContext context, IDateTimeProvider dateTimeProvider)
+        public QueryHandler(IApplicationDbContext context)
         {
             _context = context;
-            _dateTimeProvider = dateTimeProvider;
         }
 
-        public async Task<List<Result>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<List<MetricResultDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var result = new List<Result>();
+            var result = new List<MetricResultDto>();
 
             var currentDate = request.StartDate.Date;
             var endDate = request.EndDate.Date;
@@ -66,7 +59,7 @@ public class GetImportDocuments
                                     && x.Status != DocumentStatus.Issued)
                         .CountAsync(cancellationToken);
                 
-                    result.Add(new Result()
+                    result.Add(new MetricResultDto()
                     {
                         Label = label,
                         Value = importedDocumentsCount
