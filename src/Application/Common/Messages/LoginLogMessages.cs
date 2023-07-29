@@ -2,5 +2,5 @@
 
 public class LoginLogMessages
 {
-    public const string Login = "User with id {Username} Log in at {Time}";
+    public const string Login = "User with username {Username} Log in at {Time}";
 }
