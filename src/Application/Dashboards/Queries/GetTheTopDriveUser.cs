@@ -1,14 +1,11 @@
 ﻿using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.DashBoard;
-using Domain.Statuses;
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using NodaTime;
 
 namespace Application.Dashboards.Queries;
 
-public class GetLoggedInUser
+public class GetTheTopDriveUser
 {
     public class Validator : AbstractValidator<Query>
     {
@@ -34,22 +31,9 @@ public class GetLoggedInUser
             _context = context;
         }
 
-        public async Task<MetricResultDto> Handle(Query request, CancellationToken cancellationToken)
+        public Task<MetricResultDto> Handle(Query request, CancellationToken cancellationToken)
         {
-            var currentDate = request.Date.Date;
-
-            var label = $"{currentDate:dd-MM}";
-            var loggedinUsersCount = await _context.Logs
-                .Where(x => x.ObjectType!.Equals("Login")
-                            && x.Time >= Instant.FromDateTimeUtc(currentDate)
-                            && x.Time < Instant.FromDateTimeUtc(currentDate.AddDays(1)))
-                .CountAsync(cancellationToken);
-
-            return new MetricResultDto()
-            {
-                Label = label,
-                Value = loggedinUsersCount
-            };
+            throw new NotImplementedException();
         }
     }
 }
