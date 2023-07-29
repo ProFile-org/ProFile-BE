@@ -1,6 +1,6 @@
 ﻿namespace Api.Controllers.Payload.Requests.Users;
 
-public class GetAllSharedUsersFromASharedEntryPaginatedQueryParameters
+public class GetAllSharedUsersPaginatedQueryParameters
 {
     /// <summary>
     /// Search term
