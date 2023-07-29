@@ -50,4 +50,20 @@ public class DashboardController : ApiControllerBase
         var result = await Mediator.Send(query);
         return Ok(Result<MetricResultDto>.Succeed(result));
     }
+    
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpPost("largest-drive")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<Result<LargestDriveDto>>> GetUserWithLargestDrive(
+        [FromBody] DateTime date)
+    {
+        var query = new GetUserWithLargestDriveData.Query()
+        {
+            Date = date
+        };
+    
+        var result = await Mediator.Send(query);
+        return Ok(Result<LargestDriveDto>.Succeed(result));
+    }
 }
