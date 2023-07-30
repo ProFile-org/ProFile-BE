@@ -375,7 +375,7 @@ public static class ApplicationDbContextSeed
             Email = new Faker().Person.Email,
             FirstName = new Faker().Person.FirstName,
             LastName = new Faker().Person.LastName,
-            PasswordHash = new Faker().Random.String().HashPasswordWith(salt, pepper),
+            PasswordHash = "employee".HashPasswordWith(salt, pepper),
             PasswordSalt = salt,
             IsActive = true,
             IsActivated = true,
