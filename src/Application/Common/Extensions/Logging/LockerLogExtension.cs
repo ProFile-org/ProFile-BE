@@ -2,7 +2,7 @@ using Application.Common.Messages;
 using Microsoft.Extensions.Logging;
 using EventId = Application.Common.Logging.EventId;
 
-namespace Application.Lockers;
+namespace Application.Common.Extensions.Logging;
 
 public static partial class LockerLogExtension {
     

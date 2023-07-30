@@ -1,4 +1,5 @@
 using Application.Common.Extensions;
+using Application.Common.Extensions.Logging;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
 using Application.Common.Messages;

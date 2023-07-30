@@ -2,7 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using Api.Controllers.Payload.Requests.Auth;
 using Api.Controllers.Payload.Responses;
+using Application.Common.Extensions.Logging;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
 using Application.Users.Queries;
@@ -18,10 +20,14 @@ namespace Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IIdentityService _identityService;
+    private readonly ILogger<AuthController> _logger;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public AuthController(IIdentityService identityService)
+    public AuthController(IIdentityService identityService, ILogger<AuthController> logger, IDateTimeProvider dateTimeProvider)
     {
         _identityService = identityService;
+        _logger = logger;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     /// <summary>
@@ -54,6 +60,11 @@ public class AuthController : ControllerBase
                     LastName = loginSuccess.UserCredentials.LastName,
                 };
 
+                var dateTimeNow = _dateTimeProvider.DateTimeNow;
+                using (Logging.PushProperties("Login", loginResult.Id, loginResult.Id))
+                {
+                    _logger.LogLogin(loginResult.Username, dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss"));
+                }
                 return Ok(Result<LoginResult>.Succeed(loginResult));
             },
             token =>

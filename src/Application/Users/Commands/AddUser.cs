@@ -1,5 +1,6 @@
 using Application.Common.Exceptions;
 using Application.Common.Extensions;
+using Application.Common.Extensions.Logging;
 using Application.Common.Interfaces;
 using Application.Common.Logging;
 using Application.Helpers;
