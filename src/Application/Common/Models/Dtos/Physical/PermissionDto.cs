@@ -12,6 +12,8 @@ public class PermissionDto : IMapFrom<Permission>
     public bool CanBorrow { get; set; }
     public Guid EmployeeId { get; set; }
     public Guid DocumentId { get; set; }
+    
+    public UserDto Employee { get; set; } = null!;
 
     public void Mapping(Profile profile)
     {

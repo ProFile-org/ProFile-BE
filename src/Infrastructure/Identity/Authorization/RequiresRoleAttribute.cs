@@ -1,5 +1,5 @@
+using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
-using Application.Identity;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -11,6 +11,7 @@ namespace Infrastructure.Identity.Authorization;
 public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
 {
     private readonly string[] _claimValues;
+    public static Dictionary<Guid, DateTime> OnlineUsers { get; } = new();
 
     public RequiresRoleAttribute(params string[] claimValues)
     {
@@ -25,12 +26,16 @@ public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
 
         var user = dbContext.Users.FirstOrDefault(x => x.Email!.Equals(email));
 
-        foreach (var claimValue in _claimValues)
+        if (user is null)
         {
-            if (user!.Role.Equals(claimValue))
-            {
-                return;
-            }
+            context.Result = new ForbidResult();
+            return;
+        }
+        
+        if (_claimValues.Any(claimValue => user!.Role.Equals(claimValue)))
+        {
+            OnlineUsers[user.Id] = DateTime.Now;
+            return;
         }
 
         context.Result = new ForbidResult();

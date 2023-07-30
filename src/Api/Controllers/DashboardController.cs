@@ -3,7 +3,6 @@ using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos.DashBoard;
 using Application.Dashboards.Queries;
-using Application.Identity;
 using Infrastructure.Identity.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -65,5 +64,14 @@ public class DashboardController : ApiControllerBase
     
         var result = await Mediator.Send(query);
         return Ok(Result<LargestDriveDto>.Succeed(result));
+    }
+    
+    [RequiresRole(IdentityData.Roles.Admin)]
+    [HttpGet("online-users")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<int>> GetOnlineUsers()
+    {
+        return Ok(Result<int>.Succeed(RequiresRoleAttribute.OnlineUsers.Count));
     }
 }

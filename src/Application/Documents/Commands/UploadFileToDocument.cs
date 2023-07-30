@@ -1,3 +1,4 @@
+using Application.Common.Exceptions;
 using Application.Common.Extensions;
 using Application.Common.Interfaces;
 using Application.Common.Models.Dtos.Physical;
@@ -5,6 +6,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Entities.Digital;
 using Domain.Entities.Physical;
+using Domain.Statuses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,6 +62,11 @@ public abstract class UploadFileToDocument
             if (document.File is not null)
             {
                 _context.Files.Remove(document.File);
+            }
+            
+            if (document.Status is DocumentStatus.Lost )
+            {
+                throw new ConflictException("This document cannot be uploaded to.");
             }
             
             var file = new FileEntity
