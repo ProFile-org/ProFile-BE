@@ -35,6 +35,7 @@ public class ExceptionMiddleware : IMiddleware
             { typeof(InvalidOperationException), HandleInvalidOperationException },
             { typeof(AuthenticationException), HandleAuthenticationException },
             { typeof(UnauthorizedAccessException), HandleUnauthorizedAccessException },
+            { typeof(NotChangedException), HandleNotChangedException },
         };
     }
 
@@ -54,25 +55,25 @@ public class ExceptionMiddleware : IMiddleware
     }
 
     
-    private async void HandleKeyNotFoundException(HttpContext context, Exception ex)
+    private static async void HandleKeyNotFoundException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status404NotFound;
         await WriteExceptionMessageAsync(context, ex);
     }
     
-    private async void HandleConflictException(HttpContext context, Exception ex)
+    private static async void HandleConflictException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
     
-    private async void HandleNotAllowedException(HttpContext context, Exception ex)
+    private static async void HandleNotAllowedException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
         await WriteExceptionMessageAsync(context, ex);
     }
     
-    private async void HandleRequestValidationException(HttpContext context, Exception ex)
+    private static async void HandleRequestValidationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
@@ -86,28 +87,33 @@ public class ExceptionMiddleware : IMiddleware
         await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(result));
     }
     
-    private async void HandleLimitExceededException(HttpContext context, Exception ex)
+    private static async void HandleLimitExceededException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
     }
 
-    private async void HandleAuthenticationException(HttpContext context, Exception ex)
+    private static async void HandleAuthenticationException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await WriteExceptionMessageAsync(context, ex);
     }
 
     private static async void HandleUnauthorizedAccessException(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
         await WriteExceptionMessageAsync(context, ex);
     }
 
-    private async void HandleInvalidOperationException(HttpContext context, Exception ex)
+    private static async void HandleInvalidOperationException(HttpContext context, Exception ex)
     {
         context.Response.StatusCode = StatusCodes.Status409Conflict;
         await WriteExceptionMessageAsync(context, ex);
+    }
+    
+    private static async void HandleNotChangedException(HttpContext context, Exception ex)
+    {
+        context.Response.StatusCode = StatusCodes.Status204NoContent;
     }
 
     private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)

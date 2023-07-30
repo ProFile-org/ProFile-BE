@@ -3,9 +3,8 @@ using Domain.Entities.Physical;
 
 namespace Application.Common.Models.Dtos.Physical;
 
-public class LockerDto : IMapFrom<Locker>
+public class LockerDto : BaseDto, IMapFrom<Locker>
 {
-    public Guid Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
     public RoomDto Room { get; set; }

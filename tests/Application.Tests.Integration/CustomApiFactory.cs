@@ -1,4 +1,5 @@
 using Api;
+using Application.Common.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Shared;
 using Microsoft.AspNetCore.Hosting;
@@ -16,21 +17,30 @@ public class CustomApiFactory : WebApplicationFactory<IApiMarker>
     {        
         builder.ConfigureServices((builderContext, services) =>
         {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType ==
-                     typeof(DbContextOptions<ApplicationDbContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
+            Remove<DbContextOptions<ApplicationDbContext>>(services);
 
             var databaseSettings = GetConfiguration().GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(databaseSettings.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
+                options.UseNpgsql(databaseSettings!.ConnectionString, optionsBuilder => optionsBuilder.UseNodaTime());
             });
+            
+            Remove<IMailService>(services);
+            services.AddTransient<IMailService, CustomMailService>();
         });
+    }
+
+    private static void Remove<T>(IServiceCollection services) 
+        where T : class
+    {
+        var descriptor = services.SingleOrDefault(
+            d => d.ServiceType ==
+                 typeof(T));
+
+        if (descriptor != null)
+        {
+            services.Remove(descriptor);
+        }
     }
 
     private IConfiguration GetConfiguration()

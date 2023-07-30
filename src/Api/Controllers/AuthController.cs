@@ -1,9 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
-using Api.Controllers.Payload.Requests;
+using System.Security.Authentication;
+using Api.Controllers.Payload.Requests.Auth;
 using Api.Controllers.Payload.Responses;
+using Application.Common.Extensions.Logging;
 using Application.Common.Interfaces;
+using Application.Common.Logging;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
+using Application.Users.Queries;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,92 +20,152 @@ namespace Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IIdentityService _identityService;
+    private readonly ILogger<AuthController> _logger;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public AuthController(IIdentityService identityService)
+    public AuthController(IIdentityService identityService, ILogger<AuthController> logger, IDateTimeProvider dateTimeProvider)
     {
         _identityService = identityService;
+        _logger = logger;
+        _dateTimeProvider = dateTimeProvider;
     }
 
+    /// <summary>
+    /// Login
+    /// </summary>
+    /// <param name="loginModel">Login credentials</param>
+    /// <returns>A LoginResult indicating the result of logging in</returns>
     [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Result<LoginResult>>> Login([FromBody] LoginModel loginModel)
+    public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
     {
         var result = await _identityService.LoginAsync(loginModel.Email, loginModel.Password);
-        
-        SetRefreshToken(result.AuthResult.RefreshToken);
-        SetJweToken(result.AuthResult.Token);
 
-        var loginResult = new LoginResult()
-        {
-            Id = result.UserCredentials.Id,
-            Username = result.UserCredentials.Username,
-            Email = result.UserCredentials.Email,
-            Department = result.UserCredentials.Department,
-            Position = result.UserCredentials.Position,
-            Role = result.UserCredentials.Role,
-            FirstName = result.UserCredentials.FirstName,
-            LastName = result.UserCredentials.LastName,
-        };
-        
-        return Ok(Result<LoginResult>.Succeed(loginResult));
+        return result.Match<IActionResult>(loginSuccess =>
+            {
+                SetRefreshToken(loginSuccess.AuthResult.RefreshToken);
+                SetJweToken(loginSuccess.AuthResult.Token, loginSuccess.AuthResult.RefreshToken);
+
+                var loginResult = new LoginResult()
+                {
+                    Id = loginSuccess.UserCredentials.Id,
+                    Username = loginSuccess.UserCredentials.Username,
+                    Email = loginSuccess.UserCredentials.Email,
+                    Department = loginSuccess.UserCredentials.Department,
+                    Position = loginSuccess.UserCredentials.Position,
+                    Role = loginSuccess.UserCredentials.Role,
+                    FirstName = loginSuccess.UserCredentials.FirstName,
+                    LastName = loginSuccess.UserCredentials.LastName,
+                };
+
+                var dateTimeNow = _dateTimeProvider.DateTimeNow;
+                using (Logging.PushProperties("Login", loginResult.Id, loginResult.Id))
+                {
+                    _logger.LogLogin(loginResult.Username, dateTimeNow.ToString("yyyy-MM-dd HH:mm:ss"));
+                }
+                return Ok(Result<LoginResult>.Succeed(loginResult));
+            },
+            token =>
+            {
+                var r = new Result<NotActivatedLoginResult>
+                {
+                    Data = new NotActivatedLoginResult()
+                    {
+                        Token = token,
+                    }
+                };
+                return Unauthorized(r);
+            });
+
     }
-
-    [Authorize]
+    
+    /// <summary>
+    /// Refresh session and token
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of refreshing token</returns>
     [HttpPost]
-    public async Task<IActionResult> Logout()
-    {
-        var refreshToken = Request.Cookies[nameof(RefreshToken)];
-        var jweToken = Request.Cookies["JweToken"];
-
-        var loggedOut = await _identityService.LogoutAsync(jweToken!, refreshToken!);
-
-        if (!loggedOut) return Ok();
-        
-        RemoveJweToken();
-        RemoveRefreshToken();
-
-        return Ok();
-    }
-
-    [Authorize]
-    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
-        
-        var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
-        
-        SetRefreshToken(authResult.RefreshToken);
-        SetJweToken(authResult.Token);
-        
+
+        try
+        {
+            var authResult = await _identityService.RefreshTokenAsync(jweToken!, refreshToken!);
+            
+            SetRefreshToken(authResult.RefreshToken);
+            SetJweToken(authResult.Token, authResult.RefreshToken);
+        }
+        catch (AuthenticationException)
+        {
+            RemoveJweToken();
+            RemoveRefreshToken();
+            throw;
+        }
+
         return Ok();
     }
     
+    /// <summary>
+    /// Validate current user
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of validating the user</returns>
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Validate()
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult Validate()
+    {
+        return Ok();
+    }
+
+    /// <summary>
+    /// Logout of the system
+    /// </summary>
+    /// <returns>An IActionResult indicating the result of logging out of the system</returns>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[nameof(RefreshToken)];
         var jweToken = Request.Cookies["JweToken"];
         
-        var validated = await _identityService.Validate(jweToken!, refreshToken!);
+        RemoveJweToken();
+        RemoveRefreshToken();
+        
+        await _identityService.LogoutAsync(jweToken!, refreshToken!);
 
-        if (validated)
-        {
-            return Ok();
-        }
-
-        return Unauthorized();
+        return Ok();
     }
     
-    private void SetJweToken(SecurityToken jweToken)
+    [HttpPost]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (string.IsNullOrEmpty(request.NewPassword))
+        {
+            return BadRequest("Password cannot be empty.");
+        }
+        
+        if (!request.NewPassword.Equals(request.ConfirmPassword))
+        {
+            return BadRequest("Confirm password must match with new password.");
+        }
+
+        await _identityService.ResetPassword(request.Token, request.NewPassword);
+        return Ok();
+    }
+
+    private void SetJweToken(SecurityToken jweToken, RefreshTokenDto newRefreshToken)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
+            Expires = newRefreshToken.ExpiryDateTime
         };
         var handler = new JwtSecurityTokenHandler();
         Response.Cookies.Append("JweToken", handler.WriteToken(jweToken), cookieOptions);

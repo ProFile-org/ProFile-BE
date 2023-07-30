@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Models;
 using Application.Common.Models.Dtos;
@@ -10,12 +11,12 @@ using Application.Helpers;
 using Application.Users.Queries;
 using AutoMapper;
 using Domain.Entities;
-using Infrastructure.Persistence;
 using Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NodaTime;
+using OneOf;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Infrastructure.Identity;
@@ -24,19 +25,31 @@ public class IdentityService : IIdentityService
 {
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly JweSettings _jweSettings;
-    private readonly ApplicationDbContext _context;
+    private readonly IApplicationDbContext _applicationDbContext;
+    private readonly IAuthDbContext _authDbContext;
     private readonly RSA _encryptionKey;
     private readonly ECDsa _signingKey;
     private readonly IMapper _mapper;
+    private readonly SecuritySettings _securitySettings;
 
-    public IdentityService(TokenValidationParameters tokenValidationParameters, IOptions<JweSettings> jweSettingsOptions, ApplicationDbContext context, RSA encryptionKey, ECDsa signingKey, IMapper mapper)
+    public IdentityService(
+        TokenValidationParameters tokenValidationParameters, 
+        IOptions<JweSettings> jweSettingsOptions, 
+        IApplicationDbContext applicationDbContext, 
+        IAuthDbContext authDbContext, 
+        RSA encryptionKey, 
+        ECDsa signingKey, 
+        IMapper mapper, 
+        IOptions<SecuritySettings> securitySettingsOptions)
     {
         _tokenValidationParameters = tokenValidationParameters;
         _jweSettings = jweSettingsOptions.Value;
-        _context = context;
+        _applicationDbContext = applicationDbContext;
+        _authDbContext = authDbContext; 
         _encryptionKey = encryptionKey;
         _signingKey = signingKey;
         _mapper = mapper;
+        _securitySettings = securitySettingsOptions.Value;
     }
 
     public async Task<bool> Validate(string token, string refreshToken)
@@ -48,11 +61,9 @@ public class IdentityService : IIdentityService
             return false;
         }
 
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
-        
-        var user = await _context.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users.FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -73,7 +84,7 @@ public class IdentityService : IIdentityService
         }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
-        var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+        var storedRefreshToken = await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
         if (storedRefreshToken is null)
         {
@@ -106,12 +117,12 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-
-        const string emailClaim = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
         
-        var email = validatedToken.Claims.Single(y => y.Type.Equals(emailClaim)).Value;
+        var email = validatedToken.Claims.Single(y => y.Type.Equals(JwtRegisteredClaimNames.Email)).Value;
         
-        var user = await _context.Users.FirstOrDefaultAsync(x =>
+        var user = await _applicationDbContext.Users
+            .Include(x => x.Department)
+            .FirstOrDefaultAsync(x =>
             x.Username.Equals(email)
             || x.Email!.Equals(email));
         
@@ -119,20 +130,9 @@ public class IdentityService : IIdentityService
         {
             throw new AuthenticationException("Invalid token.");
         }
-        
-        var expiryDateUnix =
-            long.Parse(validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
-
-        var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-            .AddSeconds(expiryDateUnix);
-
-        if (expiryDateTimeUtc > DateTime.UtcNow)
-        {
-            throw new AuthenticationException("This token has not expired yet.");
-        }
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
-        var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+        var storedRefreshToken = await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
         if (storedRefreshToken is null)
         {
@@ -159,10 +159,9 @@ public class IdentityService : IIdentityService
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        _context.RefreshTokens.Remove(storedRefreshToken);
-        await _context.SaveChangesAsync();
+        var result = await GenerateAuthenticationResultForUserAsync(user);
 
-        return await GenerateAuthenticationResultForUserAsync(user);
+        return result;
     }
 
     private ClaimsPrincipal? GetPrincipalFromToken(string token)
@@ -187,30 +186,56 @@ public class IdentityService : IIdentityService
 
             return principal;
         }
-        catch (SecurityTokenExpiredException ex)
+        catch
         {
-            return null;
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception.StackTrace);
             return null;
         }
     }
 
-    public async Task<(AuthenticationResult, UserDto)> LoginAsync(string email, string password)
+    public async Task<OneOf<(AuthenticationResult, UserDto), string>> LoginAsync(string email, string password)
     {
-        var user = _context.Users.FirstOrDefault(x => x.Email!.Equals(email));
+        var user = _applicationDbContext.Users
+            .Include(x => x.Department)
+            .FirstOrDefault(x => x.Email.ToLower().Equals(email.Trim().ToLower()));
 
-        if (user is null || !user.PasswordHash.Equals(SecurityUtil.Hash(password)))
+        if (user is null || !user.PasswordHash.Equals(password.HashPasswordWith(user.PasswordSalt, _securitySettings.Pepper)))
         {
             throw new AuthenticationException("Username or password is invalid.");
         }
+
+        if (!user.IsActivated)
+        {
+            var token = Guid.NewGuid().ToString();
+            var expirationDate = LocalDateTime.FromDateTime(DateTime.Now.AddDays(1));
+            var resetPasswordToken = new ResetPasswordToken()
+            {
+                User = user,
+                TokenHash = SecurityUtil.Hash(token),
+                ExpirationDate = expirationDate,
+                IsInvalidated = false,
+            };
+
+            var tokens = _authDbContext.ResetPasswordTokens.Where(x => x.User.Id == user.Id && !x.IsInvalidated);
+
+            foreach (var t in tokens)
+            {
+                t.IsInvalidated = true;
+            }
+            await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken);
+            await _authDbContext.SaveChangesAsync(CancellationToken.None);
+
+            return token;
+        }
+        
+        var existedRefreshTokens = _authDbContext.RefreshTokens.Where(x => x.User.Email!.Equals(user.Email));
+
+        _authDbContext.RefreshTokens.RemoveRange(existedRefreshTokens);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
         
         return (await GenerateAuthenticationResultForUserAsync(user), _mapper.Map<UserDto>(user));
     }
 
-    public async Task<bool> LogoutAsync(string token, string refreshToken)
+    public async Task LogoutAsync(string token, string refreshToken)
     {
         var validatedToken = GetPrincipalFromToken(token);
 
@@ -221,30 +246,83 @@ public class IdentityService : IIdentityService
 
         var jti = validatedToken.Claims.Single(x => x.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
         var storedRefreshToken =
-            await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
+            await _authDbContext.RefreshTokens.SingleOrDefaultAsync(x => x.Token.Equals(Guid.Parse(refreshToken)));
 
-        if (storedRefreshToken is null) return true;
+        if (storedRefreshToken is null) return;
         
         if (!storedRefreshToken!.JwtId.Equals(jti))
         {
             throw new AuthenticationException("This refresh token does not match this Jwt.");
         }
 
-        _context.RefreshTokens.Remove(storedRefreshToken);
-        await _context.SaveChangesAsync();
+        _authDbContext.RefreshTokens.Remove(storedRefreshToken);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
+    }
 
-        return true;
+    public async Task ResetPassword(string token, string newPassword)
+    {
+        var tokenHash = SecurityUtil.Hash(token);
+        var resetPasswordToken = await _authDbContext.ResetPasswordTokens
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.TokenHash.Equals(tokenHash));
+        if (resetPasswordToken is null)
+        {
+            throw new KeyNotFoundException("Token is invalid.");
+        }
+
+        if (resetPasswordToken.IsInvalidated)
+        {
+            throw new ConflictException("Token is invalid.");
+        }
+
+        var user = resetPasswordToken.User;
+
+        if (user.IsActivated is false)
+        {
+            user.IsActivated = true;
+        }
+        var salt = StringUtil.RandomSalt();
+        user.PasswordSalt = salt;
+        user.PasswordHash = newPassword.HashPasswordWith(salt, _securitySettings.Pepper);
+        resetPasswordToken.IsInvalidated = true;
+        await _applicationDbContext.SaveChangesAsync(CancellationToken.None);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
     }
 
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(User user)
     {
+        var token = CreateJweToken(user);
+        var utcNow = DateTime.UtcNow;
+
+        var refreshToken = new RefreshToken()
+        {
+            JwtId = token.Id,
+            User = user,
+            CreationDateTime = LocalDateTime.FromDateTime(utcNow),
+            ExpiryDateTime = LocalDateTime.FromDateTime(utcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays))
+        };
+
+        await _authDbContext.RefreshTokens.AddAsync(refreshToken);
+        await _authDbContext.SaveChangesAsync(CancellationToken.None);
+        return new()
+        {
+            Token = token,
+            RefreshToken = _mapper.Map<RefreshTokenDto>(refreshToken)
+        };
+    }
+
+    private SecurityToken CreateJweToken(User user)
+    {
         var utcNow = DateTime.UtcNow;
         var authClaims = new List<Claim>
         {
+            new(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Sub, user.Username),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, utcNow.ToString(CultureInfo.InvariantCulture)),
+            new("departmentId", user.Department is not null ? user.Department.Id.ToString() : Guid.Empty.ToString()),
+            new("isActive", user.IsActive.ToString()),
         };
         var publicEncryptionKey = new RsaSecurityKey(_encryptionKey.ExportParameters(false)) {KeyId = _jweSettings.EncryptionKeyId};
         var privateSigningKey = new ECDsaSecurityKey(_signingKey) {KeyId = _jweSettings.SigningKeyId};
@@ -263,20 +341,6 @@ public class IdentityService : IIdentityService
 
         var token = handler.CreateToken(tokenDescriptor);
 
-        var refreshToken = new RefreshToken()
-        {
-            JwtId = token.Id,
-            User = user,
-            CreationDateTime = LocalDateTime.FromDateTime(utcNow),
-            ExpiryDateTime = LocalDateTime.FromDateTime(utcNow.AddDays(_jweSettings.RefreshTokenLifetimeInDays))
-        };
-
-        await _context.RefreshTokens.AddAsync(refreshToken);
-        await _context.SaveChangesAsync();
-        return new()
-        {
-            Token = token,
-            RefreshToken = _mapper.Map<RefreshTokenDto>(refreshToken)
-        };
+        return token;
     }
 }
