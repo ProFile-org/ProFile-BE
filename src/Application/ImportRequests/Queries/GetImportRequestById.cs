@@ -31,6 +31,7 @@ public class GetImportRequestById {
         {
             var importRequest = await _context.ImportRequests
                 .Include(x => x.Document)
+                .ThenInclude(x => x.Importer)
                 .Include(x => x.Room)
                 .FirstOrDefaultAsync(x => x.Id.Equals(request.RequestId), cancellationToken);
             
