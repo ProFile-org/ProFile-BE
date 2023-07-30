@@ -11,7 +11,6 @@ namespace Infrastructure.Identity.Authorization;
 public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
 {
     private readonly string[] _claimValues;
-    public static Dictionary<Guid, DateTime> OnlineUsers { get; } = new();
 
     public RequiresRoleAttribute(params string[] claimValues)
     {
@@ -34,7 +33,6 @@ public class RequiresRoleAttribute : Attribute, IAuthorizationFilter
         
         if (_claimValues.Any(claimValue => user!.Role.Equals(claimValue)))
         {
-            OnlineUsers[user.Id] = DateTime.Now;
             return;
         }
 

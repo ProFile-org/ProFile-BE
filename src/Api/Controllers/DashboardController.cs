@@ -11,13 +11,6 @@ namespace Api.Controllers;
 
 public class DashboardController : ApiControllerBase
 {
-    private readonly ICurrentUserService _currentUserService;
-    
-    public DashboardController(ICurrentUserService currentUserService)
-    {
-        _currentUserService = currentUserService;
-    }
-
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpPost("import-documents")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -65,14 +58,5 @@ public class DashboardController : ApiControllerBase
     
         var result = await Mediator.Send(query);
         return Ok(Result<LargestDriveDto>.Succeed(result));
-    }
-    
-    [RequiresRole(IdentityData.Roles.Admin)]
-    [HttpGet("online-users")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<int>> GetOnlineUsers()
-    {
-        return Ok(Result<int>.Succeed(RequiresRoleAttribute.OnlineUsers.Count));
     }
 }

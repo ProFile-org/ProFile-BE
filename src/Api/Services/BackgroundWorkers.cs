@@ -24,7 +24,6 @@ public class BackgroundWorkers : BackgroundService
                 DisposeExpiredEntries(TimeSpan.FromSeconds(10), stoppingToken),
                 DisposeExpiredPermissions(TimeSpan.FromSeconds(10), stoppingToken),
                 HandleOverdueRequest(TimeSpan.FromMinutes(2), stoppingToken),
-                HandleOnlineUsers(TimeSpan.FromSeconds(10), stoppingToken),
             };
 
             await Task.WhenAll(workers.ToArray());
@@ -74,17 +73,6 @@ public class BackgroundWorkers : BackgroundService
         context.Borrows.UpdateRange(overdueRequests);
 
         await context.SaveChangesAsync(stoppingToken);
-        await Task.Delay(delay, stoppingToken);
-    }
-    
-    private async Task HandleOnlineUsers(TimeSpan delay, CancellationToken stoppingToken)
-    {
-        var onlineUsers = RequiresRoleAttribute.OnlineUsers;
-        foreach (var id in onlineUsers.Keys
-                                    .Where(id => DateTime.Now - onlineUsers[id] < delay))
-        {
-            RequiresRoleAttribute.OnlineUsers.Remove(id);
-        }
         await Task.Delay(delay, stoppingToken);
     }
 }
