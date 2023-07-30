@@ -161,7 +161,7 @@ public class BorrowDocument
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("Request", document.Id, user.Id))
             {
-                _logger.LogBorrowDocument(document.Id.ToString(), result.Entity.Id.ToString());
+                Common.Extensions.Logging.BorrowLogExtensions.LogBorrowDocument(_logger, document.Id.ToString(), result.Entity.Id.ToString());
             }
             return _mapper.Map<BorrowDto>(result.Entity);
         }

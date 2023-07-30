@@ -1,9 +1,8 @@
 using Application.Common.Messages;
-using Domain.Entities.Physical;
 using Microsoft.Extensions.Logging;
 using EventId = Application.Common.Logging.EventId;
 
-namespace Application.ImportRequests;
+namespace Application.Common.Extensions.Logging;
 
 public static partial class ImportRequestLogExtensions {
     // Approve or reject document

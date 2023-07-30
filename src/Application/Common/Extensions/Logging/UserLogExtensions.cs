@@ -1,7 +1,7 @@
 using Application.Common.Messages;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Users;
+namespace Application.Common.Extensions.Logging;
 
 public static partial class UserLogExtensions
 {

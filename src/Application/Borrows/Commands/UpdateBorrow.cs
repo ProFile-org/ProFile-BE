@@ -115,7 +115,7 @@ public class UpdateBorrow
 
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUser.Id))
             {
-                _logger.LogUpdateBorrow(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                Common.Extensions.Logging.BorrowLogExtensions.LogUpdateBorrow(_logger, borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
             }
 
             return _mapper.Map<BorrowDto>(result.Entity);

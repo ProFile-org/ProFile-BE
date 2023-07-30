@@ -65,7 +65,7 @@ public class CancelBorrowRequest
             await _context.SaveChangesAsync(cancellationToken);
             using (Logging.PushProperties("BorrowRequest", borrowRequest.Id, request.CurrentUserId))
             {
-                _logger.LogCancelBorrowRequest(borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
+                Common.Extensions.Logging.BorrowLogExtensions.LogCancelBorrowRequest(_logger, borrowRequest.Document.Id.ToString(), borrowRequest.Id.ToString());
             }
             return _mapper.Map<BorrowDto>(result.Entity);
         }
