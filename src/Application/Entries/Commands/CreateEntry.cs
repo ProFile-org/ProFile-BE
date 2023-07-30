@@ -95,7 +95,7 @@ public class CreateEntry {
 
             var entryEntity = new Entry()
             {
-                Name = request.Name.Trim(),
+                Name = request.IsDirectory ? request.Name.Trim() : request.Name.Trim()[0..request.Name.Trim().LastIndexOf(".", StringComparison.Ordinal)],
                 Path = request.Path.Trim(),
                 CreatedBy = request.CurrentUser.Id,
                 Uploader = request.CurrentUser,
@@ -121,7 +121,7 @@ public class CreateEntry {
             else
             {
                 var entries = _context.Entries.AsQueryable()
-                    .Where(x => x.Name.Trim().Substring(0, request.Name.Trim().Length).Equals(request.Name.Trim())
+                    .Where(x => x.Name.Trim().Substring(0, entryEntity.Name.Trim().Length).Equals(entryEntity.Name.Trim())
                              && x.Path.Trim().Equals(request.Path.Trim())
                              && x.FileId != null
                              && x.OwnerId == request.CurrentUser.Id);
@@ -137,14 +137,7 @@ public class CreateEntry {
                     while (true)
                     {
                         var temp = "";
-                        if (i == 0)
-                        {
-                            temp = entryEntity.Name;
-                        }
-                        else
-                        {
-                            temp = $"{entryEntity.Name} ({i})";
-                        }
+                        temp = i == 0 ? entryEntity.Name : $"{entryEntity.Name} ({i})";
                         var checkEntry = await entries.AnyAsync(x => x.Name.Equals(temp),cancellationToken);
 
                         if (!checkEntry)

@@ -41,6 +41,8 @@ public class GetAllSharedEntriesPaginated
                 .ThenInclude(y => y.Uploader)
                 .Include(x => x.Entry)
                 .ThenInclude(y => y.Owner)
+                .Include(x => x.Entry)
+                .ThenInclude(y => y.File)
                 .Where(x =>
                     x.EmployeeId == request.CurrentUser.Id
                     && x.AllowedOperations

@@ -35,6 +35,6 @@ public class UserCreatedEventHandler : INotificationHandler<UserCreatedEvent>
         await _authDbContext.ResetPasswordTokens.AddAsync(resetPasswordToken, cancellationToken);
         await _authDbContext.SaveChangesAsync(cancellationToken);
         
-        _mailService.SendResetPasswordHtmlMail(notification.User.Email, notification.Password, resetPasswordToken.TokenHash);
+        _mailService.SendResetPasswordHtmlMail(notification.User.Email, notification.Password, token);
     }
 }

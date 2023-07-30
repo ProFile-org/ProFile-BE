@@ -75,11 +75,11 @@ public class CreateSharedEntry
             }
 
             var localDateTimeNow = LocalDateTime.FromDateTime(_dateTimeProvider.DateTimeNow);
-            var entryPath = permission.Entry.Path.Equals("/") ? permission.Entry.Path + permission.Entry.Name : $"{permission.Entry.Path}/{request.Name.Trim()}";
+            var entryPath = permission.Entry.Path.Equals("/") ? permission.Entry.Path + permission.Entry.Name : $"{permission.Entry.Path}/{permission.Entry.Name}";
             
             var entity = new Entry()
             {
-                Name = request.Name.Trim(),
+                Name = request.IsDirectory ? request.Name.Trim() : request.Name.Trim()[0..request.Name.Trim().LastIndexOf(".", StringComparison.Ordinal)],
                 Path = entryPath,
                 CreatedBy = request.CurrentUser.Id,
                 Uploader = request.CurrentUser,
@@ -108,6 +108,31 @@ public class CreateSharedEntry
                     throw new ConflictException("File size must be lower than 20MB");
                 }
                 
+                var entries = _context.Entries
+                    .Where(x => x.Name.Trim().Substring(0, entity.Name.Trim().Length).Equals(entity.Name.Trim())
+                                && x.Path.Trim().Equals(entryPath)
+                                && x.FileId != null
+                                && x.OwnerId == permission.Entry.OwnerId);
+                
+                if (entries.Any())
+                {
+                    var i = 0;
+                    while (true)
+                    {
+                        var temp = "";
+                        temp = i == 0 ? entity.Name : $"{entity.Name} ({i})";
+                        var checkEntry = await entries.AnyAsync(x => x.Name.Equals(temp),cancellationToken);
+
+                        if (!checkEntry)
+                        {
+                            entity.Name = temp;
+                            break;
+                        }
+
+                        i++;
+                    }
+                }
+                
                 var fileEntity = new FileEntity()
                 {
                     FileData = request.FileData.ToArray(),
@@ -121,7 +146,6 @@ public class CreateSharedEntry
                 entity.File = fileEntity;
             }
             
-            
             var result = await _context.Entries.AddAsync(entity, cancellationToken);
 
             var permissionEntity = new EntryPermission()
@@ -129,7 +153,6 @@ public class CreateSharedEntry
                 EntryId = result.Entity.Id,
                 Entry = result.Entity,
                 EmployeeId = request.CurrentUser.Id,
-                Employee = request.CurrentUser,
                 ExpiryDateTime = null,
                 AllowedOperations = $"{EntryOperation.View.ToString()},{EntryOperation.Edit.ToString()}"
             };

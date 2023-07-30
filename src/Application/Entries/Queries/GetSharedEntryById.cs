@@ -35,6 +35,8 @@ public class GetSharedEntryById
                 .ThenInclude(x => x.Uploader)
                 .Include(x => x.Entry)
                 .ThenInclude(x => x.Owner)
+                .Include(x => x.Entry)
+                .ThenInclude(x => x.File)
                 .FirstOrDefaultAsync(x => x.EntryId == request.EntryId && x.EmployeeId == request.CurrentUser.Id,
                     cancellationToken);
 

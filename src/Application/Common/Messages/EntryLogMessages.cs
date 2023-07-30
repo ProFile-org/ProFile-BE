@@ -9,5 +9,5 @@ public class EntryLogMessages
     public const string ShareEntry = "User with username {Username} change permission of entry with Id {EntryId} to User with id {SharedUsername}";
     public const string UpdateEntry = "User with username {Username} update entry with Id {EntryId}";
     public const string UploadDigitalFile = "User with username {Username} upload an entry with id {EntryId}";
-    public const string UploadSharedEntry = "User with username {Username} upload an emtry with id {EntryId}";
+    public const string UploadSharedEntry = "User with username {Username} upload an entry with id {EntryId}";
 }
