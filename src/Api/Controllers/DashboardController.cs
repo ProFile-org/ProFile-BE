@@ -9,9 +9,12 @@ namespace Api.Controllers;
 public class DashboardController : ApiControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
+
     public DashboardController(ICurrentUserService currentUserService)
     {
         _currentUserService = currentUserService;
+    }
+
     [RequiresRole(IdentityData.Roles.Admin)]
     [HttpGet("online-users")]
     [ProducesResponseType(StatusCodes.Status200OK)]
