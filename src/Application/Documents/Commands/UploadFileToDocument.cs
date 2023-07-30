@@ -64,7 +64,7 @@ public abstract class UploadFileToDocument
                 _context.Files.Remove(document.File);
             }
             
-            if (document.Status is DocumentStatus.Issued or DocumentStatus.Lost )
+            if (document.Status is DocumentStatus.Lost )
             {
                 throw new ConflictException("This document cannot be uploaded to.");
             }
